@@ -9,6 +9,7 @@ import { GlobalCqrsModule } from './common/cqrs';
 import { HttpLoggerMiddleware } from './common/middlewares';
 import { PrismaModule } from './common/prisma';
 import { RedisModule, RedisThrottlerStorage } from './common/redis';
+import { HeroModule } from './hero/hero.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { RedisModule, RedisThrottlerStorage } from './common/redis';
     }),
     GlobalCqrsModule,
     PrismaModule,
+    HeroModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

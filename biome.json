@@ -167,7 +167,7 @@
       "linter": {
         "rules": {
           "style": {
-            "useExplicitType": "error"
+            "noInferrableTypes": "error"
           }
         }
       }
