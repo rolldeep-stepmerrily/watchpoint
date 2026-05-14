@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Hero {
+  id          Int       @id @default(autoincrement())
+  codename    String    @unique
+  name        String
+  role        HeroRole
+  releasedAt  DateTime
+  portraitUrl String?
+  description String?
+  sourceUrl   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+
+  stat          HeroStat?
+  abilities     HeroAbility[]
+  statRevisions HeroStatRevision[]
+  patchEntries  PatchNoteEntry[]
+
+  @@index([role])
+  @@map("heroes")
+}
+
+model HeroStat {
+  id        Int       @id @default(autoincrement())
+  heroId    Int       @unique
+  health    Int
+  armor     Int       @default(0)
+  shield    Int       @default(0)
+  moveSpeed Float
+  extras    Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  hero Hero @relation(fields: [heroId], references: [id], onDelete: Cascade)
+
+  @@map("hero_stats")
+}
+
+model HeroAbility {
+  id          Int          @id @default(autoincrement())
+  heroId      Int
+  slot        AbilitySlot
+  key         String?
+  name        String
+  description String
+  stats       Json?
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime?    @updatedAt
+
+  hero Hero @relation(fields: [heroId], references: [id], onDelete: Cascade)
+
+  @@unique([heroId, slot, order])
+  @@index([heroId])
+  @@map("hero_abilities")
+}
+
+model HeroStatRevision {
+  id          Int      @id @default(autoincrement())
+  heroId      Int
+  patchNoteId Int
+  diff        Json
+  appliedAt   DateTime @default(now())
+
+  hero      Hero      @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  patchNote PatchNote @relation(fields: [patchNoteId], references: [id], onDelete: Cascade)
+
+  @@index([heroId, appliedAt])
+  @@index([patchNoteId])
+  @@map("hero_stat_revisions")
+}
+
+model PatchNote {
+  id         Int              @id @default(autoincrement())
+  version    String           @unique
+  title      String
+  releasedAt DateTime
+  sourceUrl  String           @unique
+  summary    String?
+  status     PatchNoteStatus  @default(DRAFT)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime?        @updatedAt
+
+  entries       PatchNoteEntry[]
+  statRevisions HeroStatRevision[]
+
+  @@index([releasedAt])
+  @@index([status])
+  @@map("patch_notes")
+}
+
+model PatchNoteEntry {
+  id          Int           @id @default(autoincrement())
+  patchNoteId Int
+  category    EntryCategory
+  heroId      Int?
+  title       String
+  body        String
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+
+  patchNote PatchNote @relation(fields: [patchNoteId], references: [id], onDelete: Cascade)
+  hero      Hero?     @relation(fields: [heroId], references: [id], onDelete: SetNull)
+
+  @@index([patchNoteId, order])
+  @@index([heroId])
+  @@map("patch_note_entries")
+}
+
+model ScrapeJob {
+  id          Int           @id @default(autoincrement())
+  source      ScrapeSource
+  target      String
+  status      ScrapeStatus
+  startedAt   DateTime      @default(now())
+  finishedAt  DateTime?
+  error       String?
+  diffSummary Json?
+
+  @@index([source, startedAt])
+  @@index([status])
+  @@map("scrape_jobs")
+}
+
+enum HeroRole {
+  TANK
+  DAMAGE
+  SUPPORT
+}
+
+enum AbilitySlot {
+  PASSIVE
+  PRIMARY
+  SECONDARY
+  ABILITY_1
+  ABILITY_2
+  ULTIMATE
+}
+
+enum PatchNoteStatus {
+  DRAFT
+  PUBLISHED
+  PENDING_REVIEW
+}
+
+enum EntryCategory {
+  HERO_BALANCE
+  BUG_FIX
+  MAP
+  SYSTEM
+  GENERAL
+}
+
+enum ScrapeSource {
+  BLIZZARD_PATCH_NOTES
+  NAMUWIKI_HERO
+}
+
+enum ScrapeStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+  SKIPPED
+}
