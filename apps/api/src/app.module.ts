@@ -10,6 +10,7 @@ import { HttpLoggerMiddleware } from './common/middlewares';
 import { PrismaModule } from './common/prisma';
 import { RedisModule, RedisThrottlerStorage } from './common/redis';
 import { HeroModule } from './hero/hero.module';
+import { PatchNoteModule } from './patch-note/patch-note.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { HeroModule } from './hero/hero.module';
     GlobalCqrsModule,
     PrismaModule,
     HeroModule,
+    PatchNoteModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
