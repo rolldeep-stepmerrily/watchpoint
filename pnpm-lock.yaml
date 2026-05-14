@@ -50,6 +50,9 @@ importers:
       '@scalar/nestjs-api-reference':
         specifier: ^0.5.1
         version: 0.5.14
+      '@watchpoint/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       cheerio:
         specifier: ^1.0.0
         version: 1.2.0
