@@ -1,0 +1,34 @@
+{
+  "name": "watchpoint",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:api": "pnpm --filter @watchpoint/api dev",
+    "dev:web": "pnpm --filter @watchpoint/web dev",
+    "build": "pnpm -r build",
+    "build:api": "pnpm --filter @watchpoint/api build",
+    "build:web": "pnpm --filter @watchpoint/web build",
+    "start": "pnpm -r --parallel start",
+    "lint": "biome lint apps/ packages/",
+    "check": "biome check --write apps/ packages/",
+    "test": "pnpm -r test",
+    "db:migrate": "pnpm --filter @watchpoint/api db:migrate",
+    "db:generate": "pnpm --filter @watchpoint/api db:generate",
+    "db:push": "pnpm --filter @watchpoint/api db:push",
+    "patch:sync": "pnpm --filter @watchpoint/api patch:sync",
+    "patch:list": "pnpm --filter @watchpoint/api patch:list",
+    "patch:review": "pnpm --filter @watchpoint/api patch:review",
+    "hero:sync": "pnpm --filter @watchpoint/api hero:sync",
+    "hero:sync:all": "pnpm --filter @watchpoint/api hero:sync:all",
+    "hero:edit": "pnpm --filter @watchpoint/api hero:edit"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.6",
+    "typescript": "^5.8.0"
+  }
+}

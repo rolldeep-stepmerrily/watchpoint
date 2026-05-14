@@ -1,0 +1,176 @@
+{
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "main"
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!**/.next/**", "!**/dist/**", "!**/node_modules/**", "!**/generated/**"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "attributePosition": "multiline",
+    "lineWidth": 120,
+    "lineEnding": "lf"
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "nursery": {
+        "useExhaustiveSwitchCases": "error"
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "error",
+        "noUselessStringConcat": "error",
+        "noVoid": "error",
+        "useDateNow": "error",
+        "useSimplifiedLogicExpression": "error",
+        "noUselessConstructor": "off"
+      },
+      "correctness": {
+        "useSingleJsDocAsterisk": "error",
+        "noUnusedImports": "error"
+      },
+      "style": {
+        "useReadonlyClassProperties": "error",
+        "useObjectSpread": "error",
+        "noYodaExpression": "error",
+        "noNamespace": "error",
+        "useEnumInitializers": "error",
+        "useDefaultSwitchClause": "error",
+        "useExplicitLengthCheck": "error",
+        "useForOf": "error",
+        "useThrowNewError": "error",
+        "useThrowOnlyError": "error",
+        "useImportType": "off",
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "strictCase": true,
+            "requireAscii": false,
+            "filenameCases": ["kebab-case", "export"]
+          }
+        },
+        "useNamingConvention": {
+          "level": "error",
+          "options": {
+            "strictCase": false,
+            "requireAscii": false,
+            "conventions": [
+              {
+                "selector": {
+                  "kind": "typeLike"
+                },
+                "formats": ["PascalCase"]
+              },
+              {
+                "selector": {
+                  "kind": "classProperty",
+                  "modifiers": ["static"]
+                },
+                "formats": ["PascalCase"]
+              },
+              {
+                "selector": {
+                  "kind": "classProperty",
+                  "modifiers": ["static", "readonly"]
+                },
+                "formats": ["PascalCase"]
+              },
+              {
+                "selector": {
+                  "kind": "objectLiteralMember"
+                },
+                "match": ".*|[$](.*?)",
+                "formats": ["camelCase", "PascalCase"]
+              },
+              {
+                "selector": {
+                  "kind": "classMember"
+                },
+                "match": ".*|[ㄱ-ㅎ|ㅏ-ㅣ|가-힣](.*?)"
+              }
+            ]
+          }
+        },
+        "useAsConstAssertion": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noUselessElse": "error"
+      },
+      "suspicious": {
+        "noExplicitAny": "warn",
+        "noConsole": "error",
+        "noEmptyBlockStatements": "error",
+        "useAwait": "error",
+        "useErrorMessage": "error"
+      }
+    },
+    "includes": ["**", "!**/*.config.{ts,js,mjs}", "!**/next-env.d.ts"]
+  },
+  "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "all",
+      "semicolons": "always"
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["apps/web/**"],
+      "javascript": {
+        "formatter": {
+          "jsxQuoteStyle": "double"
+        }
+      },
+      "linter": {
+        "rules": {
+          "style": {
+            "useFilenamingConvention": {
+              "level": "error",
+              "options": {
+                "strictCase": false,
+                "requireAscii": false,
+                "filenameCases": ["kebab-case", "export"]
+              }
+            }
+          },
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "apps/api/**/*.strategy.ts",
+        "apps/api/**/*.controller.ts",
+        "apps/api/**/*.service.ts",
+        "apps/api/**/*.error.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "useExplicitType": "error"
+          }
+        }
+      }
+    }
+  ]
+}
