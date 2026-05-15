@@ -48,18 +48,20 @@ export class NamuwikiHeroScraper {
   private async upsert(parsed: ParsedHero): Promise<SyncResult> {
     const existing = await this.prismaService.hero.findUnique({ where: { codename: parsed.codename } });
 
-    const heroData = {
+    const updateData = {
       name: parsed.name,
       role: parsed.role,
-      releasedAt: parsed.releasedAt ?? new Date(),
       portraitUrl: parsed.portraitUrl,
       description: parsed.description,
       sourceUrl: parsed.sourceUrl,
+      ...(parsed.releasedAt ? { releasedAt: parsed.releasedAt } : {}),
     };
 
     const hero = existing
-      ? await this.prismaService.hero.update({ where: { id: existing.id }, data: heroData })
-      : await this.prismaService.hero.create({ data: { codename: parsed.codename, ...heroData } });
+      ? await this.prismaService.hero.update({ where: { id: existing.id }, data: updateData })
+      : await this.prismaService.hero.create({
+          data: { codename: parsed.codename, releasedAt: parsed.releasedAt ?? new Date(), ...updateData },
+        });
 
     if (parsed.stat) {
       const statData = {
