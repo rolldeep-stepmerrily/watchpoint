@@ -20,14 +20,14 @@ export class HeroSyncCommand extends CommandRunner {
       process.exit(1);
     }
 
-    const pageTitle = HERO_REGISTRY[codename];
-    if (!pageTitle) {
+    const entry = HERO_REGISTRY[codename];
+    if (!entry) {
       console.error(`'${codename}' 영웅이 hero-registry에 등록되지 않았습니다. src/cli/hero-registry.ts에 추가하세요.`);
       process.exit(1);
     }
 
-    console.log(`${codename} 동기화 시작 (${pageTitle})...`);
-    const result = await this.scraper.sync(codename, pageTitle);
+    console.log(`${codename} 동기화 시작 (${entry.pageTitle})...`);
+    const result = await this.scraper.sync(codename, entry.pageTitle);
     console.log('동기화 완료:');
     console.table(result);
   }
