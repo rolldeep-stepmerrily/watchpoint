@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '@@db';
-import { ScrapeSource, ScrapeStatus } from '@@prisma';
+import { Prisma, ScrapeSource, ScrapeStatus } from '@@prisma';
 
 interface RunOptions<T> {
   source: ScrapeSource;
   target: string;
-  task: () => Promise<{ result: T; diffSummary?: Record<string, unknown> }>;
+  task: () => Promise<{ result: T; diffSummary?: Prisma.InputJsonValue }>;
 }
 
 @Injectable()
