@@ -20,6 +20,7 @@
     "db:migrate": "pnpm --filter @watchpoint/api db:migrate",
     "db:generate": "pnpm --filter @watchpoint/api db:generate",
     "db:push": "pnpm --filter @watchpoint/api db:push",
+    "db:seed": "pnpm --filter @watchpoint/api db:seed",
     "patch:sync": "pnpm --filter @watchpoint/api patch:sync",
     "patch:list": "pnpm --filter @watchpoint/api patch:list",
     "patch:review": "pnpm --filter @watchpoint/api patch:review",
