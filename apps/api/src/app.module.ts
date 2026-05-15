@@ -11,6 +11,7 @@ import { PrismaModule } from './common/prisma';
 import { RedisModule, RedisThrottlerStorage } from './common/redis';
 import { HeroModule } from './hero/hero.module';
 import { PatchNoteModule } from './patch-note/patch-note.module';
+import { ScraperModule } from './scraper/scraper.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { PatchNoteModule } from './patch-note/patch-note.module';
         SCRAPER_USER_AGENT: Joi.string().default('WatchpointBot/0.1'),
         SCRAPER_PATCH_CRON: Joi.string().default('0 */6 * * *'),
         SCRAPER_REQUEST_DELAY_MS: Joi.number().default(2000),
+        SCRAPER_CRON_ENABLED: Joi.boolean().default(false),
       }),
       isGlobal: true,
       envFilePath: ['.env', '../../.env'],
@@ -43,6 +45,7 @@ import { PatchNoteModule } from './patch-note/patch-note.module';
     PrismaModule,
     HeroModule,
     PatchNoteModule,
+    ScraperModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
