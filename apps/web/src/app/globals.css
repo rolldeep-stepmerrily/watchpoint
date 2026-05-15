@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0b0d11;
+  --color-surface: #14171d;
+  --color-surface-hover: #1a1e26;
+  --color-border: #232830;
+  --color-text: #e6e8eb;
+  --color-text-muted: #8a8f99;
+  --color-accent: #f99e1a;
+  --color-accent-hover: #ffb547;
+}
+
+html, body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Pretendard",
+    "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
+
+a {
+  color: inherit;
+}
