@@ -1,6 +1,12 @@
-export { ABILITY_SLOTS, AbilitySlot } from './ability-slot';
-export { ENTRY_CATEGORIES, EntryCategory } from './entry-category';
-export { HERO_ROLES, HeroRole } from './hero-role';
-export { PATCH_NOTE_STATUSES, PatchNoteStatus } from './patch-note-status';
-export { SCRAPE_SOURCES, ScrapeSource } from './scrape-source';
-export { SCRAPE_STATUSES, ScrapeStatus } from './scrape-status';
+export { ABILITY_SLOTS } from './ability-slot';
+export type { AbilitySlot } from './ability-slot';
+export { ENTRY_CATEGORIES } from './entry-category';
+export type { EntryCategory } from './entry-category';
+export { HERO_ROLES } from './hero-role';
+export type { HeroRole } from './hero-role';
+export { PATCH_NOTE_STATUSES } from './patch-note-status';
+export type { PatchNoteStatus } from './patch-note-status';
+export { SCRAPE_SOURCES } from './scrape-source';
+export type { ScrapeSource } from './scrape-source';
+export { SCRAPE_STATUSES } from './scrape-status';
+export type { ScrapeStatus } from './scrape-status';
