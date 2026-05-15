@@ -98,19 +98,19 @@ export class BlizzardPatchScraper {
 
   private async resolveEntries(
     parsed: ParsedPatchEntry[],
-  ): Promise<{ entries: Array<Omit<ParsedPatchEntry, 'heroCodename'> & { heroId: number | null }>; hasUnmappedHero: boolean }> {
-    const codenames = parsed
-      .map((entry) => entry.heroCodename)
-      .filter((codename): codename is string => Boolean(codename));
-    const heroes = codenames.length
-      ? await this.prismaService.hero.findMany({ where: { codename: { in: codenames } } })
+  ): Promise<{ entries: Array<{ category: ParsedPatchEntry['category']; title: string; body: string; order: number; heroId: number | null }>; hasUnmappedHero: boolean }> {
+    const heroNames = parsed
+      .map((entry) => entry.heroName)
+      .filter((name): name is string => Boolean(name));
+    const heroes = heroNames.length
+      ? await this.prismaService.hero.findMany({ where: { name: { in: heroNames } } })
       : [];
-    const heroByCodename = new Map(heroes.map((hero) => [hero.codename, hero.id]));
+    const heroByName = new Map(heroes.map((hero) => [hero.name, hero.id]));
 
     let hasUnmappedHero = false;
-    const entries = parsed.map(({ heroCodename, ...entry }) => {
-      const heroId = heroCodename ? heroByCodename.get(heroCodename) ?? null : null;
-      if (heroCodename && heroId === null) hasUnmappedHero = true;
+    const entries = parsed.map(({ heroCodename: _codename, heroName, ...entry }) => {
+      const heroId = heroName ? heroByName.get(heroName) ?? null : null;
+      if (heroName && heroId === null) hasUnmappedHero = true;
       return { ...entry, heroId };
     });
 
