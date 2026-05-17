@@ -12,6 +12,7 @@ import { RedisModule, RedisThrottlerStorage } from './common/redis';
 import { HeroModule } from './hero/hero.module';
 import { PatchNoteModule } from './patch-note/patch-note.module';
 import { ScraperModule } from './scraper/scraper.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { ScraperModule } from './scraper/scraper.module';
     HeroModule,
     PatchNoteModule,
     ScraperModule,
+    SearchModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
