@@ -1,13 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { PrismaService } from '@@db';
-import { Prisma, ScrapeSource } from '@@prisma';
+import { type HeroRole, Prisma, ScrapeSource } from '@@prisma';
 
 import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
 import type { ParsedHero } from './dto/parsed-hero.dto';
 import { NamuwikiHeroParser } from './namuwiki-hero.parser';
 
 const NAMUWIKI_BASE = 'https://namu.wiki/w/';
+
+/**
+ * catalog가 single source of truth — namuwiki에서 추론한 role/releasedAt보다 우선.
+ */
+export interface HeroSyncOverride {
+  role: HeroRole;
+  releasedAt: Date;
+}
 
 interface SyncResult {
   codename: string;
@@ -27,7 +35,7 @@ export class NamuwikiHeroScraper {
     private readonly prismaService: PrismaService,
   ) {}
 
-  async sync(codename: string, pageTitle: string): Promise<SyncResult> {
+  async sync(codename: string, pageTitle: string, override: HeroSyncOverride): Promise<SyncResult> {
     const url = `${NAMUWIKI_BASE}${encodeURIComponent(pageTitle)}`;
 
     return await this.recorder.run({
@@ -36,7 +44,7 @@ export class NamuwikiHeroScraper {
       task: async () => {
         const html = await this.httpClient.fetchHtml(url);
         const parsed = this.parser.parse(html, codename, url);
-        const result = await this.upsert(parsed);
+        const result = await this.upsert(parsed, override);
         return {
           result,
           diffSummary: { codename: result.codename, abilities: result.abilitiesCount, created: result.created },
@@ -45,22 +53,22 @@ export class NamuwikiHeroScraper {
     });
   }
 
-  private async upsert(parsed: ParsedHero): Promise<SyncResult> {
+  private async upsert(parsed: ParsedHero, override: HeroSyncOverride): Promise<SyncResult> {
     const existing = await this.prismaService.hero.findUnique({ where: { codename: parsed.codename } });
 
     const updateData = {
       name: parsed.name,
-      role: parsed.role,
+      role: override.role,
+      releasedAt: override.releasedAt,
       portraitUrl: parsed.portraitUrl,
       description: parsed.description,
       sourceUrl: parsed.sourceUrl,
-      ...(parsed.releasedAt ? { releasedAt: parsed.releasedAt } : {}),
     };
 
     const hero = existing
       ? await this.prismaService.hero.update({ where: { id: existing.id }, data: updateData })
       : await this.prismaService.hero.create({
-          data: { codename: parsed.codename, releasedAt: parsed.releasedAt ?? new Date(), ...updateData },
+          data: { codename: parsed.codename, ...updateData },
         });
 
     if (parsed.stat) {

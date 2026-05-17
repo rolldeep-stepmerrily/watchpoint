@@ -27,7 +27,10 @@ export class HeroSyncCommand extends CommandRunner {
     }
 
     console.log(`${codename} 동기화 시작 (${entry.pageTitle})...`);
-    const result = await this.scraper.sync(codename, entry.pageTitle);
+    const result = await this.scraper.sync(codename, entry.pageTitle, {
+      role: entry.role,
+      releasedAt: entry.releasedAt,
+    });
     console.log('동기화 완료:');
     console.table(result);
   }
