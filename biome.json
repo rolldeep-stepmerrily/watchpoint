@@ -171,6 +171,16 @@
           }
         }
       }
+    },
+    {
+      "includes": ["apps/api/**/cli/**", "apps/api/prisma/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
     }
   ]
 }
