@@ -10,6 +10,7 @@ import { HttpLoggerMiddleware } from './common/middlewares';
 import { PrismaModule } from './common/prisma';
 import { RedisModule, RedisThrottlerStorage } from './common/redis';
 import { HeroModule } from './hero/hero.module';
+import { InternalModule } from './internal/internal.module';
 import { PatchNoteModule } from './patch-note/patch-note.module';
 import { ScraperModule } from './scraper/scraper.module';
 import { SearchModule } from './search/search.module';
@@ -45,6 +46,7 @@ import { SearchModule } from './search/search.module';
     GlobalCqrsModule,
     PrismaModule,
     HeroModule,
+    InternalModule,
     PatchNoteModule,
     ScraperModule,
     SearchModule,
