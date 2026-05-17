@@ -45,6 +45,11 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
   { codename: 'reaper', name: '리퍼', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '리퍼(오버워치)' },
   { codename: 'sierra', name: '시에라', role: 'DAMAGE', releasedAt: '2026-04-22', pageTitle: '시에라(오버워치)' },
   { codename: 'sojourn', name: '소전', role: 'DAMAGE', releasedAt: '2022-10-04', pageTitle: '소전(오버워치)' },
+  // TODO: role/releasedAt 보정 필요 (hero:sync로 정확한 값 가져온 뒤 hero:edit)
+  { codename: 'emre', name: '엠레', role: 'DAMAGE', releasedAt: '2026-01-01', pageTitle: '엠레(오버워치)' },
+  { codename: 'mizuki', name: '미즈키', role: 'DAMAGE', releasedAt: '2026-01-01', pageTitle: '미즈키(오버워치)' },
+  { codename: 'jetpack-cat', name: '제트팩 캣', role: 'DAMAGE', releasedAt: '2026-01-01', pageTitle: '제트팩 캣(오버워치)' },
+  { codename: 'vendetta', name: '벤데타', role: 'DAMAGE', releasedAt: '2026-01-01', pageTitle: '벤데타(오버워치)' },
   { codename: 'soldier-76', name: '솔저: 76', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '솔저: 76' },
   { codename: 'sombra', name: '솜브라', role: 'DAMAGE', releasedAt: '2016-11-14', pageTitle: '솜브라(오버워치)' },
   { codename: 'symmetra', name: '시메트라', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '시메트라(오버워치)' },
@@ -64,6 +69,7 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
   { codename: 'lucio', name: '루시우', role: 'SUPPORT', releasedAt: '2016-05-24', pageTitle: '루시우(오버워치)' },
   { codename: 'mercy', name: '메르시', role: 'SUPPORT', releasedAt: '2016-05-24', pageTitle: '메르시(오버워치)' },
   { codename: 'moira', name: '모이라', role: 'SUPPORT', releasedAt: '2017-11-17', pageTitle: '모이라(오버워치)' },
+  { codename: 'wuyang', name: '우양', role: 'SUPPORT', releasedAt: '2025-04-01', pageTitle: '우양(오버워치)' },
   { codename: 'zenyatta', name: '젠야타', role: 'SUPPORT', releasedAt: '2016-05-24', pageTitle: '젠야타(오버워치)' },
 ];
 
