@@ -22,6 +22,7 @@
     "db:push": "pnpm --filter @watchpoint/api db:push",
     "db:seed": "pnpm --filter @watchpoint/api db:seed",
     "patch:sync": "pnpm --filter @watchpoint/api patch:sync",
+    "patch:backfill": "pnpm --filter @watchpoint/api patch:backfill",
     "patch:list": "pnpm --filter @watchpoint/api patch:list",
     "patch:review": "pnpm --filter @watchpoint/api patch:review",
     "hero:sync": "pnpm --filter @watchpoint/api hero:sync",
