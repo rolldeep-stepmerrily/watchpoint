@@ -14,6 +14,7 @@
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "patch:sync": "ts-node -r tsconfig-paths/register src/cli/main.ts patch:sync",
+    "patch:backfill": "ts-node -r tsconfig-paths/register src/cli/main.ts patch:backfill",
     "patch:list": "ts-node -r tsconfig-paths/register src/cli/main.ts patch:list",
     "patch:review": "ts-node -r tsconfig-paths/register src/cli/main.ts patch:review",
     "hero:sync": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:sync",
