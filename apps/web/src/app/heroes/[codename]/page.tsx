@@ -2,7 +2,7 @@ import type { HeroDetailDto, HeroPatchHistoryDto } from '@@shared';
 import { notFound } from 'next/navigation';
 
 import { getHero, getHeroPatchHistory } from '@/lib/api';
-import { categoryLabel, formatDate, roleLabel, slotLabel } from '@/lib/format';
+import { categoryLabel, formatDate, roleColorVar, roleLabel, slotLabel } from '@/lib/format';
 
 export const revalidate = 300;
 
@@ -21,10 +21,22 @@ export default async function HeroDetailPage({ params }: Props) {
     notFound();
   }
 
+  const roleColor = `var(${roleColorVar(hero.role)})`;
+
   return (
     <article className="space-y-12">
       <header className="space-y-3">
-        <p className="text-xs uppercase tracking-widest text-(--color-accent)">{roleLabel(hero.role)}</p>
+        <span
+          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold px-2 py-1 rounded border"
+          style={{ color: roleColor, borderColor: roleColor }}
+        >
+          <span
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ backgroundColor: roleColor }}
+            aria-hidden
+          />
+          {roleLabel(hero.role)}
+        </span>
         <h1 className="text-3xl font-semibold tracking-tight">{hero.name}</h1>
         {hero.description && <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{hero.description}</p>}
         <p className="text-xs text-(--color-text-muted)">출시: {formatDate(hero.releasedAt)}</p>

@@ -9,6 +9,9 @@
   --color-text-muted: #8a8f99;
   --color-accent: #f99e1a;
   --color-accent-hover: #ffb547;
+  --color-role-tank: #6db4ff;
+  --color-role-damage: #f06464;
+  --color-role-support: #7ed957;
 }
 
 html,
