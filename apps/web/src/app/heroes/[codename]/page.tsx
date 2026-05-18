@@ -1,6 +1,7 @@
 import type { HeroDetailDto, HeroPatchHistoryDto } from '@@shared';
 import { notFound } from 'next/navigation';
 
+import { HeroPortrait } from '@/components/hero-portrait';
 import { getHero, getHeroPatchHistory } from '@/lib/api';
 import { categoryLabel, formatDate, roleColorVar, roleLabel, slotLabel } from '@/lib/format';
 
@@ -25,21 +26,32 @@ export default async function HeroDetailPage({ params }: Props) {
 
   return (
     <article className="space-y-12">
-      <header className="space-y-3">
-        <span
-          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold px-2 py-1 rounded border"
-          style={{ color: roleColor, borderColor: roleColor }}
-        >
+      <header className="flex items-start gap-6">
+        <HeroPortrait
+          src={hero.portraitUrl}
+          alt={hero.name}
+          role={hero.role}
+          size="lg"
+          loading="eager"
+        />
+        <div className="space-y-3 min-w-0">
           <span
-            className="h-1.5 w-1.5 rounded-full"
-            style={{ backgroundColor: roleColor }}
-            aria-hidden
-          />
-          {roleLabel(hero.role)}
-        </span>
-        <h1 className="text-3xl font-semibold tracking-tight">{hero.name}</h1>
-        {hero.description && <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{hero.description}</p>}
-        <p className="text-xs text-(--color-text-muted)">출시: {formatDate(hero.releasedAt)}</p>
+            className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold px-2 py-1 rounded border"
+            style={{ color: roleColor, borderColor: roleColor }}
+          >
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ backgroundColor: roleColor }}
+              aria-hidden
+            />
+            {roleLabel(hero.role)}
+          </span>
+          <h1 className="text-3xl font-semibold tracking-tight">{hero.name}</h1>
+          {hero.description && (
+            <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{hero.description}</p>
+          )}
+          <p className="text-xs text-(--color-text-muted)">출시: {formatDate(hero.releasedAt)}</p>
+        </div>
       </header>
 
       {hero.stat && (
