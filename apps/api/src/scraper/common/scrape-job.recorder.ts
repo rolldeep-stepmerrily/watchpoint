@@ -1,7 +1,6 @@
-import { Injectable } from '@nestjs/common';
-
 import { PrismaService } from '@@db';
 import { Prisma, ScrapeSource, ScrapeStatus } from '@@prisma';
+import { Injectable } from '@nestjs/common';
 
 interface RunOptions<T> {
   source: ScrapeSource;

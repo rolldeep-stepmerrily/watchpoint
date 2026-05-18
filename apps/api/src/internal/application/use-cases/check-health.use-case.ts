@@ -1,7 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-
 import { PrismaService } from '@@db';
 import { RedisService } from '@@redis';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { GetHealthResponseDto } from '../../presenter/http/dto/get-health.dto';
 

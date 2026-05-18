@@ -1,7 +1,6 @@
+import { AppException } from '@@exceptions';
 import { CanActivate, type ExecutionContext, Injectable } from '@nestjs/common';
 import type { Request } from 'express';
-
-import { AppException } from '@@exceptions';
 
 import { INTERNAL_ERRORS } from '../internal.error';
 

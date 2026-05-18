@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import type { ScrapeSource, ScrapeStatus } from '@watchpoint/shared';
-
 import { TypedQueryBus } from '@@cqrs';
 import type { ScrapeSource as PrismaScrapeSource, ScrapeStatus as PrismaScrapeStatus } from '@@prisma';
+import { Injectable } from '@nestjs/common';
+import type { ScrapeSource, ScrapeStatus } from '@watchpoint/shared';
 
 import { GetScrapeJobsResponseDto } from '../../presenter/http/dto/get-scrape-jobs.dto';
 import { GetRecentScrapeJobsQuery } from '../queries/get-recent-scrape-jobs.query';

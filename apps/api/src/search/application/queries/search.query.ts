@@ -1,7 +1,6 @@
-import { IQueryHandler, Query, QueryHandler } from '@nestjs/cqrs';
-
 import { PrismaService } from '@@db';
 import type { HeroRole as PrismaHeroRole } from '@@prisma';
+import { IQueryHandler, Query, QueryHandler } from '@nestjs/cqrs';
 
 const RESULT_LIMIT = 10;
 
@@ -45,10 +44,7 @@ export class SearchQueryHandler implements IQueryHandler<SearchQuery> {
     const [heroes, patchNotes] = await this.prisma.$transaction([
       this.prisma.hero.findMany({
         where: {
-          OR: [
-            { name: { contains: q, mode: 'insensitive' } },
-            { codename: { contains: q, mode: 'insensitive' } },
-          ],
+          OR: [{ name: { contains: q, mode: 'insensitive' } }, { codename: { contains: q, mode: 'insensitive' } }],
         },
         select: {
           id: true,

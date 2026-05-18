@@ -1,7 +1,6 @@
-import { Command, CommandRunner } from 'nest-commander';
-
 import { PrismaService } from '@@db';
 import { PatchNoteStatus } from '@@prisma';
+import { Command, CommandRunner } from 'nest-commander';
 
 @Command({
   name: 'patch:review',

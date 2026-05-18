@@ -1,7 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-
 import { PrismaService } from '@@db';
 import { PatchNoteStatus, ScrapeSource } from '@@prisma';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
 import { BlizzardPatchParser } from './blizzard-patch.parser';
@@ -181,21 +180,24 @@ export class BlizzardPatchScraper {
     return summary;
   }
 
-  private async resolveEntries(
-    parsed: ParsedPatchEntry[],
-  ): Promise<{ entries: Array<{ category: ParsedPatchEntry['category']; title: string; body: string; order: number; heroId: number | null }>; hasUnmappedHero: boolean }> {
-    const heroNames = parsed
-      .map((entry) => entry.heroName)
-      .filter((name): name is string => Boolean(name));
+  private async resolveEntries(parsed: ParsedPatchEntry[]): Promise<{
+    entries: Array<{
+      category: ParsedPatchEntry['category'];
+      title: string;
+      body: string;
+      order: number;
+      heroId: number | null;
+    }>;
+    hasUnmappedHero: boolean;
+  }> {
+    const heroNames = parsed.map((entry) => entry.heroName).filter((name): name is string => Boolean(name));
     const heroes =
-      heroNames.length > 0
-        ? await this.prismaService.hero.findMany({ where: { name: { in: heroNames } } })
-        : [];
+      heroNames.length > 0 ? await this.prismaService.hero.findMany({ where: { name: { in: heroNames } } }) : [];
     const heroByName = new Map(heroes.map((hero) => [hero.name, hero.id]));
 
     let hasUnmappedHero = false;
     const entries = parsed.map(({ heroCodename: _codename, heroName, ...entry }) => {
-      const heroId = heroName ? heroByName.get(heroName) ?? null : null;
+      const heroId = heroName ? (heroByName.get(heroName) ?? null) : null;
       if (heroName && heroId === null) hasUnmappedHero = true;
       return { ...entry, heroId };
     });

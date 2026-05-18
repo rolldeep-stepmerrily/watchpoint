@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from 'next/link';
 
 export const revalidate = 3600;
 
@@ -11,8 +11,8 @@ export default function HomePage() {
         </p>
         <h1 className="text-4xl font-semibold tracking-tight">Watchpoint</h1>
         <p className="text-(--color-text-muted) max-w-xl leading-relaxed">
-          오버워치 패치노트와 영웅별 능력 상세 수치를 한곳에서 추적·열람합니다. 블리자드 공식 패치노트와
-          나무위키의 영웅 정보를 자동으로 모읍니다.
+          오버워치 패치노트와 영웅별 능력 상세 수치를 한곳에서 추적·열람합니다. 블리자드 공식 패치노트와 나무위키의 영웅
+          정보를 자동으로 모읍니다.
         </p>
       </section>
 
