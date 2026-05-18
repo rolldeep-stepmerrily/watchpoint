@@ -1,6 +1,7 @@
 import type { HeroSummaryDto } from '@@shared';
 import Link from 'next/link';
 
+import { HeroPortrait } from '@/components/hero-portrait';
 import { getHeroList } from '@/lib/api';
 import { ROLE_ORDER, type RoleKey, roleColorVar, roleLabel } from '@/lib/format';
 
@@ -49,11 +50,21 @@ export default async function HeroesPage() {
                     <li key={hero.id}>
                       <Link
                         href={`/heroes/${hero.codename}`}
-                        className="block p-4 rounded-lg border border-(--color-border) bg-(--color-surface) hover:bg-(--color-surface-hover) transition"
+                        className="flex items-center gap-3 p-3 rounded-lg border border-(--color-border) bg-(--color-surface) hover:bg-(--color-surface-hover) transition"
                         style={{ borderLeft: `3px solid var(${colorVar})` }}
                       >
-                        <div className="text-base font-semibold">{hero.name}</div>
-                        <div className="text-xs text-(--color-text-muted) mt-1 font-mono">{hero.codename}</div>
+                        <HeroPortrait
+                          src={hero.portraitUrl}
+                          alt={hero.name}
+                          role={hero.role}
+                          size="md"
+                        />
+                        <div className="min-w-0">
+                          <div className="text-base font-semibold truncate">{hero.name}</div>
+                          <div className="text-xs text-(--color-text-muted) mt-1 font-mono truncate">
+                            {hero.codename}
+                          </div>
+                        </div>
                       </Link>
                     </li>
                   ))}

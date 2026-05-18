@@ -4,6 +4,8 @@ import type { HeroSummaryDto, PatchNoteSummaryDto } from '@@shared';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
+import { HeroPortrait } from '@/components/hero-portrait';
+
 interface SearchResponse {
   heroes: HeroSummaryDto[];
   patchNotes: PatchNoteSummaryDto[];
@@ -102,10 +104,16 @@ export function SearchBar() {
                     <Link
                       href={`/heroes/${hero.codename}`}
                       onClick={close}
-                      className="block px-3 py-2 text-sm hover:bg-(--color-surface-hover)"
+                      className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-(--color-surface-hover)"
                     >
+                      <HeroPortrait
+                        src={hero.portraitUrl}
+                        alt={hero.name}
+                        role={hero.role}
+                        size="sm"
+                      />
                       <span className="font-medium">{hero.name}</span>
-                      <span className="text-xs text-(--color-text-muted) ml-2 font-mono">{hero.codename}</span>
+                      <span className="text-xs text-(--color-text-muted) font-mono">{hero.codename}</span>
                     </Link>
                   </li>
                 ))}
