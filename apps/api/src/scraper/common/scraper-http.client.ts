@@ -1,8 +1,7 @@
+import { AppException } from '@@exceptions';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { request } from 'undici';
-
-import { AppException } from '@@exceptions';
 
 import { SCRAPER_ERRORS } from '../scraper.error';
 
@@ -55,11 +54,14 @@ export class ScraperHttpClient {
 
   private async acquireSlot(host: string): Promise<void> {
     const previous = this.inFlight.get(host) ?? Promise.resolve();
-    let release: () => void = () => {};
+    let release!: () => void;
     const slot = new Promise<void>((resolve) => {
       release = resolve;
     });
-    this.inFlight.set(host, previous.then(() => slot));
+    this.inFlight.set(
+      host,
+      previous.then(() => slot),
+    );
 
     await previous;
     const waitMs = this.computeWaitMs(host);

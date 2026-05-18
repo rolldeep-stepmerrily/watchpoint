@@ -1,9 +1,8 @@
-import { notFound } from "next/navigation";
+import type { PatchNoteDetailDto, PatchNoteEntryDto } from '@@shared';
+import { notFound } from 'next/navigation';
 
-import type { PatchNoteEntryDto } from "@@shared";
-
-import { getPatchNote } from "@/lib/api";
-import { categoryLabel, formatDate } from "@/lib/format";
+import { getPatchNote } from '@/lib/api';
+import { categoryLabel, formatDate } from '@/lib/format';
 
 export const revalidate = 600;
 
@@ -14,7 +13,7 @@ interface Props {
 export default async function PatchNoteDetailPage({ params }: Props) {
   const { version } = await params;
 
-  let patch;
+  let patch: PatchNoteDetailDto;
   try {
     patch = await getPatchNote(version);
   } catch {
@@ -29,9 +28,7 @@ export default async function PatchNoteDetailPage({ params }: Props) {
         <p className="text-(--color-accent) font-mono text-sm">{patch.version}</p>
         <h1 className="text-3xl font-semibold tracking-tight">{patch.title}</h1>
         <p className="text-xs text-(--color-text-muted)">발표: {formatDate(patch.releasedAt)}</p>
-        {patch.summary && (
-          <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{patch.summary}</p>
-        )}
+        {patch.summary && <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{patch.summary}</p>}
       </header>
 
       {grouped.length === 0 ? (
@@ -39,7 +36,10 @@ export default async function PatchNoteDetailPage({ params }: Props) {
       ) : (
         <div className="space-y-8">
           {grouped.map(([category, entries]) => (
-            <section key={category} className="space-y-3">
+            <section
+              key={category}
+              className="space-y-3"
+            >
               <h2 className="text-lg font-semibold text-(--color-accent)">{categoryLabel(category)}</h2>
               <ul className="space-y-3">
                 {entries.map((entry) => (
@@ -48,9 +48,7 @@ export default async function PatchNoteDetailPage({ params }: Props) {
                     className="p-4 rounded-lg border border-(--color-border) bg-(--color-surface)"
                   >
                     <div className="font-semibold">{entry.title}</div>
-                    <p className="text-sm text-(--color-text-muted) mt-2 whitespace-pre-line">
-                      {entry.body}
-                    </p>
+                    <p className="text-sm text-(--color-text-muted) mt-2 whitespace-pre-line">{entry.body}</p>
                   </li>
                 ))}
               </ul>
@@ -60,8 +58,13 @@ export default async function PatchNoteDetailPage({ params }: Props) {
       )}
 
       <p className="text-xs text-(--color-text-muted)">
-        출처:{" "}
-        <a href={patch.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">
+        출처:{' '}
+        <a
+          href={patch.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline"
+        >
           {patch.sourceUrl}
         </a>
       </p>
@@ -69,8 +72,8 @@ export default async function PatchNoteDetailPage({ params }: Props) {
   );
 }
 
-function groupByCategory(entries: PatchNoteEntryDto[]): Array<[PatchNoteEntryDto["category"], PatchNoteEntryDto[]]> {
-  const groups = new Map<PatchNoteEntryDto["category"], PatchNoteEntryDto[]>();
+function groupByCategory(entries: PatchNoteEntryDto[]): Array<[PatchNoteEntryDto['category'], PatchNoteEntryDto[]]> {
+  const groups = new Map<PatchNoteEntryDto['category'], PatchNoteEntryDto[]>();
   for (const entry of entries) {
     const list = groups.get(entry.category) ?? [];
     list.push(entry);

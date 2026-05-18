@@ -1,7 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-
 import { PrismaService } from '@@db';
 import { type HeroRole, Prisma, ScrapeSource } from '@@prisma';
+import { Injectable } from '@nestjs/common';
 
 import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
 import type { ParsedHero } from './dto/parsed-hero.dto';
@@ -26,8 +25,6 @@ interface SyncResult {
 
 @Injectable()
 export class NamuwikiHeroScraper {
-  private readonly logger = new Logger(NamuwikiHeroScraper.name);
-
   constructor(
     private readonly httpClient: ScraperHttpClient,
     private readonly parser: NamuwikiHeroParser,
