@@ -14,9 +14,23 @@ const ROLE_LABELS = {
   SUPPORT: '지원',
 } as const;
 
-export function roleLabel(role: keyof typeof ROLE_LABELS): string {
+export type RoleKey = keyof typeof ROLE_LABELS;
+
+export function roleLabel(role: RoleKey): string {
   return ROLE_LABELS[role];
 }
+
+const ROLE_COLOR_VAR = {
+  TANK: '--color-role-tank',
+  DAMAGE: '--color-role-damage',
+  SUPPORT: '--color-role-support',
+} as const;
+
+export function roleColorVar(role: RoleKey): string {
+  return ROLE_COLOR_VAR[role];
+}
+
+export const ROLE_ORDER: readonly RoleKey[] = ['TANK', 'DAMAGE', 'SUPPORT'];
 
 const SLOT_LABELS = {
   PASSIVE: '패시브',

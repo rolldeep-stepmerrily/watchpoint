@@ -1,8 +1,13 @@
 import Link from 'next/link';
 
+import { getPatchNoteList } from '@/lib/api';
+import { formatDate } from '@/lib/format';
+
 export const revalidate = 3600;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { items } = await getPatchNoteList({ pageSize: 3 });
+
   return (
     <div className="space-y-12">
       <section className="space-y-4">
@@ -33,6 +38,38 @@ export default function HomePage() {
           <p className="text-sm text-(--color-text-muted)">전체 영웅의 스탯, 능력, 패치 이력.</p>
         </Link>
       </section>
+
+      {items.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-(--color-text-muted)">
+              최신 패치
+            </h2>
+            <Link
+              href="/patch-notes"
+              className="text-xs text-(--color-text-muted) hover:text-(--color-accent-hover)"
+            >
+              전체 보기 →
+            </Link>
+          </div>
+          <ul className="space-y-2">
+            {items.map((patch) => (
+              <li key={patch.id}>
+                <Link
+                  href={`/patch-notes/${patch.version}`}
+                  className="flex items-baseline justify-between gap-3 p-3 rounded-md border border-(--color-border) bg-(--color-surface) hover:bg-(--color-surface-hover) transition"
+                >
+                  <span>
+                    <span className="text-(--color-accent) font-mono mr-2 text-sm">{patch.version}</span>
+                    <span className="text-sm">{patch.title}</span>
+                  </span>
+                  <span className="text-xs text-(--color-text-muted) shrink-0">{formatDate(patch.releasedAt)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
