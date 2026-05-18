@@ -1,10 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  SCRAPE_SOURCES,
-  SCRAPE_STATUSES,
-  type ScrapeSource,
-  type ScrapeStatus,
-} from '@watchpoint/shared';
+import { SCRAPE_SOURCES, SCRAPE_STATUSES, type ScrapeSource, type ScrapeStatus } from '@watchpoint/shared';
 import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
 

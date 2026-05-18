@@ -1,9 +1,8 @@
+import { AppException } from '@@exceptions';
+import type { EntryCategory } from '@@prisma';
 import { Injectable, Logger } from '@nestjs/common';
 import * as cheerio from 'cheerio';
 import type { AnyNode } from 'domhandler';
-
-import { AppException } from '@@exceptions';
-import type { EntryCategory } from '@@prisma';
 
 import { SCRAPER_ERRORS } from '../scraper.error';
 import type { ParsedPatchEntry, ParsedPatchNote } from './dto/parsed-patch-note.dto';

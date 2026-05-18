@@ -1,7 +1,8 @@
-import { notFound } from "next/navigation";
+import type { HeroDetailDto, HeroPatchHistoryDto } from '@@shared';
+import { notFound } from 'next/navigation';
 
-import { getHero, getHeroPatchHistory } from "@/lib/api";
-import { categoryLabel, formatDate, roleLabel, slotLabel } from "@/lib/format";
+import { getHero, getHeroPatchHistory } from '@/lib/api';
+import { categoryLabel, formatDate, roleLabel, slotLabel } from '@/lib/format';
 
 export const revalidate = 300;
 
@@ -12,8 +13,8 @@ interface Props {
 export default async function HeroDetailPage({ params }: Props) {
   const { codename } = await params;
 
-  let hero;
-  let history;
+  let hero: HeroDetailDto;
+  let history: HeroPatchHistoryDto;
   try {
     [hero, history] = await Promise.all([getHero(codename), getHeroPatchHistory(codename)]);
   } catch {
@@ -23,13 +24,9 @@ export default async function HeroDetailPage({ params }: Props) {
   return (
     <article className="space-y-12">
       <header className="space-y-3">
-        <p className="text-xs uppercase tracking-widest text-(--color-accent)">
-          {roleLabel(hero.role)}
-        </p>
+        <p className="text-xs uppercase tracking-widest text-(--color-accent)">{roleLabel(hero.role)}</p>
         <h1 className="text-3xl font-semibold tracking-tight">{hero.name}</h1>
-        {hero.description && (
-          <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{hero.description}</p>
-        )}
+        {hero.description && <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{hero.description}</p>}
         <p className="text-xs text-(--color-text-muted)">출시: {formatDate(hero.releasedAt)}</p>
       </header>
 
@@ -38,10 +35,10 @@ export default async function HeroDetailPage({ params }: Props) {
           <h2 className="text-lg font-semibold">기본 스탯</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: "생명력", value: hero.stat.health },
-              { label: "방어력", value: hero.stat.armor },
-              { label: "보호막", value: hero.stat.shield },
-              { label: "이동 속도", value: hero.stat.moveSpeed },
+              { label: '생명력', value: hero.stat.health },
+              { label: '방어력', value: hero.stat.armor },
+              { label: '보호막', value: hero.stat.shield },
+              { label: '이동 속도', value: hero.stat.moveSpeed },
             ].map((stat) => (
               <div
                 key={stat.label}
@@ -67,18 +64,17 @@ export default async function HeroDetailPage({ params }: Props) {
                 <span className="text-xs uppercase tracking-widest text-(--color-accent)">
                   {slotLabel(ability.slot)}
                 </span>
-                {ability.key && (
-                  <span className="text-xs text-(--color-text-muted) font-mono">{ability.key}</span>
-                )}
+                {ability.key && <span className="text-xs text-(--color-text-muted) font-mono">{ability.key}</span>}
               </div>
               <div className="font-semibold mt-1">{ability.name}</div>
-              <p className="text-sm text-(--color-text-muted) mt-1 whitespace-pre-line">
-                {ability.description}
-              </p>
+              <p className="text-sm text-(--color-text-muted) mt-1 whitespace-pre-line">{ability.description}</p>
               {ability.stats && Object.keys(ability.stats).length > 0 && (
                 <dl className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                   {Object.entries(ability.stats).map(([key, value]) => (
-                    <div key={key} className="flex justify-between gap-2 py-1 border-b border-(--color-border)">
+                    <div
+                      key={key}
+                      className="flex justify-between gap-2 py-1 border-b border-(--color-border)"
+                    >
                       <dt className="text-(--color-text-muted)">{key}</dt>
                       <dd className="font-mono">{String(value)}</dd>
                     </div>
@@ -100,14 +96,20 @@ export default async function HeroDetailPage({ params }: Props) {
                 className="p-4 rounded-lg border border-(--color-border) bg-(--color-surface)"
               >
                 <div className="flex items-baseline justify-between gap-3">
-                  <a href={`/patch-notes/${patchNote.version}`} className="font-semibold hover:text-(--color-accent-hover)">
+                  <a
+                    href={`/patch-notes/${patchNote.version}`}
+                    className="font-semibold hover:text-(--color-accent-hover)"
+                  >
                     {patchNote.version} · {patchNote.title}
                   </a>
                   <span className="text-xs text-(--color-text-muted)">{formatDate(patchNote.releasedAt)}</span>
                 </div>
                 <ul className="mt-3 space-y-2">
                   {entries.map((entry) => (
-                    <li key={entry.id} className="text-sm">
+                    <li
+                      key={entry.id}
+                      className="text-sm"
+                    >
                       <span className="text-xs text-(--color-accent) mr-2">[{categoryLabel(entry.category)}]</span>
                       <span className="font-medium">{entry.title}</span>
                       <p className="text-(--color-text-muted) text-sm mt-1 whitespace-pre-line">{entry.body}</p>
@@ -122,7 +124,13 @@ export default async function HeroDetailPage({ params }: Props) {
 
       {hero.sourceUrl && (
         <p className="text-xs text-(--color-text-muted)">
-          출처: <a href={hero.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">
+          출처:{' '}
+          <a
+            href={hero.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
             {hero.sourceUrl}
           </a>
         </p>

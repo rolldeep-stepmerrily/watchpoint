@@ -1,7 +1,7 @@
-import Link from "next/link";
+import Link from 'next/link';
 
-import { getHeroList } from "@/lib/api";
-import { roleLabel } from "@/lib/format";
+import { getHeroList } from '@/lib/api';
+import { roleLabel } from '@/lib/format';
 
 export const revalidate = 300;
 

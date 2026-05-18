@@ -11,11 +11,12 @@
   --color-accent-hover: #ffb547;
 }
 
-html, body {
+html,
+body {
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Pretendard",
-    "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
 }
 
 a {

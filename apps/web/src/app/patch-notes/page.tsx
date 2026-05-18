@@ -1,7 +1,7 @@
-import Link from "next/link";
+import Link from 'next/link';
 
-import { getPatchNoteList } from "@/lib/api";
-import { formatDate } from "@/lib/format";
+import { getPatchNoteList } from '@/lib/api';
+import { formatDate } from '@/lib/format';
 
 export const revalidate = 60;
 

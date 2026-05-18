@@ -57,8 +57,7 @@ async function seedSierraDetails(): Promise<void> {
   await prisma.hero.update({
     where: { id: sierra.id },
     data: {
-      description:
-        '오버워치 44번째 영웅. 정밀 사격에 특화된 저격 딜러로, 장거리 교전에서 빛을 발한다.',
+      description: '오버워치 44번째 영웅. 정밀 사격에 특화된 저격 딜러로, 장거리 교전에서 빛을 발한다.',
     },
   });
 
