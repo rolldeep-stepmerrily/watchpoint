@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: lint + typecheck + build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: pnpm lint
+
+      - name: Build @watchpoint/shared
+        run: pnpm --filter @watchpoint/shared build
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
+      - name: Typecheck @watchpoint/api
+        run: pnpm --filter @watchpoint/api exec tsc --noEmit
+
+      - name: Typecheck @watchpoint/web
+        run: pnpm --filter @watchpoint/web exec tsc --noEmit
+
+      - name: Typecheck @watchpoint/e2e
+        run: pnpm --filter @watchpoint/e2e exec tsc --noEmit
+
+      - name: Build @watchpoint/api
+        run: pnpm build:api
