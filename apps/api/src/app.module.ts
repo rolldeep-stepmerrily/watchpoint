@@ -29,6 +29,7 @@ import { SearchModule } from './search/search.module';
     ConfigModule.forRoot({
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('local', 'development', 'production').default('development'),
+        PORT: Joi.number().optional(),
         API_PORT: Joi.number().default(3000),
         DATABASE_URL: Joi.string().required(),
         REDIS_HOST: Joi.string().required(),

@@ -6,6 +6,7 @@
     "build": "prisma generate && nest build",
     "dev": "prisma generate && nest start --watch",
     "start": "node dist/main",
+    "start:prod": "prisma migrate deploy && node dist/main",
     "lint": "biome lint src/",
     "check": "biome check --write src/",
     "test": "jest",
