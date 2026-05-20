@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
-import { SearchBar } from '@/components/search-bar';
+import { SiteHeader } from '@/components/site-header';
 
 import './globals.css';
 
@@ -14,33 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko">
       <body className="min-h-screen flex flex-col">
-        <header className="border-b border-(--color-border) bg-(--color-surface)/80 backdrop-blur sticky top-0 z-10">
-          <nav className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-lg font-semibold tracking-tight text-(--color-accent)"
-            >
-              Watchpoint
-            </Link>
-            <div className="flex items-center gap-5 text-sm">
-              <Link
-                href="/heroes"
-                className="hover:text-(--color-accent-hover)"
-              >
-                영웅
-              </Link>
-              <Link
-                href="/patch-notes"
-                className="hover:text-(--color-accent-hover)"
-              >
-                패치노트
-              </Link>
-            </div>
-            <div className="ml-auto flex-1 flex justify-end">
-              <SearchBar />
-            </div>
-          </nav>
-        </header>
+        <SiteHeader />
 
         <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10">{children}</main>
 
