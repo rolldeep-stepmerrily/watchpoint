@@ -17,6 +17,7 @@
     "lint": "biome lint apps/ packages/",
     "check": "biome check --write apps/ packages/",
     "test": "pnpm -r test",
+    "e2e": "pnpm --filter @watchpoint/e2e test",
     "db:migrate": "pnpm --filter @watchpoint/api db:migrate",
     "db:generate": "pnpm --filter @watchpoint/api db:generate",
     "db:push": "pnpm --filter @watchpoint/api db:push",
