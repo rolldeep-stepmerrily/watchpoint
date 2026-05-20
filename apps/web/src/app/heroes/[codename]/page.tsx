@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { HeroPortrait } from '@/components/hero-portrait';
 import { getHero, getHeroPatchHistory } from '@/lib/api';
-import { categoryLabel, formatDate, roleColorVar, roleLabel, slotLabel } from '@/lib/format';
+import { categoryColorVar, categoryLabel, formatDate, roleColorVar, roleLabel, slotLabel } from '@/lib/format';
 
 export const revalidate = 300;
 
@@ -129,16 +129,24 @@ export default async function HeroDetailPage({ params }: Props) {
                   <span className="text-xs text-(--color-text-muted)">{formatDate(patchNote.releasedAt)}</span>
                 </div>
                 <ul className="mt-3 space-y-2">
-                  {entries.map((entry) => (
-                    <li
-                      key={entry.id}
-                      className="text-sm"
-                    >
-                      <span className="text-xs text-(--color-accent) mr-2">[{categoryLabel(entry.category)}]</span>
-                      <span className="font-medium">{entry.title}</span>
-                      <p className="text-(--color-text-muted) text-sm mt-1 whitespace-pre-line">{entry.body}</p>
-                    </li>
-                  ))}
+                  {entries.map((entry) => {
+                    const catColor = `var(${categoryColorVar(entry.category)})`;
+                    return (
+                      <li
+                        key={entry.id}
+                        className="text-sm"
+                      >
+                        <span
+                          className="inline-block text-[10px] uppercase tracking-wider mr-2 px-1.5 py-0.5 rounded border align-middle"
+                          style={{ color: catColor, borderColor: catColor }}
+                        >
+                          {categoryLabel(entry.category)}
+                        </span>
+                        <span className="font-medium align-middle">{entry.title}</span>
+                        <p className="text-(--color-text-muted) text-sm mt-1 whitespace-pre-line">{entry.body}</p>
+                      </li>
+                    );
+                  })}
                 </ul>
               </li>
             ))}

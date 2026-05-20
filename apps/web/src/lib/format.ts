@@ -53,6 +53,22 @@ const CATEGORY_LABELS = {
   GENERAL: '일반',
 } as const;
 
-export function categoryLabel(category: keyof typeof CATEGORY_LABELS): string {
+export type CategoryKey = keyof typeof CATEGORY_LABELS;
+
+export function categoryLabel(category: CategoryKey): string {
   return CATEGORY_LABELS[category];
 }
+
+const CATEGORY_COLOR_VAR = {
+  HERO_BALANCE: '--color-cat-balance',
+  BUG_FIX: '--color-cat-bug',
+  MAP: '--color-cat-map',
+  SYSTEM: '--color-cat-system',
+  GENERAL: '--color-cat-general',
+} as const;
+
+export function categoryColorVar(category: CategoryKey): string {
+  return CATEGORY_COLOR_VAR[category];
+}
+
+export const CATEGORY_ORDER: readonly CategoryKey[] = ['HERO_BALANCE', 'BUG_FIX', 'MAP', 'SYSTEM', 'GENERAL'];

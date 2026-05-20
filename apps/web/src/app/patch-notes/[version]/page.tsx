@@ -2,7 +2,7 @@ import type { PatchNoteDetailDto, PatchNoteEntryDto } from '@@shared';
 import { notFound } from 'next/navigation';
 
 import { getPatchNote } from '@/lib/api';
-import { categoryLabel, formatDate } from '@/lib/format';
+import { CATEGORY_ORDER, categoryColorVar, categoryLabel, formatDate } from '@/lib/format';
 
 export const revalidate = 600;
 
@@ -35,25 +35,42 @@ export default async function PatchNoteDetailPage({ params }: Props) {
         <p className="text-(--color-text-muted)">변경사항이 없습니다.</p>
       ) : (
         <div className="space-y-8">
-          {grouped.map(([category, entries]) => (
-            <section
-              key={category}
-              className="space-y-3"
-            >
-              <h2 className="text-lg font-semibold text-(--color-accent)">{categoryLabel(category)}</h2>
-              <ul className="space-y-3">
-                {entries.map((entry) => (
-                  <li
-                    key={entry.id}
-                    className="p-4 rounded-lg border border-(--color-border) bg-(--color-surface)"
+          {grouped.map(([category, entries]) => {
+            const colorVar = categoryColorVar(category);
+            return (
+              <section
+                key={category}
+                className="space-y-3"
+              >
+                <div className="flex items-baseline gap-3">
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: `var(${colorVar})` }}
+                    aria-hidden
+                  />
+                  <h2
+                    className="text-lg font-semibold"
+                    style={{ color: `var(${colorVar})` }}
                   >
-                    <div className="font-semibold">{entry.title}</div>
-                    <p className="text-sm text-(--color-text-muted) mt-2 whitespace-pre-line">{entry.body}</p>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+                    {categoryLabel(category)}
+                  </h2>
+                  <span className="text-xs text-(--color-text-muted)">{entries.length}</span>
+                </div>
+                <ul className="space-y-3">
+                  {entries.map((entry) => (
+                    <li
+                      key={entry.id}
+                      className="p-4 rounded-lg border border-(--color-border) bg-(--color-surface)"
+                      style={{ borderLeft: `3px solid var(${colorVar})` }}
+                    >
+                      <div className="font-semibold">{entry.title}</div>
+                      <p className="text-sm text-(--color-text-muted) mt-2 whitespace-pre-line">{entry.body}</p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
         </div>
       )}
 
@@ -79,5 +96,7 @@ function groupByCategory(entries: PatchNoteEntryDto[]): Array<[PatchNoteEntryDto
     list.push(entry);
     groups.set(entry.category, list);
   }
-  return Array.from(groups.entries());
+  return CATEGORY_ORDER.filter((category) => groups.has(category)).map(
+    (category) => [category, groups.get(category) ?? []] as const,
+  );
 }
