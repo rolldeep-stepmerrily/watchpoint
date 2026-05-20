@@ -1,13 +1,44 @@
 import type { PatchNoteDetailDto, PatchNoteEntryDto } from '@@shared';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { getPatchNote } from '@/lib/api';
 import { CATEGORY_ORDER, categoryColorVar, categoryLabel, formatDate } from '@/lib/format';
+import { absoluteUrl } from '@/lib/seo';
 
 export const revalidate = 600;
 
 interface Props {
   params: Promise<{ version: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { version } = await params;
+  try {
+    const patch = await getPatchNote(version);
+    const title = `${patch.version} · ${patch.title}`;
+    const description = patch.summary ?? `오버워치 ${patch.version} 패치노트 — ${patch.title}`;
+    const url = absoluteUrl(`/patch-notes/${patch.version}`);
+    return {
+      title,
+      description,
+      alternates: { canonical: url },
+      openGraph: {
+        type: 'article',
+        title,
+        description,
+        url,
+        publishedTime: patch.releasedAt,
+      },
+      twitter: {
+        card: 'summary',
+        title,
+        description,
+      },
+    };
+  } catch {
+    return { title: '패치노트를 찾을 수 없음' };
+  }
 }
 
 export default async function PatchNoteDetailPage({ params }: Props) {

@@ -1,9 +1,17 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { getPatchNoteList } from '@/lib/api';
 import { formatDate } from '@/lib/format';
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: '패치노트',
+  description: '오버워치 공식 패치노트 — 2026년 1월 이후 모든 버전 변경사항.',
+  alternates: { canonical: '/patch-notes' },
+  openGraph: { title: '패치노트', url: '/patch-notes' },
+};
 
 export default async function PatchNotesPage() {
   const { items, total } = await getPatchNoteList({ pageSize: 50 });

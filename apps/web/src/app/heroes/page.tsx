@@ -1,4 +1,5 @@
 import type { HeroSummaryDto } from '@@shared';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { HeroPortrait } from '@/components/hero-portrait';
@@ -6,6 +7,13 @@ import { getHeroList } from '@/lib/api';
 import { ROLE_ORDER, type RoleKey, roleColorVar, roleLabel } from '@/lib/format';
 
 export const revalidate = 300;
+
+export const metadata: Metadata = {
+  title: '영웅',
+  description: '오버워치 전체 영웅 목록 — 역할별 분류, 능력 수치, 패치 이력으로 연결.',
+  alternates: { canonical: '/heroes' },
+  openGraph: { title: '영웅', url: '/heroes' },
+};
 
 export default async function HeroesPage() {
   const { items, total } = await getHeroList({ pageSize: 100 });

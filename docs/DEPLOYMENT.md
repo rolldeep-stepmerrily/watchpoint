@@ -72,9 +72,11 @@ api 서비스 → **Settings → Networking → Generate Domain**.
 
 ```bash
 WEB_API_BASE_URL=https://watchpoint-api-production.up.railway.app
+WEB_PUBLIC_URL=https://watchpoint.vercel.app
 ```
 
-> 1.6 단계에서 받은 Railway 도메인. **trailing slash 금지.**
+> `WEB_API_BASE_URL`은 1.6 단계의 Railway 도메인. `WEB_PUBLIC_URL`은 Vercel이 부여한 web 도메인.
+> 둘 다 **trailing slash 금지.** `WEB_PUBLIC_URL`은 sitemap·canonical·OpenGraph URL 빌드에 사용된다.
 
 ### 2.3 배포
 

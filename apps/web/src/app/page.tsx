@@ -42,9 +42,7 @@ export default async function HomePage() {
       {items.length > 0 && (
         <section className="space-y-3">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-(--color-text-muted)">
-              최신 패치
-            </h2>
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-(--color-text-muted)">최신 패치</h2>
             <Link
               href="/patch-notes"
               className="text-xs text-(--color-text-muted) hover:text-(--color-accent-hover)"

@@ -1,14 +1,46 @@
 import type { HeroDetailDto, HeroPatchHistoryDto } from '@@shared';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { HeroPortrait } from '@/components/hero-portrait';
 import { getHero, getHeroPatchHistory } from '@/lib/api';
 import { categoryColorVar, categoryLabel, formatDate, roleColorVar, roleLabel, slotLabel } from '@/lib/format';
+import { absoluteUrl } from '@/lib/seo';
 
 export const revalidate = 300;
 
 interface Props {
   params: Promise<{ codename: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { codename } = await params;
+  try {
+    const hero = await getHero(codename);
+    const title = `${hero.name} · ${roleLabel(hero.role)}`;
+    const description = hero.description ?? `오버워치 영웅 ${hero.name}의 능력 수치와 패치 이력.`;
+    const url = absoluteUrl(`/heroes/${hero.codename}`);
+    return {
+      title,
+      description,
+      alternates: { canonical: url },
+      openGraph: {
+        type: 'article',
+        title,
+        description,
+        url,
+        images: hero.portraitUrl ? [{ url: hero.portraitUrl, alt: hero.name }] : undefined,
+      },
+      twitter: {
+        card: hero.portraitUrl ? 'summary_large_image' : 'summary',
+        title,
+        description,
+        images: hero.portraitUrl ? [hero.portraitUrl] : undefined,
+      },
+    };
+  } catch {
+    return { title: '영웅을 찾을 수 없음' };
+  }
 }
 
 export default async function HeroDetailPage({ params }: Props) {
