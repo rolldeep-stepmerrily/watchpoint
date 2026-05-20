@@ -2,7 +2,8 @@
 
 import type { HeroSummaryDto, PatchNoteSummaryDto } from '@@shared';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react';
 
 import { HeroPortrait } from '@/components/hero-portrait';
 
@@ -19,7 +20,10 @@ export function SearchBar() {
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -67,11 +71,61 @@ export function SearchBar() {
   const close = () => {
     setIsOpen(false);
     setQuery('');
+    setActiveIndex(-1);
   };
+
+  const flatHrefs = useMemo(() => {
+    if (!results) return [] as string[];
+    return [
+      ...results.heroes.map((hero) => `/heroes/${hero.codename}`),
+      ...results.patchNotes.map((patch) => `/patch-notes/${patch.version}`),
+    ];
+  }, [results]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: results 변화가 reset 트리거
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [results]);
+
+  useEffect(() => {
+    if (activeIndex < 0) return;
+    const node = listRef.current?.querySelector<HTMLElement>(`[data-index="${activeIndex}"]`);
+    node?.scrollIntoView({ block: 'nearest' });
+  }, [activeIndex]);
 
   const showDropdown = isOpen && query.trim().length >= MIN_LENGTH;
   const hasResults = Boolean(results && (results.heroes.length > 0 || results.patchNotes.length > 0));
   const isEmpty = !isLoading && results !== null && !hasResults;
+  const heroesCount = results?.heroes.length ?? 0;
+
+  const moveActive = (delta: 1 | -1) => {
+    setActiveIndex((i) => Math.max(0, Math.min(flatHrefs.length - 1, i + delta)));
+  };
+
+  const submitActive = () => {
+    const href = activeIndex >= 0 ? flatHrefs[activeIndex] : flatHrefs[0];
+    if (!href) return;
+    router.push(href);
+    close();
+  };
+
+  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Escape') {
+      close();
+      return;
+    }
+    if (!showDropdown || flatHrefs.length === 0) return;
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      moveActive(1);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      moveActive(-1);
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      submitActive();
+    }
+  };
 
   return (
     <div
@@ -80,43 +134,57 @@ export function SearchBar() {
     >
       <input
         type="search"
+        role="combobox"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         onFocus={() => setIsOpen(true)}
+        onKeyDown={onKeyDown}
         placeholder="영웅·패치노트 검색"
         aria-label="검색"
+        aria-autocomplete="list"
+        aria-expanded={showDropdown}
+        aria-controls="search-results"
+        aria-activedescendant={activeIndex >= 0 ? `search-result-${activeIndex}` : undefined}
         className="w-full text-sm px-3 py-1.5 rounded-md bg-(--color-bg) border border-(--color-border) focus:border-(--color-accent) focus:outline-none placeholder:text-(--color-text-muted)"
       />
       {showDropdown && (
-        <div className="absolute left-0 right-0 mt-2 rounded-lg border border-(--color-border) bg-(--color-surface) shadow-lg overflow-hidden">
-          {isLoading && !results && (
-            <p className="px-3 py-3 text-xs text-(--color-text-muted)">검색 중…</p>
-          )}
+        <div
+          ref={listRef}
+          id="search-results"
+          className="absolute left-0 right-0 mt-2 rounded-lg border border-(--color-border) bg-(--color-surface) shadow-lg overflow-hidden max-h-[60vh] overflow-y-auto"
+        >
+          {isLoading && !results && <p className="px-3 py-3 text-xs text-(--color-text-muted)">검색 중…</p>}
           {isEmpty && <p className="px-3 py-3 text-xs text-(--color-text-muted)">결과 없음</p>}
           {results && results.heroes.length > 0 && (
             <section>
-              <h3 className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-widest text-(--color-text-muted)">
-                영웅
-              </h3>
+              <h3 className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-widest text-(--color-text-muted)">영웅</h3>
               <ul>
-                {results.heroes.map((hero) => (
-                  <li key={hero.id}>
-                    <Link
-                      href={`/heroes/${hero.codename}`}
-                      onClick={close}
-                      className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-(--color-surface-hover)"
-                    >
-                      <HeroPortrait
-                        src={hero.portraitUrl}
-                        alt={hero.name}
-                        role={hero.role}
-                        size="sm"
-                      />
-                      <span className="font-medium">{hero.name}</span>
-                      <span className="text-xs text-(--color-text-muted) font-mono">{hero.codename}</span>
-                    </Link>
-                  </li>
-                ))}
+                {results.heroes.map((hero, index) => {
+                  const isActive = activeIndex === index;
+                  return (
+                    <li key={hero.id}>
+                      <Link
+                        id={`search-result-${index}`}
+                        data-index={index}
+                        href={`/heroes/${hero.codename}`}
+                        onClick={close}
+                        onMouseEnter={() => setActiveIndex(index)}
+                        className={`flex items-center gap-2 px-3 py-2 text-sm ${
+                          isActive ? 'bg-(--color-surface-hover)' : 'hover:bg-(--color-surface-hover)'
+                        }`}
+                      >
+                        <HeroPortrait
+                          src={hero.portraitUrl}
+                          alt={hero.name}
+                          role={hero.role}
+                          size="sm"
+                        />
+                        <span className="font-medium">{hero.name}</span>
+                        <span className="text-xs text-(--color-text-muted) font-mono">{hero.codename}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           )}
@@ -126,18 +194,27 @@ export function SearchBar() {
                 패치노트
               </h3>
               <ul>
-                {results.patchNotes.map((patch) => (
-                  <li key={patch.id}>
-                    <Link
-                      href={`/patch-notes/${patch.version}`}
-                      onClick={close}
-                      className="block px-3 py-2 text-sm hover:bg-(--color-surface-hover)"
-                    >
-                      <span className="font-mono text-(--color-accent) mr-2">{patch.version}</span>
-                      <span>{patch.title}</span>
-                    </Link>
-                  </li>
-                ))}
+                {results.patchNotes.map((patch, offset) => {
+                  const index = heroesCount + offset;
+                  const isActive = activeIndex === index;
+                  return (
+                    <li key={patch.id}>
+                      <Link
+                        id={`search-result-${index}`}
+                        data-index={index}
+                        href={`/patch-notes/${patch.version}`}
+                        onClick={close}
+                        onMouseEnter={() => setActiveIndex(index)}
+                        className={`block px-3 py-2 text-sm ${
+                          isActive ? 'bg-(--color-surface-hover)' : 'hover:bg-(--color-surface-hover)'
+                        }`}
+                      >
+                        <span className="font-mono text-(--color-accent) mr-2">{patch.version}</span>
+                        <span>{patch.title}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           )}
