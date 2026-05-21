@@ -126,13 +126,13 @@ export default async function HeroDetailPage({ params }: Props) {
               <div className="font-semibold mt-1">{ability.name}</div>
               <p className="text-sm text-(--color-text-muted) mt-1 whitespace-pre-line">{ability.description}</p>
               {ability.stats && Object.keys(ability.stats).length > 0 && (
-                <dl className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                <dl className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs">
                   {Object.entries(ability.stats).map(([key, value]) => (
                     <div
                       key={key}
-                      className="flex justify-between gap-2 py-1 border-b border-(--color-border)"
+                      className="flex items-baseline gap-1.5 py-1 border-b border-(--color-border)"
                     >
-                      <dt className="text-(--color-text-muted)">{key}</dt>
+                      <dt className="text-(--color-text-muted)">{key}:</dt>
                       <dd className="font-mono">{String(value)}</dd>
                     </div>
                   ))}
