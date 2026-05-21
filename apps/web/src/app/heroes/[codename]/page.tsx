@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 
 import { HeroPortrait } from '@/components/hero-portrait';
 import { getHero, getHeroPatchHistory } from '@/lib/api';
-import { categoryColorVar, roleColorVar, slotColorVar } from '@/lib/format';
+import { categoryColorVar, roleColorVar, slotColorVar, statKeyLabel } from '@/lib/format';
 import { getLocale } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 import { absoluteUrl } from '@/lib/seo';
@@ -227,7 +227,7 @@ export default async function HeroDetailPage({ params }: Props) {
                             key={key}
                             className="flex items-baseline gap-1.5 py-1 border-b border-(--color-border)"
                           >
-                            <dt className="text-(--color-text-muted)">{key}:</dt>
+                            <dt className="text-(--color-text-muted)">{statKeyLabel(key)}:</dt>
                             <dd className="font-mono">{String(value)}</dd>
                           </div>
                         ))}
