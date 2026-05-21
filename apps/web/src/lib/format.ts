@@ -173,6 +173,8 @@ const STAT_KEY_LABELS: Record<string, string> = {
   fireRate: '발사 속도',
   moveSpeed: '이동 속도',
   moveSpeedBoost: '이동 속도 증가',
+  moveSpeedStealth: '은신 중 이속',
+  shieldHp: '보호막',
   rollSpeed: '굴리기 속도',
   rollMoveSpeedBoost: '굴리기 이속 증가',
   liftSpeed: '상승 속도',
