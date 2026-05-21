@@ -1,8 +1,10 @@
+import { AppException } from '@@exceptions';
 import { PrismaService } from '@@db';
 import { type HeroRole, Prisma, ScrapeSource } from '@@prisma';
 import { Injectable } from '@nestjs/common';
 
 import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
+import { SCRAPER_ERRORS } from '../scraper.error';
 import type { ParsedHero } from './dto/parsed-hero.dto';
 import { NamuwikiHeroParser } from './namuwiki-hero.parser';
 
@@ -33,14 +35,15 @@ export class NamuwikiHeroScraper {
   ) {}
 
   async sync(codename: string, pageTitle: string, override: HeroSyncOverride): Promise<SyncResult> {
-    const url = `${NAMUWIKI_BASE}${encodeURIComponent(pageTitle)}`;
+    const candidates = this.buildCandidateUrls(pageTitle);
+    const primaryUrl = candidates[0];
 
     return await this.recorder.run({
       source: ScrapeSource.NAMUWIKI_HERO,
-      target: url,
+      target: primaryUrl,
       task: async () => {
-        const html = await this.httpClient.fetchHtml(url);
-        const parsed = this.parser.parse(html, codename, url);
+        const fetched = await this.fetchWithFallback(candidates);
+        const parsed = this.parser.parse(fetched.html, codename, fetched.url);
         const result = await this.upsert(parsed, override);
         return {
           result,
@@ -48,6 +51,28 @@ export class NamuwikiHeroScraper {
         };
       },
     });
+  }
+
+  /**
+   * pageTitle이 `<name>(<context>)` 형태면 bare `<name>`도 후보에 포함.
+   * namuwiki는 동음이의 있을 때만 suffix를 쓰는데 카탈로그가 어긋날 때
+   * 자동으로 폴백되도록 함.
+   */
+  private buildCandidateUrls(pageTitle: string): string[] {
+    const urls = [`${NAMUWIKI_BASE}${encodeURIComponent(pageTitle)}`];
+    const stripped = pageTitle.replace(/\([^)]+\)$/, '').trim();
+    if (stripped && stripped !== pageTitle) {
+      urls.push(`${NAMUWIKI_BASE}${encodeURIComponent(stripped)}`);
+    }
+    return urls;
+  }
+
+  private async fetchWithFallback(urls: string[]): Promise<{ url: string; html: string }> {
+    for (const url of urls) {
+      const html = await this.httpClient.fetchHtmlOrNullOnClientError(url);
+      if (html !== null) return { url, html };
+    }
+    throw new AppException(SCRAPER_ERRORS.FETCH_FAILED);
   }
 
   private async upsert(parsed: ParsedHero, override: HeroSyncOverride): Promise<SyncResult> {
