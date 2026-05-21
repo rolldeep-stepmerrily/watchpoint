@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
+import compression from 'compression';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module';
@@ -33,6 +34,7 @@ const bootstrap = async () => {
 
   if (isProduction) {
     app.use(helmet());
+    app.use(compression());
   } else {
     const config = new DocumentBuilder().setTitle('Watchpoint API').setVersion('0.1.0').build();
 

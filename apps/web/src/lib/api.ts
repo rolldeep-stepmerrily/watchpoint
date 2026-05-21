@@ -7,6 +7,7 @@ import type {
   PatchNoteDetailDto,
   PatchNoteSummaryDto,
 } from '@@shared';
+import { cache } from 'react';
 
 const API_BASE = process.env.WEB_API_BASE_URL ?? 'http://localhost:3000';
 
@@ -41,13 +42,13 @@ export function getHeroList(params: HeroListParams = {}): Promise<PaginatedDto<H
   return fetchJson<PaginatedDto<HeroSummaryDto>>(`/heroes${qs ? `?${qs}` : ''}`, 300);
 }
 
-export function getHero(codename: string): Promise<HeroDetailDto> {
+export const getHero = cache((codename: string): Promise<HeroDetailDto> => {
   return fetchJson<HeroDetailDto>(`/heroes/${encodeURIComponent(codename)}`, 300);
-}
+});
 
-export function getHeroPatchHistory(codename: string): Promise<HeroPatchHistoryDto> {
+export const getHeroPatchHistory = cache((codename: string): Promise<HeroPatchHistoryDto> => {
   return fetchJson<HeroPatchHistoryDto>(`/heroes/${encodeURIComponent(codename)}/patch-history`, 300);
-}
+});
 
 export interface PatchNoteListParams {
   page?: number;
@@ -62,6 +63,6 @@ export function getPatchNoteList(params: PatchNoteListParams = {}): Promise<Pagi
   return fetchJson<PaginatedDto<PatchNoteSummaryDto>>(`/patch-notes${qs ? `?${qs}` : ''}`, 60);
 }
 
-export function getPatchNote(version: string): Promise<PatchNoteDetailDto> {
+export const getPatchNote = cache((version: string): Promise<PatchNoteDetailDto> => {
   return fetchJson<PatchNoteDetailDto>(`/patch-notes/${encodeURIComponent(version)}`, 600);
-}
+});

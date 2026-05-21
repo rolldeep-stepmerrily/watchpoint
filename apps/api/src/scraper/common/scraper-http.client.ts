@@ -31,6 +31,8 @@ export class ScraperHttpClient {
           'accept-language': 'ko-KR,ko;q=0.9',
         },
         maxRedirections: 5,
+        headersTimeout: 10_000,
+        bodyTimeout: 15_000,
       });
 
       if (statusCode >= 400) {
