@@ -19,6 +19,22 @@ export class ScraperHttpClient {
   }
 
   async fetchHtml(url: string): Promise<string> {
+    const html = await this.fetchHtmlInternal(url);
+    if (html === null) {
+      throw new AppException(SCRAPER_ERRORS.FETCH_FAILED);
+    }
+    return html;
+  }
+
+  /**
+   * 4xx (특히 404)에서는 null을 반환하고, 5xx/네트워크 에러는 throw.
+   * 호출자(scraper)가 fallback URL을 시도할 때 사용.
+   */
+  async fetchHtmlOrNullOnClientError(url: string): Promise<string | null> {
+    return await this.fetchHtmlInternal(url);
+  }
+
+  private async fetchHtmlInternal(url: string): Promise<string | null> {
     const host = this.hostOf(url);
     await this.acquireSlot(host);
 
@@ -35,7 +51,13 @@ export class ScraperHttpClient {
         bodyTimeout: 15_000,
       });
 
-      if (statusCode >= 400) {
+      if (statusCode >= 400 && statusCode < 500) {
+        this.logger.warn(`fetch ${url} returned ${statusCode}`);
+        await body.dump();
+        return null;
+      }
+
+      if (statusCode >= 500) {
         this.logger.warn(`fetch ${url} returned ${statusCode}`);
         throw new AppException(SCRAPER_ERRORS.FETCH_FAILED);
       }
