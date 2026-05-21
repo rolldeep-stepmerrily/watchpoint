@@ -6,9 +6,28 @@ interface GetHeroPatchHistoryQueryProps {
   heroId: number;
 }
 
-export type PatchEntryWithPatch = Prisma.PatchNoteEntryGetPayload<{
-  include: { patchNote: true };
-}>;
+const PATCH_NOTE_SELECT = {
+  id: true,
+  version: true,
+  title: true,
+  releasedAt: true,
+  sourceUrl: true,
+  summary: true,
+  status: true,
+} as const satisfies Prisma.PatchNoteSelect;
+
+const ENTRY_SELECT = {
+  id: true,
+  patchNoteId: true,
+  category: true,
+  heroId: true,
+  title: true,
+  body: true,
+  order: true,
+  patchNote: { select: PATCH_NOTE_SELECT },
+} as const satisfies Prisma.PatchNoteEntrySelect;
+
+export type PatchEntryWithPatch = Prisma.PatchNoteEntryGetPayload<{ select: typeof ENTRY_SELECT }>;
 
 export class GetHeroPatchHistoryQuery extends Query<PatchEntryWithPatch[]> {
   constructor(public readonly props: GetHeroPatchHistoryQueryProps) {
@@ -23,13 +42,18 @@ export class GetHeroPatchHistoryQueryHandler implements IQueryHandler<GetHeroPat
   async execute(query: GetHeroPatchHistoryQuery): Promise<PatchEntryWithPatch[]> {
     const { heroId } = query.props;
 
-    return await this.prisma.patchNoteEntry.findMany({
+    const entries = await this.prisma.patchNoteEntry.findMany({
       where: {
         heroId,
         patchNote: { status: 'PUBLISHED' },
       },
-      include: { patchNote: true },
-      orderBy: [{ patchNote: { releasedAt: 'desc' } }, { order: 'asc' }],
+      select: ENTRY_SELECT,
+    });
+
+    return entries.sort((a, b) => {
+      const releasedDiff = b.patchNote.releasedAt.getTime() - a.patchNote.releasedAt.getTime();
+      if (releasedDiff !== 0) return releasedDiff;
+      return a.order - b.order;
     });
   }
 }
