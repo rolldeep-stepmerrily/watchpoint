@@ -1,5 +1,6 @@
 import type { HeroDetailDto, HeroPatchHistoryDto } from '@@shared';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { HeroPortrait } from '@/components/hero-portrait';
@@ -152,12 +153,12 @@ export default async function HeroDetailPage({ params }: Props) {
                 className="p-4 rounded-lg border border-(--color-border) bg-(--color-surface)"
               >
                 <div className="flex items-baseline justify-between gap-3">
-                  <a
+                  <Link
                     href={`/patch-notes/${patchNote.version}`}
                     className="font-semibold hover:text-(--color-accent-hover)"
                   >
                     {patchNote.version} · {patchNote.title}
-                  </a>
+                  </Link>
                   <span className="text-xs text-(--color-text-muted)">{formatDate(patchNote.releasedAt)}</span>
                 </div>
                 <ul className="mt-3 space-y-2">
