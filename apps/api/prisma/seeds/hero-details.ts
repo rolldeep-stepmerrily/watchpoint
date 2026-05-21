@@ -816,6 +816,31 @@ export const HERO_DETAIL_SEEDS: readonly HeroDetailSeed[] = [
       { slot: 'PASSIVE', key: null, name: '서포트 패시브', description: '피격 후 일정 시간 뒤 자가 체력 재생.', stats: { delay: 2.5, healRate: '15 HP/s' } },
     ],
   },
+  // === 2026-02-11 출시 신영웅 — 학습 컷오프 이후. stub만, hero:edit으로 보정 필요 ===
+  {
+    codename: 'emre',
+    description: '신영웅 딜러. (2026-02 출시) — 능력 수치는 추정치이며 추후 보정 필요.',
+    stat: { health: 200, moveSpeed: 5.5 },
+    abilities: [
+      { slot: 'PASSIVE', key: null, name: '딜러 패시브', description: '처치/도움 시 짧게 이동속도 증가.', stats: { duration: 2.5, moveSpeedBoost: 0.3 } },
+    ],
+  },
+  {
+    codename: 'mizuki',
+    description: '신영웅 딜러. (2026-02 출시) — 능력 수치는 추정치이며 추후 보정 필요.',
+    stat: { health: 200, moveSpeed: 5.5 },
+    abilities: [
+      { slot: 'PASSIVE', key: null, name: '딜러 패시브', description: '처치/도움 시 짧게 이동속도 증가.', stats: { duration: 2.5, moveSpeedBoost: 0.3 } },
+    ],
+  },
+  {
+    codename: 'jetpack-cat',
+    description: '신영웅 딜러. (2026-02 출시) — 능력 수치는 추정치이며 추후 보정 필요.',
+    stat: { health: 200, moveSpeed: 5.5 },
+    abilities: [
+      { slot: 'PASSIVE', key: null, name: '딜러 패시브', description: '처치/도움 시 짧게 이동속도 증가.', stats: { duration: 2.5, moveSpeedBoost: 0.3 } },
+    ],
+  },
   {
     codename: 'zenyatta',
     description: '구체 명상을 통해 아군 치유와 적 견제를 동시에 하는 옴닉 승려.',
