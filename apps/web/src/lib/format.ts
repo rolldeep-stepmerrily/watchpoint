@@ -1,4 +1,4 @@
-import type { EntryCategory, HeroRole } from '@@shared';
+import type { AbilitySlot, EntryCategory, HeroRole } from '@@shared';
 
 const ROLE_COLOR_VAR: Record<HeroRole, string> = {
   TANK: '--color-role-tank',
@@ -11,6 +11,28 @@ export function roleColorVar(role: HeroRole): string {
 }
 
 export const ROLE_ORDER: readonly HeroRole[] = ['TANK', 'DAMAGE', 'SUPPORT'];
+
+const SLOT_COLOR_VAR: Record<AbilitySlot, string> = {
+  PASSIVE: '--color-slot-passive',
+  PRIMARY: '--color-slot-primary',
+  SECONDARY: '--color-slot-secondary',
+  ABILITY_1: '--color-slot-ability1',
+  ABILITY_2: '--color-slot-ability2',
+  ULTIMATE: '--color-slot-ultimate',
+};
+
+export function slotColorVar(slot: AbilitySlot): string {
+  return SLOT_COLOR_VAR[slot];
+}
+
+export const SLOT_ORDER: readonly AbilitySlot[] = [
+  'PASSIVE',
+  'PRIMARY',
+  'SECONDARY',
+  'ABILITY_1',
+  'ABILITY_2',
+  'ULTIMATE',
+];
 
 const CATEGORY_COLOR_VAR: Record<EntryCategory, string> = {
   HERO_BALANCE: '--color-cat-balance',
