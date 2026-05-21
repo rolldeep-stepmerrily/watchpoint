@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { LocaleProvider } from '@/hooks/use-locale';
 import { getLocale } from '@/lib/i18n';
@@ -36,18 +37,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = await getLocale();
-  const t = getLabels(lang);
   return (
     <html lang={lang}>
       <body className="min-h-screen flex flex-col">
         <LocaleProvider initialLocale={lang}>
           <SiteHeader />
-
-          <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10">{children}</main>
-
-          <footer className="border-t border-(--color-border) py-6 text-center text-xs text-(--color-text-muted)">
-            {t.common.footerAttribution}
-          </footer>
+          <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-10">{children}</main>
+          <SiteFooter />
         </LocaleProvider>
       </body>
     </html>
