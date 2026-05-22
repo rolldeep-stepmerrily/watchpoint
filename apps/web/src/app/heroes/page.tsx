@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { HeroPortrait } from '@/components/hero-portrait';
 import { getHeroList } from '@/lib/api';
 import { ROLE_ORDER, type RoleKey, roleColorVar, roleLabel } from '@/lib/format';
+import { getLocale } from '@/lib/i18n';
 
 export const revalidate = 300;
 
@@ -16,7 +17,8 @@ export const metadata: Metadata = {
 };
 
 export default async function HeroesPage() {
-  const { items, total } = await getHeroList({ pageSize: 100 });
+  const lang = await getLocale();
+  const { items, total } = await getHeroList({ pageSize: 100, lang });
 
   const grouped = groupByRole(items);
 

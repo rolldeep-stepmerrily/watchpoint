@@ -8,16 +8,17 @@ datasource db {
 }
 
 model Hero {
-  id          Int       @id @default(autoincrement())
-  codename    String    @unique
-  name        String
-  role        HeroRole
-  releasedAt  DateTime
-  portraitUrl String?
-  description String?
-  sourceUrl   String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime? @updatedAt
+  id                Int       @id @default(autoincrement())
+  codename          String    @unique
+  name              String
+  nameTranslations  Json?
+  role              HeroRole
+  releasedAt        DateTime
+  portraitUrl       String?
+  description       String?
+  sourceUrl         String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime? @updatedAt
 
   stat          HeroStat?
   abilities     HeroAbility[]
@@ -45,16 +46,17 @@ model HeroStat {
 }
 
 model HeroAbility {
-  id          Int          @id @default(autoincrement())
-  heroId      Int
-  slot        AbilitySlot
-  key         String?
-  name        String
-  description String
-  stats       Json?
-  order       Int          @default(0)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime?    @updatedAt
+  id                Int          @id @default(autoincrement())
+  heroId            Int
+  slot              AbilitySlot
+  key               String?
+  name              String
+  nameTranslations  Json?
+  description       String
+  stats             Json?
+  order             Int          @default(0)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime?    @updatedAt
 
   hero Hero @relation(fields: [heroId], references: [id], onDelete: Cascade)
 

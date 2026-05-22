@@ -4,6 +4,8 @@ export type { EntryCategory } from './entry-category';
 export { ENTRY_CATEGORIES } from './entry-category';
 export type { HeroRole } from './hero-role';
 export { HERO_ROLES } from './hero-role';
+export type { Locale } from './locale';
+export { DEFAULT_LOCALE, LOCALES, isLocale } from './locale';
 export type { PatchNoteStatus } from './patch-note-status';
 export { PATCH_NOTE_STATUSES } from './patch-note-status';
 export type { ScrapeSource } from './scrape-source';

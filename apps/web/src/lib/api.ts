@@ -3,6 +3,7 @@ import type {
   HeroPatchHistoryDto,
   HeroRole,
   HeroSummaryDto,
+  Locale,
   PaginatedDto,
   PatchNoteDetailDto,
   PatchNoteSummaryDto,
@@ -30,6 +31,7 @@ export interface HeroListParams {
   q?: string;
   page?: number;
   pageSize?: number;
+  lang?: Locale;
 }
 
 export function getHeroList(params: HeroListParams = {}): Promise<PaginatedDto<HeroSummaryDto>> {
@@ -38,16 +40,19 @@ export function getHeroList(params: HeroListParams = {}): Promise<PaginatedDto<H
   if (params.q) search.set('q', params.q);
   if (params.page) search.set('page', String(params.page));
   if (params.pageSize) search.set('pageSize', String(params.pageSize));
+  if (params.lang) search.set('lang', params.lang);
   const qs = search.toString();
   return fetchJson<PaginatedDto<HeroSummaryDto>>(`/heroes${qs ? `?${qs}` : ''}`, 300);
 }
 
-export const getHero = cache((codename: string): Promise<HeroDetailDto> => {
-  return fetchJson<HeroDetailDto>(`/heroes/${encodeURIComponent(codename)}`, 300);
+export const getHero = cache((codename: string, lang?: Locale): Promise<HeroDetailDto> => {
+  const qs = lang ? `?lang=${lang}` : '';
+  return fetchJson<HeroDetailDto>(`/heroes/${encodeURIComponent(codename)}${qs}`, 300);
 });
 
-export const getHeroPatchHistory = cache((codename: string): Promise<HeroPatchHistoryDto> => {
-  return fetchJson<HeroPatchHistoryDto>(`/heroes/${encodeURIComponent(codename)}/patch-history`, 300);
+export const getHeroPatchHistory = cache((codename: string, lang?: Locale): Promise<HeroPatchHistoryDto> => {
+  const qs = lang ? `?lang=${lang}` : '';
+  return fetchJson<HeroPatchHistoryDto>(`/heroes/${encodeURIComponent(codename)}/patch-history${qs}`, 300);
 });
 
 export interface PatchNoteListParams {

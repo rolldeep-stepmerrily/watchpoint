@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { LanguageToggle } from './language-toggle';
 import { SearchBar } from './search-bar';
 
 const NAV_LINKS = [
@@ -40,8 +41,9 @@ export function SiteHeader() {
             </Link>
           ))}
         </div>
-        <div className="ml-auto hidden md:flex flex-1 justify-end">
+        <div className="ml-auto hidden md:flex flex-1 justify-end items-center gap-3">
           <SearchBar />
+          <LanguageToggle />
         </div>
         <button
           type="button"
@@ -69,6 +71,9 @@ export function SiteHeader() {
                 </Link>
               ))}
             </nav>
+            <div className="pt-2 border-t border-(--color-border)">
+              <LanguageToggle />
+            </div>
           </div>
         </div>
       )}
