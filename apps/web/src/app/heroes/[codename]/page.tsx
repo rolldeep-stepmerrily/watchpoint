@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { HeroPortrait } from '@/components/hero-portrait';
 import { getHero, getHeroPatchHistory } from '@/lib/api';
 import { categoryColorVar, categoryLabel, formatDate, roleColorVar, roleLabel, slotLabel } from '@/lib/format';
+import { getLocale } from '@/lib/i18n';
 import { absoluteUrl } from '@/lib/seo';
 
 export const revalidate = 300;
@@ -17,7 +18,8 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { codename } = await params;
   try {
-    const hero = await getHero(codename);
+    const lang = await getLocale();
+    const hero = await getHero(codename, lang);
     const title = `${hero.name} · ${roleLabel(hero.role)}`;
     const description = hero.description ?? `오버워치 영웅 ${hero.name}의 능력 수치와 패치 이력.`;
     const url = absoluteUrl(`/heroes/${hero.codename}`);
@@ -46,11 +48,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function HeroDetailPage({ params }: Props) {
   const { codename } = await params;
+  const lang = await getLocale();
 
   let hero: HeroDetailDto;
   let history: HeroPatchHistoryDto;
   try {
-    [hero, history] = await Promise.all([getHero(codename), getHeroPatchHistory(codename)]);
+    [hero, history] = await Promise.all([getHero(codename, lang), getHeroPatchHistory(codename, lang)]);
   } catch {
     notFound();
   }
