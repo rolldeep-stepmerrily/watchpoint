@@ -3,14 +3,20 @@ import { type AbilitySlot, Prisma, type PrismaClient } from '../../src/generated
 /**
  * 풀데이터(stat + abilities)가 들어가는 영웅의 정적 시드.
  *
- * - 멱등: hero_stats는 `update: {}` upsert(이미 있으면 손대지 않음),
- *   hero_abilities는 행 수가 0일 때만 createMany.
+ * - 멱등: hero_stats는 `update: {}` upsert(이미 있으면 손대지 않음).
+ *   hero_abilities는 `(heroId, slot, order)` 복합키로 upsert — 신규는 create,
+ *   기존은 name/nameTranslations만 동기화(stats/description은 CLI 수정값 보존).
  * - 수치는 OW2 기준 근사치. 패치마다 변동하므로 `pnpm hero:edit <codename>`으로
  *   보정 가능.
  */
 export interface HeroDetailSeed {
   codename: string;
   description: string;
+  /**
+   * 비-기본 언어 이름 (기본 name 필드는 한국어). 추후 언어 토글 시 사용.
+   * 예: { en: 'Doomfist', ja: 'ドゥームフィスト' }
+   */
+  nameTranslations?: Record<string, string>;
   stat: {
     health: number;
     armor?: number;
@@ -22,6 +28,10 @@ export interface HeroDetailSeed {
     slot: AbilitySlot;
     key: string | null;
     name: string;
+    /**
+     * 능력 이름의 비-기본 언어 번역. 예: { en: 'Meteor Strike' }
+     */
+    nameTranslations?: Record<string, string>;
     description: string;
     stats?: Record<string, unknown>;
     order?: number;
@@ -328,7 +338,7 @@ export const HERO_DETAIL_SEEDS: readonly HeroDetailSeed[] = [
       { slot: 'SECONDARY', key: '우클릭', name: '로켓 펀치', description: '충전 후 강력한 일격. 벽 충돌 시 추가 데미지.', stats: { damage: '15-50', wallDamage: 30, cooldown: 4 } },
       { slot: 'ABILITY_1', key: 'Shift', name: '지진 강타', description: '공중에서 내려찍어 광역 데미지 + 띄움.', stats: { damage: 15, cooldown: 6, range: 8 } },
       { slot: 'ABILITY_2', key: 'E', name: '파워 블록', description: '전방 데미지 감쇄 + 강력한 일격 충전.', stats: { damageReduction: 0.8, maxAbsorb: 100, cooldown: 7 } },
-      { slot: 'ULTIMATE', key: 'Q', name: '메테오 스트라이크', description: '하늘로 솟구쳐 지정 지점에 강하 데미지.', stats: { impactDamage: 15, maxOuterDamage: 300, radius: 8 } },
+      { slot: 'ULTIMATE', key: 'Q', name: '파멸의 일격', nameTranslations: { en: 'Meteor Strike' }, description: '하늘로 솟구쳐 지정 지점에 강하 데미지.', stats: { impactDamage: 15, maxOuterDamage: 300, radius: 8 } },
       { slot: 'PASSIVE', key: null, name: '최선의 방어', description: '능력 적중 시 일시 임시 체력.', stats: { tempHpPerHit: 35, maxTempHp: 200 } },
     ],
   },
@@ -866,7 +876,12 @@ export async function applyHeroDetailSeeds(prisma: PrismaClient): Promise<{ stat
 
     await prisma.hero.update({
       where: { id: hero.id },
-      data: { description: seed.description },
+      data: {
+        description: seed.description,
+        ...(seed.nameTranslations && {
+          nameTranslations: seed.nameTranslations as Prisma.InputJsonValue,
+        }),
+      },
     });
 
     await prisma.heroStat.upsert({
@@ -883,21 +898,31 @@ export async function applyHeroDetailSeeds(prisma: PrismaClient): Promise<{ stat
     });
     statApplied += 1;
 
-    const existingAbilities = await prisma.heroAbility.count({ where: { heroId: hero.id } });
-    if (existingAbilities > 0) continue;
-
-    await prisma.heroAbility.createMany({
-      data: seed.abilities.map((ability) => ({
-        heroId: hero.id,
-        slot: ability.slot,
-        key: ability.key,
-        name: ability.name,
-        description: ability.description,
-        stats: (ability.stats ?? Prisma.JsonNull) as Prisma.InputJsonValue,
-        order: ability.order ?? 0,
-      })),
-    });
-    abilitiesApplied += seed.abilities.length;
+    for (const ability of seed.abilities) {
+      const order = ability.order ?? 0;
+      const nameTranslationsValue =
+        ability.nameTranslations !== undefined
+          ? (ability.nameTranslations as Prisma.InputJsonValue)
+          : Prisma.JsonNull;
+      await prisma.heroAbility.upsert({
+        where: { heroId_slot_order: { heroId: hero.id, slot: ability.slot, order } },
+        update: {
+          name: ability.name,
+          nameTranslations: nameTranslationsValue,
+        },
+        create: {
+          heroId: hero.id,
+          slot: ability.slot,
+          key: ability.key,
+          name: ability.name,
+          nameTranslations: nameTranslationsValue,
+          description: ability.description,
+          stats: (ability.stats ?? Prisma.JsonNull) as Prisma.InputJsonValue,
+          order,
+        },
+      });
+      abilitiesApplied += 1;
+    }
   }
 
   return { stat: statApplied, abilities: abilitiesApplied };
