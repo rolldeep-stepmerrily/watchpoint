@@ -1,13 +1,16 @@
 import { TypedQueryBus } from '@@cqrs';
 import { AppException } from '@@exceptions';
 import { Injectable } from '@nestjs/common';
+import { DEFAULT_LOCALE, type Locale } from '@watchpoint/shared';
 import { isDefined } from 'class-validator';
 import { HERO_ERRORS } from '../../hero.error';
 import { GetHeroAbilitiesResponseDto } from '../../presenter/http/dto/get-hero-abilities.dto';
+import { resolveName } from '../name-resolver';
 import { GetHeroByCodenameQuery } from '../queries/get-hero-by-codename.query';
 
 interface GetHeroAbilitiesUseCaseProps {
   codename: string;
+  lang?: Locale;
 }
 
 @Injectable()
@@ -28,12 +31,14 @@ export class GetHeroAbilitiesUseCase {
       throw new AppException(HERO_ERRORS.NOT_FOUND);
     }
 
+    const lang = props.lang ?? DEFAULT_LOCALE;
+
     return {
       abilities: hero.abilities.map((ability) => ({
         id: ability.id,
         slot: ability.slot,
         key: ability.key,
-        name: ability.name,
+        name: resolveName(ability.name, ability.nameTranslations, lang),
         description: ability.description,
         stats: ability.stats as Record<string, unknown> | null,
         order: ability.order,
