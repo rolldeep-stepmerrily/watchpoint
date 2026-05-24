@@ -4,22 +4,28 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { useLocale } from '@/hooks/use-locale';
+import { getLabels } from '@/lib/labels';
+
 import { LanguageToggle } from './language-toggle';
 import { SearchBar } from './search-bar';
 
-const NAV_LINKS = [
-  { href: '/heroes', label: '영웅' },
-  { href: '/patch-notes', label: '패치노트' },
-] as const;
-
 export function SiteHeader() {
+  const t = getLabels(useLocale());
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+
+  const navLinks = [
+    { href: '/heroes', label: t.nav.heroes },
+    { href: '/patch-notes', label: t.nav.patchNotes },
+  ];
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the trigger to close menu on navigation
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
+
+  const menuLabel = isOpen ? t.nav.menuClose : t.nav.menuOpen;
 
   return (
     <header className="border-b border-(--color-border) bg-(--color-surface)/80 backdrop-blur sticky top-0 z-10">
@@ -28,10 +34,10 @@ export function SiteHeader() {
           href="/"
           className="text-lg font-semibold tracking-tight text-(--color-accent)"
         >
-          Watchpoint
+          {t.site.name}
         </Link>
         <div className="hidden md:flex items-center gap-5 text-sm">
-          {NAV_LINKS.map((link) => (
+          {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -48,11 +54,14 @@ export function SiteHeader() {
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
-          aria-label={isOpen ? '메뉴 닫기' : '메뉴 열기'}
+          aria-label={menuLabel}
           aria-expanded={isOpen}
           className="md:hidden ml-auto p-2 -mr-2 rounded hover:bg-(--color-surface-hover)"
         >
-          <HamburgerIcon isOpen={isOpen} />
+          <HamburgerIcon
+            isOpen={isOpen}
+            label={menuLabel}
+          />
         </button>
       </div>
 
@@ -61,7 +70,7 @@ export function SiteHeader() {
           <div className="max-w-5xl mx-auto px-6 py-4 space-y-4">
             <SearchBar />
             <nav className="flex flex-col gap-1 text-sm">
-              {NAV_LINKS.map((link) => (
+              {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -81,7 +90,7 @@ export function SiteHeader() {
   );
 }
 
-function HamburgerIcon({ isOpen }: { isOpen: boolean }) {
+function HamburgerIcon({ isOpen, label }: { isOpen: boolean; label: string }) {
   return (
     <svg
       width="20"
@@ -92,9 +101,9 @@ function HamburgerIcon({ isOpen }: { isOpen: boolean }) {
       strokeWidth="2"
       strokeLinecap="round"
       role="img"
-      aria-label={isOpen ? '메뉴 닫기' : '메뉴 열기'}
+      aria-label={label}
     >
-      <title>{isOpen ? '메뉴 닫기' : '메뉴 열기'}</title>
+      <title>{label}</title>
       {isOpen ? (
         <>
           <line

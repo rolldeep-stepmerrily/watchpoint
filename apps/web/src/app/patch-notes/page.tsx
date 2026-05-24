@@ -2,29 +2,34 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { getPatchNoteList } from '@/lib/api';
-import { formatDate } from '@/lib/format';
+import { getLocale } from '@/lib/i18n';
+import { getLabels } from '@/lib/labels';
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: '패치노트',
-  description: '오버워치 공식 패치노트 — 2026년 1월 이후 모든 버전 변경사항.',
-  alternates: { canonical: '/patch-notes' },
-  openGraph: { title: '패치노트', url: '/patch-notes' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = getLabels(await getLocale());
+  return {
+    title: t.patchNotes.title,
+    description: t.patchNotes.description,
+    alternates: { canonical: '/patch-notes' },
+    openGraph: { title: t.patchNotes.title, url: '/patch-notes' },
+  };
+}
 
 export default async function PatchNotesPage() {
+  const t = getLabels(await getLocale());
   const { items, total } = await getPatchNoteList({ pageSize: 50 });
 
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">패치노트 ({total})</h1>
-        <p className="text-sm text-(--color-text-muted) mt-1">최신순으로 표시 — PUBLISHED만 노출</p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t.patchNotes.titleWithCount(total)}</h1>
+        <p className="text-sm text-(--color-text-muted) mt-1">{t.patchNotes.subtitle}</p>
       </header>
 
       {items.length === 0 ? (
-        <p className="text-(--color-text-muted)">등록된 패치노트가 없습니다.</p>
+        <p className="text-(--color-text-muted)">{t.patchNotes.empty}</p>
       ) : (
         <ul className="space-y-3">
           {items.map((patch) => (
@@ -38,7 +43,7 @@ export default async function PatchNotesPage() {
                     <span className="text-(--color-accent) font-mono mr-2">{patch.version}</span>
                     {patch.title}
                   </div>
-                  <span className="text-xs text-(--color-text-muted)">{formatDate(patch.releasedAt)}</span>
+                  <span className="text-xs text-(--color-text-muted)">{t.date(patch.releasedAt)}</span>
                 </div>
                 {patch.summary && (
                   <p className="text-sm text-(--color-text-muted) mt-2 line-clamp-2">{patch.summary}</p>

@@ -5,18 +5,9 @@ import { notFound } from 'next/navigation';
 
 import { HeroPortrait } from '@/components/hero-portrait';
 import { getHero, getHeroPatchHistory } from '@/lib/api';
-import {
-  categoryColorVar,
-  categoryLabel,
-  formatDate,
-  roleColorVar,
-  roleLabel,
-  slotLabel,
-  subroleLabel,
-  subrolePassive,
-  subroleStats,
-} from '@/lib/format';
+import { categoryColorVar, roleColorVar } from '@/lib/format';
 import { getLocale } from '@/lib/i18n';
+import { getLabels } from '@/lib/labels';
 import { absoluteUrl } from '@/lib/seo';
 
 export const revalidate = 300;
@@ -27,11 +18,12 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { codename } = await params;
+  const lang = await getLocale();
+  const t = getLabels(lang);
   try {
-    const lang = await getLocale();
     const hero = await getHero(codename, lang);
-    const title = `${hero.name} · ${roleLabel(hero.role)}`;
-    const description = hero.description ?? `오버워치 영웅 ${hero.name}의 능력 수치와 패치 이력.`;
+    const title = `${hero.name} · ${t.role(hero.role)}`;
+    const description = hero.description ?? t.hero.descriptionFallback(hero.name);
     const url = absoluteUrl(`/heroes/${hero.codename}`);
     return {
       title,
@@ -52,13 +44,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch {
-    return { title: '영웅을 찾을 수 없음' };
+    return { title: t.heroes.notFound.title };
   }
 }
 
 export default async function HeroDetailPage({ params }: Props) {
   const { codename } = await params;
   const lang = await getLocale();
+  const t = getLabels(lang);
 
   let hero: HeroDetailDto;
   let history: HeroPatchHistoryDto;
@@ -91,14 +84,14 @@ export default async function HeroDetailPage({ params }: Props) {
                 style={{ backgroundColor: roleColor }}
                 aria-hidden
               />
-              {roleLabel(hero.role)}
+              {t.role(hero.role)}
             </span>
             {hero.subrole && (
               <span
                 className="inline-flex items-center text-xs font-medium px-2 py-1 rounded border border-(--color-border) text-(--color-text-muted)"
-                title={subrolePassive(hero.subrole)}
+                title={t.subrolePassive(hero.subrole)}
               >
-                {subroleLabel(hero.subrole)}
+                {t.subrole(hero.subrole)}
               </span>
             )}
           </div>
@@ -106,12 +99,14 @@ export default async function HeroDetailPage({ params }: Props) {
           {hero.subrole && (
             <div className="space-y-2 max-w-2xl">
               <p className="text-xs text-(--color-text-muted)">
-                <span className="font-semibold text-(--color-text)">서브 패시브 · {subroleLabel(hero.subrole)}</span>
+                <span className="font-semibold text-(--color-text)">
+                  {t.hero.subPassive} · {t.subrole(hero.subrole)}
+                </span>
                 {' — '}
-                {subrolePassive(hero.subrole)}
+                {t.subrolePassive(hero.subrole)}
               </p>
               <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
-                {subroleStats(hero.subrole).map((stat) => (
+                {t.subroleStats(hero.subrole).map((stat) => (
                   <div
                     key={stat.label}
                     className="contents"
@@ -126,19 +121,21 @@ export default async function HeroDetailPage({ params }: Props) {
           {hero.description && (
             <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{hero.description}</p>
           )}
-          <p className="text-xs text-(--color-text-muted)">출시: {formatDate(hero.releasedAt)}</p>
+          <p className="text-xs text-(--color-text-muted)">
+            {t.hero.release}: {t.date(hero.releasedAt)}
+          </p>
         </div>
       </header>
 
       {hero.stat && (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">기본 스탯</h2>
+          <h2 className="text-lg font-semibold">{t.hero.stats}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: '생명력', value: hero.stat.health },
-              { label: '방어력', value: hero.stat.armor },
-              { label: '보호막', value: hero.stat.shield },
-              { label: '이동 속도', value: hero.stat.moveSpeed },
+              { label: t.hero.statLabels.health, value: hero.stat.health },
+              { label: t.hero.statLabels.armor, value: hero.stat.armor },
+              { label: t.hero.statLabels.shield, value: hero.stat.shield },
+              { label: t.hero.statLabels.moveSpeed, value: hero.stat.moveSpeed },
             ].map((stat) => (
               <div
                 key={stat.label}
@@ -153,7 +150,7 @@ export default async function HeroDetailPage({ params }: Props) {
       )}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">능력</h2>
+        <h2 className="text-lg font-semibold">{t.hero.abilities}</h2>
         <ul className="space-y-3">
           {hero.abilities.map((ability) => (
             <li
@@ -161,9 +158,7 @@ export default async function HeroDetailPage({ params }: Props) {
               className="p-4 rounded-lg border border-(--color-border) bg-(--color-surface)"
             >
               <div className="flex items-baseline gap-3">
-                <span className="text-xs uppercase tracking-widest text-(--color-accent)">
-                  {slotLabel(ability.slot)}
-                </span>
+                <span className="text-xs uppercase tracking-widest text-(--color-accent)">{t.slot(ability.slot)}</span>
                 {ability.key && <span className="text-xs text-(--color-text-muted) font-mono">{ability.key}</span>}
               </div>
               <div className="font-semibold mt-1">{ability.name}</div>
@@ -188,7 +183,7 @@ export default async function HeroDetailPage({ params }: Props) {
 
       {history.history.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">패치 이력</h2>
+          <h2 className="text-lg font-semibold">{t.hero.patchHistory}</h2>
           <ul className="space-y-4">
             {history.history.map(({ patchNote, entries }) => (
               <li
@@ -202,7 +197,7 @@ export default async function HeroDetailPage({ params }: Props) {
                   >
                     {patchNote.version} · {patchNote.title}
                   </Link>
-                  <span className="text-xs text-(--color-text-muted)">{formatDate(patchNote.releasedAt)}</span>
+                  <span className="text-xs text-(--color-text-muted)">{t.date(patchNote.releasedAt)}</span>
                 </div>
                 <ul className="mt-3 space-y-2">
                   {entries.map((entry) => {
@@ -216,7 +211,7 @@ export default async function HeroDetailPage({ params }: Props) {
                           className="inline-block text-[10px] uppercase tracking-wider mr-2 px-1.5 py-0.5 rounded border align-middle"
                           style={{ color: catColor, borderColor: catColor }}
                         >
-                          {categoryLabel(entry.category)}
+                          {t.category(entry.category)}
                         </span>
                         <span className="font-medium align-middle">{entry.title}</span>
                         <p className="text-(--color-text-muted) text-sm mt-1 whitespace-pre-line">{entry.body}</p>
@@ -232,7 +227,7 @@ export default async function HeroDetailPage({ params }: Props) {
 
       {hero.sourceUrl && (
         <p className="text-xs text-(--color-text-muted)">
-          출처:{' '}
+          {t.common.source}:{' '}
           <a
             href={hero.sourceUrl}
             target="_blank"

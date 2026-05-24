@@ -1,10 +1,11 @@
-import type { RoleKey } from '@/lib/format';
+import type { HeroRole } from '@@shared';
+
 import { roleColorVar } from '@/lib/format';
 
 interface HeroPortraitProps {
   src: string | null;
   alt: string;
-  role: RoleKey;
+  role: HeroRole;
   size: 'sm' | 'md' | 'lg';
   loading?: 'lazy' | 'eager';
 }

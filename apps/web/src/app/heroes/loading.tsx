@@ -1,9 +1,12 @@
 import { Skeleton } from '@/components/skeleton';
+import { getLocale } from '@/lib/i18n';
+import { getLabels } from '@/lib/labels';
 
 const SECTION_KEYS = ['tank', 'damage', 'support'] as const;
 const CARD_KEYS = Array.from({ length: 8 }, (_, i) => `card-${i}`);
 
-export default function HeroesLoading() {
+export default async function HeroesLoading() {
+  const t = getLabels(await getLocale());
   return (
     <div
       className="space-y-10"
@@ -12,7 +15,7 @@ export default function HeroesLoading() {
     >
       <Skeleton
         className="h-8 w-32"
-        aria-label="영웅 목록 불러오는 중"
+        aria-label={t.heroes.loading}
       />
       {SECTION_KEYS.map((sectionKey) => (
         <section
