@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react';
 
 import { HeroPortrait } from '@/components/hero-portrait';
+import { useLocale } from '@/hooks/use-locale';
+import { getLabels } from '@/lib/labels';
 
 interface SearchResponse {
   heroes: HeroSummaryDto[];
@@ -16,6 +18,7 @@ const MIN_LENGTH = 1;
 const DEBOUNCE_MS = 200;
 
 export function SearchBar() {
+  const t = getLabels(useLocale());
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -139,8 +142,8 @@ export function SearchBar() {
         onChange={(event) => setQuery(event.target.value)}
         onFocus={() => setIsOpen(true)}
         onKeyDown={onKeyDown}
-        placeholder="영웅·패치노트 검색"
-        aria-label="검색"
+        placeholder={t.search.placeholder}
+        aria-label={t.search.ariaLabel}
         aria-autocomplete="list"
         aria-expanded={showDropdown}
         aria-controls="search-results"
@@ -153,11 +156,15 @@ export function SearchBar() {
           id="search-results"
           className="absolute left-0 right-0 mt-2 rounded-lg border border-(--color-border) bg-(--color-surface) shadow-lg overflow-hidden max-h-[60vh] overflow-y-auto"
         >
-          {isLoading && !results && <p className="px-3 py-3 text-xs text-(--color-text-muted)">검색 중…</p>}
-          {isEmpty && <p className="px-3 py-3 text-xs text-(--color-text-muted)">결과 없음</p>}
+          {isLoading && !results && (
+            <p className="px-3 py-3 text-xs text-(--color-text-muted)">{t.search.searching}</p>
+          )}
+          {isEmpty && <p className="px-3 py-3 text-xs text-(--color-text-muted)">{t.search.empty}</p>}
           {results && results.heroes.length > 0 && (
             <section>
-              <h3 className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-widest text-(--color-text-muted)">영웅</h3>
+              <h3 className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-widest text-(--color-text-muted)">
+                {t.search.groupHeroes}
+              </h3>
               <ul>
                 {results.heroes.map((hero, index) => {
                   const isActive = activeIndex === index;
@@ -191,7 +198,7 @@ export function SearchBar() {
           {results && results.patchNotes.length > 0 && (
             <section>
               <h3 className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-widest text-(--color-text-muted)">
-                패치노트
+                {t.search.groupPatchNotes}
               </h3>
               <ul>
                 {results.patchNotes.map((patch, offset) => {

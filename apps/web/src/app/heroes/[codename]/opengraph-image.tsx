@@ -1,7 +1,8 @@
 import { ImageResponse } from 'next/og';
 
 import { getHero } from '@/lib/api';
-import { roleLabel } from '@/lib/format';
+import { getLocale } from '@/lib/i18n';
+import { getLabels } from '@/lib/labels';
 import {
   loadPretendardBold,
   OG_ACCENT,
@@ -14,7 +15,8 @@ import {
 } from '@/lib/og';
 
 export const runtime = 'nodejs';
-export const alt = '영웅 상세';
+// note: Next.js requires `alt` to be a static string export; not localized.
+export const alt = 'Watchpoint hero';
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
@@ -24,19 +26,21 @@ interface Props {
 
 export default async function HeroOgImage({ params }: Props) {
   const { codename } = await params;
+  const lang = await getLocale();
+  const t = getLabels(lang);
   const fontData = await loadPretendardBold();
 
   let hero: Awaited<ReturnType<typeof getHero>> | null = null;
   try {
-    hero = await getHero(codename);
+    hero = await getHero(codename, lang);
   } catch {
     hero = null;
   }
 
   const roleColor = hero ? ROLE_OG_COLOR[hero.role] : OG_ACCENT;
-  const heroName = hero?.name ?? '영웅을 찾을 수 없음';
+  const heroName = hero?.name ?? t.heroes.notFound.ogFallback;
   const heroCodename = hero?.codename ?? codename;
-  const heroRole = hero ? roleLabel(hero.role) : '—';
+  const heroRole = hero ? t.role(hero.role) : '—';
 
   return new ImageResponse(
     <div

@@ -1,7 +1,9 @@
 import { ImageResponse } from 'next/og';
 
+import { getLocale } from '@/lib/i18n';
+import { getLabels } from '@/lib/labels';
 import { loadPretendardBold, OG_ACCENT, OG_BACKGROUND, OG_CONTENT_TYPE, OG_MUTED, OG_SIZE, OG_TEXT } from '@/lib/og';
-import { SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo';
+import { SITE_NAME } from '@/lib/seo';
 
 export const runtime = 'nodejs';
 export const alt = SITE_NAME;
@@ -9,6 +11,7 @@ export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
 export default async function OgImage() {
+  const t = getLabels(await getLocale());
   const fontData = await loadPretendardBold();
 
   return new ImageResponse(
@@ -56,7 +59,7 @@ export default async function OgImage() {
           lineHeight: 1.4,
         }}
       >
-        {SITE_DESCRIPTION}
+        {t.site.description}
       </div>
     </div>,
     {

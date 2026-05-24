@@ -3,7 +3,9 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { getPatchNote } from '@/lib/api';
-import { CATEGORY_ORDER, categoryColorVar, categoryLabel, formatDate } from '@/lib/format';
+import { CATEGORY_ORDER, categoryColorVar } from '@/lib/format';
+import { getLocale } from '@/lib/i18n';
+import { getLabels } from '@/lib/labels';
 import { absoluteUrl } from '@/lib/seo';
 
 export const revalidate = 600;
@@ -14,10 +16,11 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { version } = await params;
+  const t = getLabels(await getLocale());
   try {
     const patch = await getPatchNote(version);
     const title = `${patch.version} · ${patch.title}`;
-    const description = patch.summary ?? `오버워치 ${patch.version} 패치노트 — ${patch.title}`;
+    const description = patch.summary ?? t.patchNotes.descriptionFallback(patch.version, patch.title);
     const url = absoluteUrl(`/patch-notes/${patch.version}`);
     return {
       title,
@@ -37,12 +40,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch {
-    return { title: '패치노트를 찾을 수 없음' };
+    return { title: t.patchNotes.notFound.title };
   }
 }
 
 export default async function PatchNoteDetailPage({ params }: Props) {
   const { version } = await params;
+  const t = getLabels(await getLocale());
 
   let patch: PatchNoteDetailDto;
   try {
@@ -58,12 +62,14 @@ export default async function PatchNoteDetailPage({ params }: Props) {
       <header className="space-y-3">
         <p className="text-(--color-accent) font-mono text-sm">{patch.version}</p>
         <h1 className="text-3xl font-semibold tracking-tight">{patch.title}</h1>
-        <p className="text-xs text-(--color-text-muted)">발표: {formatDate(patch.releasedAt)}</p>
+        <p className="text-xs text-(--color-text-muted)">
+          {t.patchNotes.released}: {t.date(patch.releasedAt)}
+        </p>
         {patch.summary && <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{patch.summary}</p>}
       </header>
 
       {grouped.length === 0 ? (
-        <p className="text-(--color-text-muted)">변경사항이 없습니다.</p>
+        <p className="text-(--color-text-muted)">{t.patchNotes.noChanges}</p>
       ) : (
         <div className="space-y-8">
           {grouped.map(([category, entries]) => {
@@ -83,7 +89,7 @@ export default async function PatchNoteDetailPage({ params }: Props) {
                     className="text-lg font-semibold"
                     style={{ color: `var(${colorVar})` }}
                   >
-                    {categoryLabel(category)}
+                    {t.category(category)}
                   </h2>
                   <span className="text-xs text-(--color-text-muted)">{entries.length}</span>
                 </div>
@@ -106,7 +112,7 @@ export default async function PatchNoteDetailPage({ params }: Props) {
       )}
 
       <p className="text-xs text-(--color-text-muted)">
-        출처:{' '}
+        {t.common.source}:{' '}
         <a
           href={patch.sourceUrl}
           target="_blank"

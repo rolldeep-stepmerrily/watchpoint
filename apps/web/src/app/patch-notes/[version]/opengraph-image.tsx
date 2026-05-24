@@ -1,11 +1,13 @@
 import { ImageResponse } from 'next/og';
 
 import { getPatchNote } from '@/lib/api';
-import { formatDate } from '@/lib/format';
+import { getLocale } from '@/lib/i18n';
+import { getLabels } from '@/lib/labels';
 import { loadPretendardBold, OG_ACCENT, OG_BACKGROUND, OG_CONTENT_TYPE, OG_MUTED, OG_SIZE, OG_TEXT } from '@/lib/og';
 
 export const runtime = 'nodejs';
-export const alt = '패치노트';
+// note: Next.js requires `alt` to be a static string export; not localized.
+export const alt = 'Watchpoint patch notes';
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
@@ -15,6 +17,7 @@ interface Props {
 
 export default async function PatchNoteOgImage({ params }: Props) {
   const { version } = await params;
+  const t = getLabels(await getLocale());
   const fontData = await loadPretendardBold();
 
   let patch: Awaited<ReturnType<typeof getPatchNote>> | null = null;
@@ -24,9 +27,9 @@ export default async function PatchNoteOgImage({ params }: Props) {
     patch = null;
   }
 
-  const title = patch?.title ?? '패치노트를 찾을 수 없음';
+  const title = patch?.title ?? t.patchNotes.notFound.ogFallback;
   const versionText = patch?.version ?? version;
-  const dateText = patch ? formatDate(patch.releasedAt) : '';
+  const dateText = patch ? t.date(patch.releasedAt) : '';
 
   return new ImageResponse(
     <div

@@ -1,6 +1,9 @@
 import { Skeleton } from '@/components/skeleton';
+import { getLocale } from '@/lib/i18n';
+import { getLabels } from '@/lib/labels';
 
-export default function Loading() {
+export default async function Loading() {
+  const t = getLabels(await getLocale());
   return (
     <div
       className="space-y-6"
@@ -9,7 +12,7 @@ export default function Loading() {
     >
       <Skeleton
         className="h-8 w-48"
-        aria-label="페이지 불러오는 중"
+        aria-label={t.common.pageLoading}
       />
       <Skeleton className="h-4 w-3/4" />
       <Skeleton className="h-4 w-2/3" />

@@ -1,35 +1,40 @@
-import type { HeroSummaryDto } from '@@shared';
+import type { HeroRole, HeroSummaryDto, Locale } from '@@shared';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { HeroPortrait } from '@/components/hero-portrait';
 import { getHeroList } from '@/lib/api';
-import { ROLE_ORDER, type RoleKey, roleColorVar, roleLabel, subroleLabel } from '@/lib/format';
+import { ROLE_ORDER, roleColorVar } from '@/lib/format';
 import { getLocale } from '@/lib/i18n';
+import { getLabels } from '@/lib/labels';
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: '영웅',
-  description: '오버워치 전체 영웅 목록 — 역할별 분류, 능력 수치, 패치 이력으로 연결.',
-  alternates: { canonical: '/heroes' },
-  openGraph: { title: '영웅', url: '/heroes' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = getLabels(await getLocale());
+  return {
+    title: t.heroes.title,
+    description: t.heroes.description,
+    alternates: { canonical: '/heroes' },
+    openGraph: { title: t.heroes.title, url: '/heroes' },
+  };
+}
 
 export default async function HeroesPage() {
   const lang = await getLocale();
+  const t = getLabels(lang);
   const { items, total } = await getHeroList({ pageSize: 100, lang });
 
-  const grouped = groupByRole(items);
+  const grouped = groupByRole(items, lang);
 
   return (
     <div className="space-y-10">
       <header className="flex items-end justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">영웅 ({total})</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t.heroes.titleWithCount(total)}</h1>
       </header>
 
       {items.length === 0 ? (
-        <p className="text-(--color-text-muted)">아직 등록된 영웅이 없습니다.</p>
+        <p className="text-(--color-text-muted)">{t.heroes.empty}</p>
       ) : (
         <div className="space-y-8">
           {ROLE_ORDER.map((role) => {
@@ -51,7 +56,7 @@ export default async function HeroesPage() {
                     className="text-sm font-semibold uppercase tracking-widest"
                     style={{ color: `var(${colorVar})` }}
                   >
-                    {roleLabel(role)}
+                    {t.role(role)}
                   </h2>
                   <span className="text-xs text-(--color-text-muted)">{heroes.length}</span>
                 </div>
@@ -72,7 +77,7 @@ export default async function HeroesPage() {
                         <div className="min-w-0">
                           <div className="text-base font-semibold truncate">{hero.name}</div>
                           <div className="text-xs text-(--color-text-muted) mt-1 truncate">
-                            {hero.subrole ? subroleLabel(hero.subrole) : hero.codename}
+                            {hero.subrole ? t.subrole(hero.subrole) : hero.codename}
                           </div>
                         </div>
                       </Link>
@@ -88,15 +93,16 @@ export default async function HeroesPage() {
   );
 }
 
-function groupByRole(items: HeroSummaryDto[]): Map<RoleKey, HeroSummaryDto[]> {
-  const groups = new Map<RoleKey, HeroSummaryDto[]>();
+function groupByRole(items: HeroSummaryDto[], lang: Locale): Map<HeroRole, HeroSummaryDto[]> {
+  const groups = new Map<HeroRole, HeroSummaryDto[]>();
   for (const hero of items) {
     const list = groups.get(hero.role) ?? [];
     list.push(hero);
     groups.set(hero.role, list);
   }
+  const collator = lang === 'en' ? 'en-US' : lang === 'ja' ? 'ja-JP' : 'ko-KR';
   for (const list of groups.values()) {
-    list.sort((a, b) => a.name.localeCompare(b.name, 'ko-KR'));
+    list.sort((a, b) => a.name.localeCompare(b.name, collator));
   }
   return groups;
 }
