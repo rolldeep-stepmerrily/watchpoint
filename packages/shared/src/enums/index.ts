@@ -12,3 +12,5 @@ export type { ScrapeSource } from './scrape-source';
 export { SCRAPE_SOURCES } from './scrape-source';
 export type { ScrapeStatus } from './scrape-status';
 export { SCRAPE_STATUSES } from './scrape-status';
+export type { Subrole } from './subrole';
+export { SUBROLES, isSubrole } from './subrole';
