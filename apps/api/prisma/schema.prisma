@@ -13,6 +13,7 @@ model Hero {
   name              String
   nameTranslations  Json?
   role              HeroRole
+  subrole           String?
   releasedAt        DateTime
   portraitUrl       String?
   description       String?
