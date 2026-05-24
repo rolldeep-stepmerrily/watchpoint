@@ -1,3 +1,4 @@
+import type { Subrole } from '@watchpoint/shared';
 import type { HeroRole } from '../generated/prisma/client';
 
 /**
@@ -6,75 +7,82 @@ import type { HeroRole } from '../generated/prisma/client';
  * codename ↔ 한글 이름 ↔ 나무위키 페이지가 항상 일치하도록 보장한다.
  *
  * 출시일은 정확하지 않을 수 있으므로 hero:edit으로 보정 가능.
+ *
+ * subrole: 2026-02 Reign of Talon 시즌1에서 도입된 서브 역할군 패시브.
+ * 출처: Dexerto + Blizzard 한국 영웅 페이지. 신영웅이라 미공개면 null.
  */
 export interface HeroCatalogEntry {
   codename: string;
   name: string;
   role: HeroRole;
+  subrole: Subrole | null;
   releasedAt: string; // ISO date
   pageTitle: string; // 나무위키 페이지 제목
 }
 
 export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
   // Tank
-  { codename: 'd-va', name: 'D.Va', role: 'TANK', releasedAt: '2016-05-24', pageTitle: 'D.Va' },
-  { codename: 'doomfist', name: '둠피스트', role: 'TANK', releasedAt: '2017-07-27', pageTitle: '둠피스트' },
-  { codename: 'hazard', name: '해저드', role: 'TANK', releasedAt: '2024-12-10', pageTitle: '해저드' },
-  { codename: 'junker-queen', name: '정커퀸', role: 'TANK', releasedAt: '2022-10-04', pageTitle: '정커퀸' },
-  { codename: 'mauga', name: '마우가', role: 'TANK', releasedAt: '2023-12-05', pageTitle: '마우가' },
-  { codename: 'orisa', name: '오리사', role: 'TANK', releasedAt: '2017-03-21', pageTitle: '오리사' },
-  { codename: 'ramattra', name: '라마트라', role: 'TANK', releasedAt: '2022-12-06', pageTitle: '라마트라' },
+  { codename: 'd-va', name: 'D.Va', role: 'TANK', subrole: 'Initiator', releasedAt: '2016-05-24', pageTitle: 'D.Va' },
+  { codename: 'doomfist', name: '둠피스트', role: 'TANK', subrole: 'Initiator', releasedAt: '2017-07-27', pageTitle: '둠피스트' },
+  { codename: 'hazard', name: '해저드', role: 'TANK', subrole: 'Initiator', releasedAt: '2024-12-10', pageTitle: '해저드' },
+  { codename: 'junker-queen', name: '정커퀸', role: 'TANK', subrole: 'Stalwart', releasedAt: '2022-10-04', pageTitle: '정커퀸' },
+  { codename: 'mauga', name: '마우가', role: 'TANK', subrole: 'Bruiser', releasedAt: '2023-12-05', pageTitle: '마우가' },
+  { codename: 'orisa', name: '오리사', role: 'TANK', subrole: 'Bruiser', releasedAt: '2017-03-21', pageTitle: '오리사' },
+  { codename: 'ramattra', name: '라마트라', role: 'TANK', subrole: 'Stalwart', releasedAt: '2022-12-06', pageTitle: '라마트라' },
   {
     codename: 'reinhardt',
     name: '라인하르트',
     role: 'TANK',
+    subrole: 'Stalwart',
     releasedAt: '2016-05-24',
     pageTitle: '라인하르트(오버워치)',
   },
-  { codename: 'roadhog', name: '로드호그', role: 'TANK', releasedAt: '2016-05-24', pageTitle: '로드호그' },
-  { codename: 'sigma', name: '시그마', role: 'TANK', releasedAt: '2019-08-04', pageTitle: '시그마(오버워치)' },
-  { codename: 'winston', name: '윈스턴', role: 'TANK', releasedAt: '2016-05-24', pageTitle: '윈스턴(오버워치)' },
-  { codename: 'wrecking-ball', name: '레킹볼', role: 'TANK', releasedAt: '2018-07-23', pageTitle: '레킹볼(오버워치)' },
-  { codename: 'zarya', name: '자리야', role: 'TANK', releasedAt: '2016-05-24', pageTitle: '자리야' },
+  { codename: 'roadhog', name: '로드호그', role: 'TANK', subrole: 'Bruiser', releasedAt: '2016-05-24', pageTitle: '로드호그' },
+  { codename: 'sigma', name: '시그마', role: 'TANK', subrole: 'Stalwart', releasedAt: '2019-08-04', pageTitle: '시그마(오버워치)' },
+  { codename: 'winston', name: '윈스턴', role: 'TANK', subrole: 'Initiator', releasedAt: '2016-05-24', pageTitle: '윈스턴(오버워치)' },
+  { codename: 'wrecking-ball', name: '레킹볼', role: 'TANK', subrole: 'Initiator', releasedAt: '2018-07-23', pageTitle: '레킹볼(오버워치)' },
+  { codename: 'zarya', name: '자리야', role: 'TANK', subrole: 'Bruiser', releasedAt: '2016-05-24', pageTitle: '자리야' },
 
   // Damage
-  { codename: 'ashe', name: '애쉬', role: 'DAMAGE', releasedAt: '2018-11-13', pageTitle: '애쉬(오버워치)' },
-  { codename: 'bastion', name: '바스티온', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '바스티온' },
-  { codename: 'cassidy', name: '캐서디', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '캐서디' },
-  { codename: 'echo', name: '에코', role: 'DAMAGE', releasedAt: '2020-04-14', pageTitle: '에코(오버워치)' },
-  { codename: 'freja', name: '프레야', role: 'DAMAGE', releasedAt: '2025-02-25', pageTitle: '프레야' },
-  { codename: 'genji', name: '겐지', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '겐지(오버워치)' },
-  { codename: 'hanzo', name: '한조', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '한조(오버워치)' },
-  { codename: 'junkrat', name: '정크랫', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '정크랫' },
-  { codename: 'mei', name: '메이', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '메이(오버워치)' },
-  { codename: 'pharah', name: '파라', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '파라(오버워치)' },
-  { codename: 'reaper', name: '리퍼', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '리퍼(오버워치)' },
-  { codename: 'sierra', name: '시에라', role: 'DAMAGE', releasedAt: '2026-04-22', pageTitle: '시에라(오버워치)' },
-  { codename: 'sojourn', name: '소전', role: 'DAMAGE', releasedAt: '2022-10-04', pageTitle: '소전(오버워치)' },
-  { codename: 'emre', name: '엠레', role: 'DAMAGE', releasedAt: '2026-02-11', pageTitle: '엠레(오버워치)' },
-  { codename: 'mizuki', name: '미즈키', role: 'DAMAGE', releasedAt: '2026-02-11', pageTitle: '미즈키(오버워치)' },
-  { codename: 'jetpack-cat', name: '제트팩 캣', role: 'DAMAGE', releasedAt: '2026-02-11', pageTitle: '제트팩 캣' },
-  { codename: 'vendetta', name: '벤데타', role: 'DAMAGE', releasedAt: '2025-12-10', pageTitle: '벤데타(오버워치)' },
-  { codename: 'soldier-76', name: '솔저: 76', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '솔저: 76' },
-  { codename: 'sombra', name: '솜브라', role: 'DAMAGE', releasedAt: '2016-11-14', pageTitle: '솜브라' },
-  { codename: 'symmetra', name: '시메트라', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '시메트라' },
-  { codename: 'torbjorn', name: '토르비욘', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '토르비욘' },
-  { codename: 'tracer', name: '트레이서', role: 'DAMAGE', releasedAt: '2016-05-24', pageTitle: '트레이서(오버워치)' },
-  { codename: 'venture', name: '벤처', role: 'DAMAGE', releasedAt: '2024-04-16', pageTitle: '벤처(오버워치)' },
+  { codename: 'ashe', name: '애쉬', role: 'DAMAGE', subrole: 'Sharpshooter', releasedAt: '2018-11-13', pageTitle: '애쉬(오버워치)' },
+  { codename: 'bastion', name: '바스티온', role: 'DAMAGE', subrole: 'Specialist', releasedAt: '2016-05-24', pageTitle: '바스티온' },
+  { codename: 'cassidy', name: '캐서디', role: 'DAMAGE', subrole: 'Sharpshooter', releasedAt: '2016-05-24', pageTitle: '캐서디' },
+  { codename: 'echo', name: '에코', role: 'DAMAGE', subrole: 'Recon', releasedAt: '2020-04-14', pageTitle: '에코(오버워치)' },
+  { codename: 'freja', name: '프레야', role: 'DAMAGE', subrole: 'Recon', releasedAt: '2025-02-25', pageTitle: '프레야' },
+  { codename: 'genji', name: '겐지', role: 'DAMAGE', subrole: 'Flanker', releasedAt: '2016-05-24', pageTitle: '겐지(오버워치)' },
+  { codename: 'hanzo', name: '한조', role: 'DAMAGE', subrole: 'Sharpshooter', releasedAt: '2016-05-24', pageTitle: '한조(오버워치)' },
+  { codename: 'junkrat', name: '정크랫', role: 'DAMAGE', subrole: 'Specialist', releasedAt: '2016-05-24', pageTitle: '정크랫' },
+  { codename: 'mei', name: '메이', role: 'DAMAGE', subrole: 'Specialist', releasedAt: '2016-05-24', pageTitle: '메이(오버워치)' },
+  { codename: 'pharah', name: '파라', role: 'DAMAGE', subrole: 'Recon', releasedAt: '2016-05-24', pageTitle: '파라(오버워치)' },
+  { codename: 'reaper', name: '리퍼', role: 'DAMAGE', subrole: 'Flanker', releasedAt: '2016-05-24', pageTitle: '리퍼(오버워치)' },
+  // 시에라: dexerto 자료(2026-02) 이후 출시. 시드 설명상 저격 딜러 → Sharpshooter로 임시 분류.
+  { codename: 'sierra', name: '시에라', role: 'DAMAGE', subrole: 'Sharpshooter', releasedAt: '2026-04-22', pageTitle: '시에라(오버워치)' },
+  { codename: 'sojourn', name: '소전', role: 'DAMAGE', subrole: 'Sharpshooter', releasedAt: '2022-10-04', pageTitle: '소전(오버워치)' },
+  { codename: 'emre', name: '엠레', role: 'DAMAGE', subrole: 'Specialist', releasedAt: '2026-02-11', pageTitle: '엠레(오버워치)' },
+  { codename: 'vendetta', name: '벤데타', role: 'DAMAGE', subrole: 'Flanker', releasedAt: '2025-12-10', pageTitle: '벤데타(오버워치)' },
+  { codename: 'soldier-76', name: '솔저: 76', role: 'DAMAGE', subrole: 'Specialist', releasedAt: '2016-05-24', pageTitle: '솔저: 76' },
+  { codename: 'sombra', name: '솜브라', role: 'DAMAGE', subrole: 'Recon', releasedAt: '2016-11-14', pageTitle: '솜브라' },
+  { codename: 'symmetra', name: '시메트라', role: 'DAMAGE', subrole: 'Specialist', releasedAt: '2016-05-24', pageTitle: '시메트라' },
+  { codename: 'torbjorn', name: '토르비욘', role: 'DAMAGE', subrole: 'Specialist', releasedAt: '2016-05-24', pageTitle: '토르비욘' },
+  { codename: 'tracer', name: '트레이서', role: 'DAMAGE', subrole: 'Flanker', releasedAt: '2016-05-24', pageTitle: '트레이서(오버워치)' },
+  { codename: 'venture', name: '벤처', role: 'DAMAGE', subrole: 'Flanker', releasedAt: '2024-04-16', pageTitle: '벤처(오버워치)' },
   {
     codename: 'widowmaker',
     name: '위도우메이커',
     role: 'DAMAGE',
+    subrole: 'Sharpshooter',
     releasedAt: '2016-05-24',
     pageTitle: '위도우메이커',
   },
 
   // Support
-  { codename: 'ana', name: '아나', role: 'SUPPORT', releasedAt: '2016-07-12', pageTitle: '아나(오버워치)' },
+  // 미즈키/제트팩 캣: 출시 시점에 잘못 DAMAGE로 분류되어 있었음. dexerto 기준 SUPPORT가 정답.
+  { codename: 'ana', name: '아나', role: 'SUPPORT', subrole: 'Tactician', releasedAt: '2016-07-12', pageTitle: '아나(오버워치)' },
   {
     codename: 'baptiste',
     name: '바티스트',
     role: 'SUPPORT',
+    subrole: 'Tactician',
     releasedAt: '2019-03-19',
     pageTitle: '바티스트(오버워치)',
   },
@@ -82,24 +90,28 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     codename: 'brigitte',
     name: '브리기테',
     role: 'SUPPORT',
+    subrole: 'Survivor',
     releasedAt: '2018-03-28',
     pageTitle: '브리기테',
   },
-  { codename: 'illari', name: '일리아리', role: 'SUPPORT', releasedAt: '2023-08-10', pageTitle: '일리아리' },
-  { codename: 'juno', name: '주노', role: 'SUPPORT', releasedAt: '2024-08-20', pageTitle: '주노(오버워치)' },
-  { codename: 'kiriko', name: '키리코', role: 'SUPPORT', releasedAt: '2022-10-04', pageTitle: '키리코(오버워치)' },
+  { codename: 'illari', name: '일리아리', role: 'SUPPORT', subrole: 'Survivor', releasedAt: '2023-08-10', pageTitle: '일리아리' },
+  { codename: 'jetpack-cat', name: '제트팩 캣', role: 'SUPPORT', subrole: 'Tactician', releasedAt: '2026-02-11', pageTitle: '제트팩 캣' },
+  { codename: 'juno', name: '주노', role: 'SUPPORT', subrole: 'Survivor', releasedAt: '2024-08-20', pageTitle: '주노(오버워치)' },
+  { codename: 'kiriko', name: '키리코', role: 'SUPPORT', subrole: 'Medic', releasedAt: '2022-10-04', pageTitle: '키리코(오버워치)' },
   {
     codename: 'lifeweaver',
     name: '라이프위버',
     role: 'SUPPORT',
+    subrole: 'Medic',
     releasedAt: '2023-04-11',
     pageTitle: '라이프위버',
   },
-  { codename: 'lucio', name: '루시우', role: 'SUPPORT', releasedAt: '2016-05-24', pageTitle: '루시우(오버워치)' },
-  { codename: 'mercy', name: '메르시', role: 'SUPPORT', releasedAt: '2016-05-24', pageTitle: '메르시' },
-  { codename: 'moira', name: '모이라', role: 'SUPPORT', releasedAt: '2017-11-17', pageTitle: '모이라(오버워치)' },
-  { codename: 'wuyang', name: '우양', role: 'SUPPORT', releasedAt: '2025-08-27', pageTitle: '우양' },
-  { codename: 'zenyatta', name: '젠야타', role: 'SUPPORT', releasedAt: '2016-05-24', pageTitle: '젠야타' },
+  { codename: 'lucio', name: '루시우', role: 'SUPPORT', subrole: 'Tactician', releasedAt: '2016-05-24', pageTitle: '루시우(오버워치)' },
+  { codename: 'mercy', name: '메르시', role: 'SUPPORT', subrole: 'Medic', releasedAt: '2016-05-24', pageTitle: '메르시' },
+  { codename: 'mizuki', name: '미즈키', role: 'SUPPORT', subrole: 'Survivor', releasedAt: '2026-02-11', pageTitle: '미즈키(오버워치)' },
+  { codename: 'moira', name: '모이라', role: 'SUPPORT', subrole: 'Medic', releasedAt: '2017-11-17', pageTitle: '모이라(오버워치)' },
+  { codename: 'wuyang', name: '우양', role: 'SUPPORT', subrole: 'Survivor', releasedAt: '2025-08-27', pageTitle: '우양' },
+  { codename: 'zenyatta', name: '젠야타', role: 'SUPPORT', subrole: 'Tactician', releasedAt: '2016-05-24', pageTitle: '젠야타' },
 ];
 
 export const HERO_CATALOG_BY_CODENAME: Record<string, HeroCatalogEntry> = Object.fromEntries(

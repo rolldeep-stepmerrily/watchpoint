@@ -1,7 +1,7 @@
 import { TypedQueryBus } from '@@cqrs';
 import { AppException } from '@@exceptions';
 import { Injectable } from '@nestjs/common';
-import { DEFAULT_LOCALE, type Locale } from '@watchpoint/shared';
+import { DEFAULT_LOCALE, isSubrole, type Locale } from '@watchpoint/shared';
 import { isDefined } from 'class-validator';
 import { HERO_ERRORS } from '../../hero.error';
 import { GetHeroResponseDto } from '../../presenter/http/dto/get-hero.dto';
@@ -38,6 +38,7 @@ export class GetHeroUseCase {
       codename: hero.codename,
       name: resolveName(hero.name, hero.nameTranslations, lang),
       role: hero.role,
+      subrole: isSubrole(hero.subrole) ? hero.subrole : null,
       releasedAt: hero.releasedAt.toISOString(),
       portraitUrl: hero.portraitUrl,
       description: hero.description,

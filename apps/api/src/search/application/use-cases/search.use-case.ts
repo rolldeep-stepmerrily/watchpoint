@@ -1,5 +1,6 @@
 import { TypedQueryBus } from '@@cqrs';
 import { Injectable } from '@nestjs/common';
+import { isSubrole } from '@watchpoint/shared';
 
 import { GetSearchResponseDto } from '../../presenter/http/dto/search.dto';
 import { SearchQuery } from '../queries/search.query';
@@ -27,6 +28,7 @@ export class SearchUseCase {
         codename: hero.codename,
         name: hero.name,
         role: hero.role,
+        subrole: isSubrole(hero.subrole) ? hero.subrole : null,
         releasedAt: hero.releasedAt.toISOString(),
         portraitUrl: hero.portraitUrl,
       })),

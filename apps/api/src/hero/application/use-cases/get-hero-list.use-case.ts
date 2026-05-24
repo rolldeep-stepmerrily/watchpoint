@@ -1,6 +1,6 @@
 import { TypedQueryBus } from '@@cqrs';
 import { Injectable } from '@nestjs/common';
-import { DEFAULT_LOCALE, type HeroSummaryDto, type Locale } from '@watchpoint/shared';
+import { DEFAULT_LOCALE, type HeroSummaryDto, isSubrole, type Locale } from '@watchpoint/shared';
 import { GetHeroListResponseDto } from '../../presenter/http/dto/get-hero-list.dto';
 import { resolveName } from '../name-resolver';
 import { GetHeroListQuery } from '../queries/get-hero-list.query';
@@ -33,6 +33,7 @@ export class GetHeroListUseCase {
         codename: hero.codename,
         name: resolveName(hero.name, hero.nameTranslations, lang),
         role: hero.role,
+        subrole: isSubrole(hero.subrole) ? hero.subrole : null,
         releasedAt: hero.releasedAt.toISOString(),
         portraitUrl: hero.portraitUrl,
       })),
