@@ -14,6 +14,7 @@ import {
   slotLabel,
   subroleLabel,
   subrolePassive,
+  subroleStats,
 } from '@/lib/format';
 import { getLocale } from '@/lib/i18n';
 import { absoluteUrl } from '@/lib/seo';
@@ -103,11 +104,24 @@ export default async function HeroDetailPage({ params }: Props) {
           </div>
           <h1 className="text-3xl font-semibold tracking-tight">{hero.name}</h1>
           {hero.subrole && (
-            <p className="text-xs text-(--color-text-muted) max-w-2xl">
-              <span className="font-semibold text-(--color-text)">서브 패시브 · {subroleLabel(hero.subrole)}</span>
-              {' — '}
-              {subrolePassive(hero.subrole)}
-            </p>
+            <div className="space-y-2 max-w-2xl">
+              <p className="text-xs text-(--color-text-muted)">
+                <span className="font-semibold text-(--color-text)">서브 패시브 · {subroleLabel(hero.subrole)}</span>
+                {' — '}
+                {subrolePassive(hero.subrole)}
+              </p>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
+                {subroleStats(hero.subrole).map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="contents"
+                  >
+                    <dt className="text-(--color-text-muted)">{stat.label}</dt>
+                    <dd className="font-mono">{stat.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           )}
           {hero.description && (
             <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{hero.description}</p>

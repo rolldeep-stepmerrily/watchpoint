@@ -100,18 +100,59 @@ export function subroleLabel(subrole: SubroleKey): string {
  * 같은 subrole의 모든 영웅에게 자동 부여되는 패시브 효과.
  */
 const SUBROLE_PASSIVES: Record<SubroleKey, string> = {
-  Bruiser: '치명타 저항력을 얻습니다',
-  Initiator: '특정 이동 기술을 사용한 후 지속 치유를 얻습니다',
-  Stalwart: '밀쳐내기 및 감속에 저항력을 얻습니다',
-  Sharpshooter: '치명타 적중 시 이동 기술 재사용 대기시간이 감소합니다',
-  Flanker: '생명력 팩으로 생명력을 더 회복합니다',
-  Specialist: '적을 처치하면 잠깐 동안 재장전 속도가 증가합니다',
-  Recon: '생명력 절반 미만인 적에게 피해를 주면 적이 드러납니다',
-  Tactician: '추가 궁극기 충전을 유지합니다',
-  Medic: '무기로 아군을 치유하면 자신도 치유합니다',
-  Survivor: '이동 기술을 사용하면 생명력 지속 재생이 발동합니다',
+  Bruiser: '치명타 저항력을 얻습니다. 생명력이 절반 미만일 시 더 빨리 이동합니다.',
+  Initiator: '특정 기술을 사용한 후 지속 치유를 얻습니다.',
+  Stalwart: '밀쳐내기 및 감속에 저항력을 얻습니다.',
+  Sharpshooter: '치명타 적중 시 이동 기술 재사용 대기시간이 감소합니다.',
+  Flanker: '생명력 팩으로 생명력을 더 회복합니다.',
+  Specialist: '적을 처치하면 잠깐 동안 재장전 속도가 증가합니다.',
+  Recon: '생명력이 절반 미만인 적에게 피해를 주면 적이 드러납니다.',
+  Tactician: '추가 궁극기 충전을 유지합니다.',
+  Medic: '무기로 아군을 치유하면 자신도 치유합니다.',
+  Survivor: '이동 기술을 사용하면 생명력 지속 재생이 발동합니다.',
 };
 
 export function subrolePassive(subrole: SubroleKey): string {
   return SUBROLE_PASSIVES[subrole];
+}
+
+export interface SubroleStat {
+  label: string;
+  value: string;
+}
+
+/**
+ * subrole 패시브의 세부 수치. 영웅 상세 페이지에서 패시브 설명과 함께 표시한다.
+ */
+const SUBROLE_STATS: Record<SubroleKey, readonly SubroleStat[]> = {
+  Bruiser: [
+    { label: '치명타 피해 저항', value: '25%' },
+    { label: '이동 속도 증가', value: '20%' },
+  ],
+  Initiator: [
+    { label: '지속시간', value: '1초' },
+    { label: '치유량', value: '50/초' },
+    { label: '재사용 대기시간', value: '5초' },
+  ],
+  Stalwart: [
+    { label: '밀쳐내기 저항', value: '40%' },
+    { label: '감속 저항', value: '40%' },
+  ],
+  Sharpshooter: [{ label: '재사용 대기시간 감소량', value: '준 피해량의 0.75%' }],
+  Flanker: [{ label: '추가 치유량', value: '75' }],
+  Specialist: [
+    { label: '지속 시간', value: '처치 후 3초' },
+    { label: '재장전 속도 증가', value: '50%' },
+  ],
+  Recon: [{ label: '위치 노출 지속 시간', value: '3.5초' }],
+  Tactician: [
+    { label: '추가 궁극기 게이지', value: '최대 125%' },
+    { label: '궁극기 충전 감소', value: '25% (100% 초과 시)' },
+  ],
+  Medic: [{ label: '회복량', value: '무기 치유량의 40%' }],
+  Survivor: [{ label: '생명력 재생 최소 지속시간', value: '0.25초' }],
+};
+
+export function subroleStats(subrole: SubroleKey): readonly SubroleStat[] {
+  return SUBROLE_STATS[subrole];
 }
