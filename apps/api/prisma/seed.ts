@@ -25,6 +25,7 @@ async function seedCatalog(): Promise<{ created: number; updated: number }> {
     const heroData = {
       name: entry.name,
       role: entry.role,
+      subrole: entry.subrole,
       releasedAt: new Date(`${entry.releasedAt}T00:00:00Z`),
       sourceUrl: `https://namu.wiki/w/${entry.pageTitle}`,
     };
@@ -35,6 +36,7 @@ async function seedCatalog(): Promise<{ created: number; updated: number }> {
         data: {
           name: entry.name,
           role: entry.role,
+          subrole: entry.subrole,
         },
       });
       updated += 1;

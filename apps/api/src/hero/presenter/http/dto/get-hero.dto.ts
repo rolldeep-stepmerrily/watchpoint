@@ -7,6 +7,8 @@ import {
   type HeroDetailDto,
   type HeroRole,
   type HeroStatDto,
+  SUBROLES,
+  type Subrole,
 } from '@watchpoint/shared';
 
 export class HeroStatItemDto implements HeroStatDto {
@@ -61,6 +63,9 @@ export class GetHeroResponseDto implements HeroDetailDto {
 
   @ApiProperty({ enum: HERO_ROLES })
   role!: HeroRole;
+
+  @ApiProperty({ enum: SUBROLES, nullable: true, description: '서브 역할군 (Reign of Talon 시즌1 도입)' })
+  subrole!: Subrole | null;
 
   @ApiProperty({ description: 'ISO 8601 datetime' })
   releasedAt!: string;

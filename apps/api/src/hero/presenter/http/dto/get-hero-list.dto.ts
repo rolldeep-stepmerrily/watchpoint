@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { HERO_ROLES, type HeroRole, type HeroSummaryDto, type PaginatedDto } from '@watchpoint/shared';
+import {
+  HERO_ROLES,
+  type HeroRole,
+  type HeroSummaryDto,
+  type PaginatedDto,
+  SUBROLES,
+  type Subrole,
+} from '@watchpoint/shared';
 import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
@@ -43,6 +50,9 @@ export class HeroSummaryItemDto implements HeroSummaryDto {
 
   @ApiProperty({ enum: HERO_ROLES })
   role!: HeroRole;
+
+  @ApiProperty({ enum: SUBROLES, nullable: true, description: '서브 역할군 (Reign of Talon 시즌1 도입)' })
+  subrole!: Subrole | null;
 
   @ApiProperty({ description: 'ISO 8601 datetime' })
   releasedAt!: string;

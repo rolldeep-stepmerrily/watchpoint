@@ -17,6 +17,7 @@ interface HeroListResult {
     name: string;
     nameTranslations: Prisma.JsonValue;
     role: PrismaHeroRole;
+    subrole: string | null;
     releasedAt: Date;
     portraitUrl: string | null;
   }>;
@@ -55,6 +56,7 @@ export class GetHeroListQueryHandler implements IQueryHandler<GetHeroListQuery> 
           name: true,
           nameTranslations: true,
           role: true,
+          subrole: true,
           releasedAt: true,
           portraitUrl: true,
         },

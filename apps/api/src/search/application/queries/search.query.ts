@@ -14,6 +14,7 @@ export interface SearchResult {
     codename: string;
     name: string;
     role: PrismaHeroRole;
+    subrole: string | null;
     releasedAt: Date;
     portraitUrl: string | null;
   }>;
@@ -51,6 +52,7 @@ export class SearchQueryHandler implements IQueryHandler<SearchQuery> {
           codename: true,
           name: true,
           role: true,
+          subrole: true,
           releasedAt: true,
           portraitUrl: true,
         },

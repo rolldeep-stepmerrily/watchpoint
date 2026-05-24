@@ -7,6 +7,8 @@ import {
   type PatchNoteStatus,
   type PatchNoteSummaryDto,
   type SearchResponseDto,
+  SUBROLES,
+  type Subrole,
 } from '@watchpoint/shared';
 import { IsString, MaxLength, MinLength } from 'class-validator';
 
@@ -30,6 +32,9 @@ class HeroSummaryItemDto implements HeroSummaryDto {
 
   @ApiProperty({ enum: HERO_ROLES })
   role!: HeroRole;
+
+  @ApiProperty({ enum: SUBROLES, nullable: true })
+  subrole!: Subrole | null;
 
   @ApiProperty({ description: 'ISO 8601 datetime' })
   releasedAt!: string;
