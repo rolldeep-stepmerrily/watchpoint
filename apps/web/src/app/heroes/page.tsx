@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { HeroPortrait } from '@/components/hero-portrait';
 import { getHeroList } from '@/lib/api';
-import { ROLE_ORDER, type RoleKey, roleColorVar, roleLabel } from '@/lib/format';
+import { ROLE_ORDER, type RoleKey, roleColorVar, roleLabel, subroleLabel } from '@/lib/format';
 import { getLocale } from '@/lib/i18n';
 
 export const revalidate = 300;
@@ -71,8 +71,8 @@ export default async function HeroesPage() {
                         />
                         <div className="min-w-0">
                           <div className="text-base font-semibold truncate">{hero.name}</div>
-                          <div className="text-xs text-(--color-text-muted) mt-1 font-mono truncate">
-                            {hero.codename}
+                          <div className="text-xs text-(--color-text-muted) mt-1 truncate">
+                            {hero.subrole ? subroleLabel(hero.subrole) : hero.codename}
                           </div>
                         </div>
                       </Link>

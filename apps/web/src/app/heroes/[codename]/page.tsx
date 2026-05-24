@@ -5,7 +5,16 @@ import { notFound } from 'next/navigation';
 
 import { HeroPortrait } from '@/components/hero-portrait';
 import { getHero, getHeroPatchHistory } from '@/lib/api';
-import { categoryColorVar, categoryLabel, formatDate, roleColorVar, roleLabel, slotLabel } from '@/lib/format';
+import {
+  categoryColorVar,
+  categoryLabel,
+  formatDate,
+  roleColorVar,
+  roleLabel,
+  slotLabel,
+  subroleLabel,
+  subrolePassive,
+} from '@/lib/format';
 import { getLocale } from '@/lib/i18n';
 import { absoluteUrl } from '@/lib/seo';
 
@@ -71,18 +80,35 @@ export default async function HeroDetailPage({ params }: Props) {
           loading="eager"
         />
         <div className="space-y-3 min-w-0">
-          <span
-            className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold px-2 py-1 rounded border"
-            style={{ color: roleColor, borderColor: roleColor }}
-          >
+          <div className="flex flex-wrap items-center gap-2">
             <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ backgroundColor: roleColor }}
-              aria-hidden
-            />
-            {roleLabel(hero.role)}
-          </span>
+              className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold px-2 py-1 rounded border"
+              style={{ color: roleColor, borderColor: roleColor }}
+            >
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: roleColor }}
+                aria-hidden
+              />
+              {roleLabel(hero.role)}
+            </span>
+            {hero.subrole && (
+              <span
+                className="inline-flex items-center text-xs font-medium px-2 py-1 rounded border border-(--color-border) text-(--color-text-muted)"
+                title={subrolePassive(hero.subrole)}
+              >
+                {subroleLabel(hero.subrole)}
+              </span>
+            )}
+          </div>
           <h1 className="text-3xl font-semibold tracking-tight">{hero.name}</h1>
+          {hero.subrole && (
+            <p className="text-xs text-(--color-text-muted) max-w-2xl">
+              <span className="font-semibold text-(--color-text)">서브 패시브 · {subroleLabel(hero.subrole)}</span>
+              {' — '}
+              {subrolePassive(hero.subrole)}
+            </p>
+          )}
           {hero.description && (
             <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{hero.description}</p>
           )}
