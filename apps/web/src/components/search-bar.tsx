@@ -18,7 +18,8 @@ const MIN_LENGTH = 1;
 const DEBOUNCE_MS = 200;
 
 export function SearchBar() {
-  const t = getLabels(useLocale());
+  const locale = useLocale();
+  const t = getLabels(locale);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -40,9 +41,10 @@ export function SearchBar() {
     setIsLoading(true);
     const timer = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, {
-          signal: controller.signal,
-        });
+        const response = await fetch(
+          `/api/search?q=${encodeURIComponent(trimmed)}&lang=${encodeURIComponent(locale)}`,
+          { signal: controller.signal },
+        );
         if (!response.ok) throw new Error(`status ${response.status}`);
         const data = (await response.json()) as SearchResponse;
         setResults(data);
@@ -59,7 +61,7 @@ export function SearchBar() {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [query]);
+  }, [query, locale]);
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {

@@ -1,11 +1,8 @@
 'use client';
 
-import { DEFAULT_LOCALE, isLocale, type Locale } from '@@shared';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import type { Locale } from '@@shared';
 
-import { useLocale } from '@/hooks/use-locale';
-import { LANG_COOKIE } from '@/lib/i18n-shared';
+import { useLocale, useSetLocale } from '@/hooks/use-locale';
 import { getLabels } from '@/lib/labels';
 
 const OPTIONS: Array<{ value: Locale; label: string; enabled: boolean }> = [
@@ -14,40 +11,21 @@ const OPTIONS: Array<{ value: Locale; label: string; enabled: boolean }> = [
   { value: 'ja', label: '日本語', enabled: false },
 ];
 
-function writeCookie(name: string, value: string): void {
-  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
-}
-
 export function LanguageToggle() {
-  const t = getLabels(useLocale());
-  const [current, setCurrent] = useState<Locale>(DEFAULT_LOCALE);
-  const router = useRouter();
-
-  useEffect(() => {
-    const match = document.cookie.split('; ').find((row) => row.startsWith(`${LANG_COOKIE}=`));
-    const value = match ? decodeURIComponent(match.slice(LANG_COOKIE.length + 1)) : null;
-    if (isLocale(value)) {
-      setCurrent(value);
-    }
-  }, []);
-
-  const select = (locale: Locale): void => {
-    if (locale === current) return;
-    writeCookie(LANG_COOKIE, locale);
-    setCurrent(locale);
-    router.refresh();
-  };
+  const locale = useLocale();
+  const setLocale = useSetLocale();
+  const t = getLabels(locale);
 
   return (
     <fieldset className="inline-flex items-center gap-0.5 rounded-md border border-(--color-border) bg-(--color-bg) p-0.5 text-xs">
       <legend className="sr-only">{t.common.language}</legend>
       {OPTIONS.map((opt) => {
-        const active = opt.value === current;
+        const active = opt.value === locale;
         return (
           <button
             key={opt.value}
             type="button"
-            onClick={() => opt.enabled && select(opt.value)}
+            onClick={() => opt.enabled && setLocale(opt.value)}
             disabled={!opt.enabled}
             aria-pressed={active}
             title={opt.enabled ? opt.label : `${opt.label} (${t.common.languageComingSoon})`}

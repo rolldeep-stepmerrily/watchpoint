@@ -1,5 +1,5 @@
 import { PrismaService } from '@@db';
-import type { HeroRole as PrismaHeroRole } from '@@prisma';
+import { type HeroRole as PrismaHeroRole, type Prisma } from '@@prisma';
 import { IQueryHandler, Query, QueryHandler } from '@nestjs/cqrs';
 
 const RESULT_LIMIT = 10;
@@ -13,6 +13,7 @@ export interface SearchResult {
     id: number;
     codename: string;
     name: string;
+    nameTranslations: Prisma.JsonValue;
     role: PrismaHeroRole;
     subrole: string | null;
     releasedAt: Date;
@@ -51,6 +52,7 @@ export class SearchQueryHandler implements IQueryHandler<SearchQuery> {
           id: true,
           codename: true,
           name: true,
+          nameTranslations: true,
           role: true,
           subrole: true,
           releasedAt: true,

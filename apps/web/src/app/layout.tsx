@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { SiteHeader } from '@/components/site-header';
+import { LocaleProvider } from '@/hooks/use-locale';
 import { getLocale } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
@@ -39,13 +40,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={lang}>
       <body className="min-h-screen flex flex-col">
-        <SiteHeader />
+        <LocaleProvider initialLocale={lang}>
+          <SiteHeader />
 
-        <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10">{children}</main>
+          <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10">{children}</main>
 
-        <footer className="border-t border-(--color-border) py-6 text-center text-xs text-(--color-text-muted)">
-          {t.common.footerAttribution}
-        </footer>
+          <footer className="border-t border-(--color-border) py-6 text-center text-xs text-(--color-text-muted)">
+            {t.common.footerAttribution}
+          </footer>
+        </LocaleProvider>
       </body>
     </html>
   );
