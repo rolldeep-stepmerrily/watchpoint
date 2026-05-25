@@ -47,11 +47,13 @@ export class PatchNoteHttpController {
   }
 
   @ApiOperation({ summary: '패치노트 entry 목록 조회 (category 필터)' })
+  @ApiQuery({ name: 'lang', enum: LOCALES, required: false, description: '응답 언어 (기본 ko)' })
   @Get(PatchNoteRouter.Http.GetEntries)
   async getEntries(
     @Param('version') version: string,
     @Query() queryDto: GetPatchNoteEntriesRequestDto,
+    @LangQuery() lang: Locale,
   ): Promise<GetPatchNoteEntriesResponseDto> {
-    return await this.getPatchNoteEntriesUseCase.execute({ version, category: queryDto.category });
+    return await this.getPatchNoteEntriesUseCase.execute({ version, category: queryDto.category, lang });
   }
 }

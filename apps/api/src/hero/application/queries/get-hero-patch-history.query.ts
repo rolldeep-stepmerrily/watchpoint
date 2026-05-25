@@ -24,7 +24,9 @@ const ENTRY_SELECT = {
   category: true,
   heroId: true,
   title: true,
+  titleTranslations: true,
   body: true,
+  bodyTranslations: true,
   order: true,
   patchNote: { select: PATCH_NOTE_SELECT },
 } as const satisfies Prisma.PatchNoteEntrySelect;
