@@ -1,6 +1,7 @@
 import { TypedQueryBus } from '@@cqrs';
 import { AppException } from '@@exceptions';
 import { Injectable } from '@nestjs/common';
+import { DEFAULT_LOCALE, isSubrole, type Locale } from '@watchpoint/shared';
 import { isDefined } from 'class-validator';
 import { HERO_ERRORS } from '../../hero.error';
 import {
@@ -9,11 +10,13 @@ import {
   PatchNoteEntryItemDto,
   PatchNoteSummaryItemDto,
 } from '../../presenter/http/dto/get-hero-patch-history.dto';
+import { resolveName } from '../name-resolver';
 import { GetHeroByCodenameQuery } from '../queries/get-hero-by-codename.query';
 import { GetHeroPatchHistoryQuery, type PatchEntryWithPatch } from '../queries/get-hero-patch-history.query';
 
 interface GetHeroPatchHistoryUseCaseProps {
   codename: string;
+  lang?: Locale;
 }
 
 @Injectable()
@@ -38,12 +41,15 @@ export class GetHeroPatchHistoryUseCase {
 
     const grouped = this.groupEntriesByPatch(entries);
 
+    const lang = props.lang ?? DEFAULT_LOCALE;
+
     return {
       hero: {
         id: hero.id,
         codename: hero.codename,
-        name: hero.name,
+        name: resolveName(hero.name, hero.nameTranslations, lang),
         role: hero.role,
+        subrole: isSubrole(hero.subrole) ? hero.subrole : null,
         releasedAt: hero.releasedAt.toISOString(),
         portraitUrl: hero.portraitUrl,
       },

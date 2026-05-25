@@ -1,7 +1,6 @@
-import { Command, CommandRunner, Option } from 'nest-commander';
-
 import { PrismaService } from '@@db';
 import { HeroRole } from '@@prisma';
+import { Command, CommandRunner, Option } from 'nest-commander';
 
 interface HeroEditOptions {
   name?: string;

@@ -59,7 +59,8 @@ pnpm db:migrate
 pnpm db:generate
 
 # 운영 CLI (apps/api)
-pnpm patch:sync                       # 블리자드 패치노트 동기화
+pnpm patch:sync                       # 블리자드 패치노트 동기화 (최신 페이지만)
+pnpm patch:backfill                   # 페이지네이션 따라 과거 패치 백필 (--until, --max-pages)
 pnpm patch:list
 pnpm patch:review <version>
 pnpm hero:sync <codename>

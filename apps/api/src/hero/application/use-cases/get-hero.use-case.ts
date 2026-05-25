@@ -1,13 +1,16 @@
 import { TypedQueryBus } from '@@cqrs';
 import { AppException } from '@@exceptions';
 import { Injectable } from '@nestjs/common';
+import { DEFAULT_LOCALE, isSubrole, type Locale } from '@watchpoint/shared';
 import { isDefined } from 'class-validator';
 import { HERO_ERRORS } from '../../hero.error';
 import { GetHeroResponseDto } from '../../presenter/http/dto/get-hero.dto';
+import { resolveName } from '../name-resolver';
 import { GetHeroByCodenameQuery } from '../queries/get-hero-by-codename.query';
 
 interface GetHeroUseCaseProps {
   codename: string;
+  lang?: Locale;
 }
 
 @Injectable()
@@ -28,11 +31,14 @@ export class GetHeroUseCase {
       throw new AppException(HERO_ERRORS.NOT_FOUND);
     }
 
+    const lang = props.lang ?? DEFAULT_LOCALE;
+
     return {
       id: hero.id,
       codename: hero.codename,
-      name: hero.name,
+      name: resolveName(hero.name, hero.nameTranslations, lang),
       role: hero.role,
+      subrole: isSubrole(hero.subrole) ? hero.subrole : null,
       releasedAt: hero.releasedAt.toISOString(),
       portraitUrl: hero.portraitUrl,
       description: hero.description,
@@ -50,7 +56,7 @@ export class GetHeroUseCase {
         id: ability.id,
         slot: ability.slot,
         key: ability.key,
-        name: ability.name,
+        name: resolveName(ability.name, ability.nameTranslations, lang),
         description: ability.description,
         stats: ability.stats as Record<string, unknown> | null,
         order: ability.order,

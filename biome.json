@@ -123,6 +123,11 @@
       "semicolons": "always"
     }
   },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
   "assist": {
     "enabled": true,
     "actions": {
@@ -168,6 +173,16 @@
         "rules": {
           "style": {
             "noInferrableTypes": "error"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/api/**/cli/**", "apps/api/prisma/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
           }
         }
       }

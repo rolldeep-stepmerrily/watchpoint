@@ -1,5 +1,5 @@
 import { PrismaService } from '@@db';
-import { type HeroRole as PrismaHeroRole } from '@@prisma';
+import { type HeroRole as PrismaHeroRole, type Prisma } from '@@prisma';
 import { IQueryHandler, Query, QueryHandler } from '@nestjs/cqrs';
 import type { HeroRole } from '@watchpoint/shared';
 
@@ -15,7 +15,9 @@ interface HeroListResult {
     id: number;
     codename: string;
     name: string;
+    nameTranslations: Prisma.JsonValue;
     role: PrismaHeroRole;
+    subrole: string | null;
     releasedAt: Date;
     portraitUrl: string | null;
   }>;
@@ -52,7 +54,9 @@ export class GetHeroListQueryHandler implements IQueryHandler<GetHeroListQuery> 
           id: true,
           codename: true,
           name: true,
+          nameTranslations: true,
           role: true,
+          subrole: true,
           releasedAt: true,
           portraitUrl: true,
         },

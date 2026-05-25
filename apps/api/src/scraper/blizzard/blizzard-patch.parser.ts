@@ -1,9 +1,8 @@
+import { AppException } from '@@exceptions';
+import type { EntryCategory } from '@@prisma';
 import { Injectable, Logger } from '@nestjs/common';
 import * as cheerio from 'cheerio';
 import type { AnyNode } from 'domhandler';
-
-import { AppException } from '@@exceptions';
-import type { EntryCategory } from '@@prisma';
 
 import { SCRAPER_ERRORS } from '../scraper.error';
 import type { ParsedPatchEntry, ParsedPatchNote } from './dto/parsed-patch-note.dto';
@@ -24,7 +23,7 @@ export class BlizzardPatchParser {
         const dateText = node.find('.PatchNotes-date').first().text().trim();
         const title = node.find('.PatchNotes-patchTitle').first().text().trim();
 
-        if (!version || !title) {
+        if (!(version && title)) {
           this.logger.warn(`patch skipped — missing version/title (anchor=${anchorId})`);
           return;
         }
@@ -45,6 +44,17 @@ export class BlizzardPatchParser {
       this.logger.error('blizzard parse failed', error as Error);
       throw new AppException(SCRAPER_ERRORS.PARSE_FAILED);
     }
+  }
+
+  /**
+   * 페이지 하단의 "이전 월 패치 노트" 링크를 절대 URL로 반환.
+   * 더 이전 페이지가 없으면 null.
+   */
+  extractPrevPageUrl(html: string, currentUrl: string): string | null {
+    const $ = cheerio.load(html);
+    const href = $('.PatchNotesPaginationLink--prev').first().attr('href');
+    if (!href) return null;
+    return new URL(href, currentUrl).toString();
   }
 
   private parseEntries($: cheerio.CheerioAPI, root: cheerio.Cheerio<AnyNode>): ParsedPatchEntry[] {
@@ -78,7 +88,7 @@ export class BlizzardPatchParser {
         });
       } else {
         const body = [sectionDescription, this.collectListItems($, sectionNode)].filter(Boolean).join('\n\n');
-        if (!sectionTitle && !body) return;
+        if (!(sectionTitle || body)) return;
 
         entries.push({
           category: this.inferGenericCategory(sectionTitle),

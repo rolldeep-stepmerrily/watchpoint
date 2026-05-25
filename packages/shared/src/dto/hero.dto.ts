@@ -1,10 +1,11 @@
-import type { AbilitySlot, HeroRole } from '../enums';
+import type { AbilitySlot, HeroRole, Subrole } from '../enums';
 
 export interface HeroSummaryDto {
   id: number;
   codename: string;
   name: string;
   role: HeroRole;
+  subrole: Subrole | null;
   releasedAt: string;
   portraitUrl: string | null;
 }

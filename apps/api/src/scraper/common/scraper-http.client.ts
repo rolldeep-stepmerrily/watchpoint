@@ -1,8 +1,7 @@
+import { AppException } from '@@exceptions';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { request } from 'undici';
-
-import { AppException } from '@@exceptions';
 
 import { SCRAPER_ERRORS } from '../scraper.error';
 
@@ -20,6 +19,22 @@ export class ScraperHttpClient {
   }
 
   async fetchHtml(url: string): Promise<string> {
+    const html = await this.fetchHtmlInternal(url);
+    if (html === null) {
+      throw new AppException(SCRAPER_ERRORS.FETCH_FAILED);
+    }
+    return html;
+  }
+
+  /**
+   * 4xx (특히 404)에서는 null을 반환하고, 5xx/네트워크 에러는 throw.
+   * 호출자(scraper)가 fallback URL을 시도할 때 사용.
+   */
+  async fetchHtmlOrNullOnClientError(url: string): Promise<string | null> {
+    return await this.fetchHtmlInternal(url);
+  }
+
+  private async fetchHtmlInternal(url: string): Promise<string | null> {
     const host = this.hostOf(url);
     await this.acquireSlot(host);
 
@@ -32,9 +47,17 @@ export class ScraperHttpClient {
           'accept-language': 'ko-KR,ko;q=0.9',
         },
         maxRedirections: 5,
+        headersTimeout: 10_000,
+        bodyTimeout: 15_000,
       });
 
-      if (statusCode >= 400) {
+      if (statusCode >= 400 && statusCode < 500) {
+        this.logger.warn(`fetch ${url} returned ${statusCode}`);
+        await body.dump();
+        return null;
+      }
+
+      if (statusCode >= 500) {
         this.logger.warn(`fetch ${url} returned ${statusCode}`);
         throw new AppException(SCRAPER_ERRORS.FETCH_FAILED);
       }
@@ -55,11 +78,14 @@ export class ScraperHttpClient {
 
   private async acquireSlot(host: string): Promise<void> {
     const previous = this.inFlight.get(host) ?? Promise.resolve();
-    let release: () => void = () => {};
+    let release!: () => void;
     const slot = new Promise<void>((resolve) => {
       release = resolve;
     });
-    this.inFlight.set(host, previous.then(() => slot));
+    this.inFlight.set(
+      host,
+      previous.then(() => slot),
+    );
 
     await previous;
     const waitMs = this.computeWaitMs(host);

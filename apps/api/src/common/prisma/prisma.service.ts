@@ -12,7 +12,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     super({
       adapter,
       log: ['local', 'development'].includes(process.env.NODE_ENV ?? 'development')
-        ? ['info', 'warn', 'error']
+        ? ['query', 'info', 'warn', 'error']
         : ['warn', 'error'],
     });
   }

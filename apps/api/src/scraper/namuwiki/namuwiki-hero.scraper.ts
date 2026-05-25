@@ -1,13 +1,22 @@
-import { Injectable, Logger } from '@nestjs/common';
-
+import { AppException } from '@@exceptions';
 import { PrismaService } from '@@db';
-import { Prisma, ScrapeSource } from '@@prisma';
+import { type HeroRole, Prisma, ScrapeSource } from '@@prisma';
+import { Injectable } from '@nestjs/common';
 
 import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
+import { SCRAPER_ERRORS } from '../scraper.error';
 import type { ParsedHero } from './dto/parsed-hero.dto';
 import { NamuwikiHeroParser } from './namuwiki-hero.parser';
 
 const NAMUWIKI_BASE = 'https://namu.wiki/w/';
+
+/**
+ * catalog가 single source of truth — namuwiki에서 추론한 role/releasedAt보다 우선.
+ */
+export interface HeroSyncOverride {
+  role: HeroRole;
+  releasedAt: Date;
+}
 
 interface SyncResult {
   codename: string;
@@ -18,8 +27,6 @@ interface SyncResult {
 
 @Injectable()
 export class NamuwikiHeroScraper {
-  private readonly logger = new Logger(NamuwikiHeroScraper.name);
-
   constructor(
     private readonly httpClient: ScraperHttpClient,
     private readonly parser: NamuwikiHeroParser,
@@ -27,16 +34,17 @@ export class NamuwikiHeroScraper {
     private readonly prismaService: PrismaService,
   ) {}
 
-  async sync(codename: string, pageTitle: string): Promise<SyncResult> {
-    const url = `${NAMUWIKI_BASE}${encodeURIComponent(pageTitle)}`;
+  async sync(codename: string, pageTitle: string, override: HeroSyncOverride): Promise<SyncResult> {
+    const candidates = this.buildCandidateUrls(pageTitle);
+    const primaryUrl = candidates[0];
 
     return await this.recorder.run({
       source: ScrapeSource.NAMUWIKI_HERO,
-      target: url,
+      target: primaryUrl,
       task: async () => {
-        const html = await this.httpClient.fetchHtml(url);
-        const parsed = this.parser.parse(html, codename, url);
-        const result = await this.upsert(parsed);
+        const fetched = await this.fetchWithFallback(candidates);
+        const parsed = this.parser.parse(fetched.html, codename, fetched.url);
+        const result = await this.upsert(parsed, override);
         return {
           result,
           diffSummary: { codename: result.codename, abilities: result.abilitiesCount, created: result.created },
@@ -45,22 +53,44 @@ export class NamuwikiHeroScraper {
     });
   }
 
-  private async upsert(parsed: ParsedHero): Promise<SyncResult> {
+  /**
+   * pageTitle이 `<name>(<context>)` 형태면 bare `<name>`도 후보에 포함.
+   * namuwiki는 동음이의 있을 때만 suffix를 쓰는데 카탈로그가 어긋날 때
+   * 자동으로 폴백되도록 함.
+   */
+  private buildCandidateUrls(pageTitle: string): string[] {
+    const urls = [`${NAMUWIKI_BASE}${encodeURIComponent(pageTitle)}`];
+    const stripped = pageTitle.replace(/\([^)]+\)$/, '').trim();
+    if (stripped && stripped !== pageTitle) {
+      urls.push(`${NAMUWIKI_BASE}${encodeURIComponent(stripped)}`);
+    }
+    return urls;
+  }
+
+  private async fetchWithFallback(urls: string[]): Promise<{ url: string; html: string }> {
+    for (const url of urls) {
+      const html = await this.httpClient.fetchHtmlOrNullOnClientError(url);
+      if (html !== null) return { url, html };
+    }
+    throw new AppException(SCRAPER_ERRORS.FETCH_FAILED);
+  }
+
+  private async upsert(parsed: ParsedHero, override: HeroSyncOverride): Promise<SyncResult> {
     const existing = await this.prismaService.hero.findUnique({ where: { codename: parsed.codename } });
 
     const updateData = {
       name: parsed.name,
-      role: parsed.role,
+      role: override.role,
+      releasedAt: override.releasedAt,
       portraitUrl: parsed.portraitUrl,
       description: parsed.description,
       sourceUrl: parsed.sourceUrl,
-      ...(parsed.releasedAt ? { releasedAt: parsed.releasedAt } : {}),
     };
 
     const hero = existing
       ? await this.prismaService.hero.update({ where: { id: existing.id }, data: updateData })
       : await this.prismaService.hero.create({
-          data: { codename: parsed.codename, releasedAt: parsed.releasedAt ?? new Date(), ...updateData },
+          data: { codename: parsed.codename, ...updateData },
         });
 
     if (parsed.stat) {

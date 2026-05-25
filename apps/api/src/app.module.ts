@@ -10,8 +10,10 @@ import { HttpLoggerMiddleware } from './common/middlewares';
 import { PrismaModule } from './common/prisma';
 import { RedisModule, RedisThrottlerStorage } from './common/redis';
 import { HeroModule } from './hero/hero.module';
+import { InternalModule } from './internal/internal.module';
 import { PatchNoteModule } from './patch-note/patch-note.module';
 import { ScraperModule } from './scraper/scraper.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { ScraperModule } from './scraper/scraper.module';
     ConfigModule.forRoot({
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('local', 'development', 'production').default('development'),
+        PORT: Joi.number().optional(),
         API_PORT: Joi.number().default(3000),
         DATABASE_URL: Joi.string().required(),
         REDIS_HOST: Joi.string().required(),
@@ -44,8 +47,10 @@ import { ScraperModule } from './scraper/scraper.module';
     GlobalCqrsModule,
     PrismaModule,
     HeroModule,
+    InternalModule,
     PatchNoteModule,
     ScraperModule,
+    SearchModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

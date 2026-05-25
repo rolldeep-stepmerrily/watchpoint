@@ -9,13 +9,22 @@
   --color-text-muted: #8a8f99;
   --color-accent: #f99e1a;
   --color-accent-hover: #ffb547;
+  --color-role-tank: #6db4ff;
+  --color-role-damage: #f06464;
+  --color-role-support: #7ed957;
+  --color-cat-balance: #f5a524;
+  --color-cat-bug: #ef4444;
+  --color-cat-map: #22d3ee;
+  --color-cat-system: #a78bfa;
+  --color-cat-general: #94a3b8;
 }
 
-html, body {
+html,
+body {
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Pretendard",
-    "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
 }
 
 a {

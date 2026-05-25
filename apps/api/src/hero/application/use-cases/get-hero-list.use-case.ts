@@ -1,7 +1,8 @@
 import { TypedQueryBus } from '@@cqrs';
 import { Injectable } from '@nestjs/common';
-import type { HeroSummaryDto } from '@watchpoint/shared';
+import { DEFAULT_LOCALE, type HeroSummaryDto, isSubrole, type Locale } from '@watchpoint/shared';
 import { GetHeroListResponseDto } from '../../presenter/http/dto/get-hero-list.dto';
+import { resolveName } from '../name-resolver';
 import { GetHeroListQuery } from '../queries/get-hero-list.query';
 
 interface GetHeroListUseCaseProps {
@@ -9,6 +10,7 @@ interface GetHeroListUseCaseProps {
   q?: string;
   page: number;
   pageSize: number;
+  lang?: Locale;
 }
 
 @Injectable()
@@ -23,13 +25,15 @@ export class GetHeroListUseCase {
    */
   async execute(props: GetHeroListUseCaseProps): Promise<GetHeroListResponseDto> {
     const { items, total } = await this.queryBus.execute(new GetHeroListQuery(props));
+    const lang = props.lang ?? DEFAULT_LOCALE;
 
     return {
       items: items.map((hero) => ({
         id: hero.id,
         codename: hero.codename,
-        name: hero.name,
+        name: resolveName(hero.name, hero.nameTranslations, lang),
         role: hero.role,
+        subrole: isSubrole(hero.subrole) ? hero.subrole : null,
         releasedAt: hero.releasedAt.toISOString(),
         portraitUrl: hero.portraitUrl,
       })),

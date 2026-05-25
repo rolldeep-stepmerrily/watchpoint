@@ -1,9 +1,12 @@
-import { notFound } from "next/navigation";
+import type { PatchNoteDetailDto, PatchNoteEntryDto } from '@@shared';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
-import type { PatchNoteEntryDto } from "@@shared";
-
-import { getPatchNote } from "@/lib/api";
-import { categoryLabel, formatDate } from "@/lib/format";
+import { getPatchNote } from '@/lib/api';
+import { CATEGORY_ORDER, categoryColorVar } from '@/lib/format';
+import { getLocale } from '@/lib/i18n';
+import { getLabels } from '@/lib/labels';
+import { absoluteUrl } from '@/lib/seo';
 
 export const revalidate = 600;
 
@@ -11,10 +14,41 @@ interface Props {
   params: Promise<{ version: string }>;
 }
 
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { version } = await params;
+  const t = getLabels(await getLocale());
+  try {
+    const patch = await getPatchNote(version);
+    const title = `${patch.version} · ${patch.title}`;
+    const description = patch.summary ?? t.patchNotes.descriptionFallback(patch.version, patch.title);
+    const url = absoluteUrl(`/patch-notes/${patch.version}`);
+    return {
+      title,
+      description,
+      alternates: { canonical: url },
+      openGraph: {
+        type: 'article',
+        title,
+        description,
+        url,
+        publishedTime: patch.releasedAt,
+      },
+      twitter: {
+        card: 'summary',
+        title,
+        description,
+      },
+    };
+  } catch {
+    return { title: t.patchNotes.notFound.title };
+  }
+}
+
 export default async function PatchNoteDetailPage({ params }: Props) {
   const { version } = await params;
+  const t = getLabels(await getLocale());
 
-  let patch;
+  let patch: PatchNoteDetailDto;
   try {
     patch = await getPatchNote(version);
   } catch {
@@ -28,40 +62,63 @@ export default async function PatchNoteDetailPage({ params }: Props) {
       <header className="space-y-3">
         <p className="text-(--color-accent) font-mono text-sm">{patch.version}</p>
         <h1 className="text-3xl font-semibold tracking-tight">{patch.title}</h1>
-        <p className="text-xs text-(--color-text-muted)">발표: {formatDate(patch.releasedAt)}</p>
-        {patch.summary && (
-          <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{patch.summary}</p>
-        )}
+        <p className="text-xs text-(--color-text-muted)">
+          {t.patchNotes.released}: {t.date(patch.releasedAt)}
+        </p>
+        {patch.summary && <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{patch.summary}</p>}
       </header>
 
       {grouped.length === 0 ? (
-        <p className="text-(--color-text-muted)">변경사항이 없습니다.</p>
+        <p className="text-(--color-text-muted)">{t.patchNotes.noChanges}</p>
       ) : (
         <div className="space-y-8">
-          {grouped.map(([category, entries]) => (
-            <section key={category} className="space-y-3">
-              <h2 className="text-lg font-semibold text-(--color-accent)">{categoryLabel(category)}</h2>
-              <ul className="space-y-3">
-                {entries.map((entry) => (
-                  <li
-                    key={entry.id}
-                    className="p-4 rounded-lg border border-(--color-border) bg-(--color-surface)"
+          {grouped.map(([category, entries]) => {
+            const colorVar = categoryColorVar(category);
+            return (
+              <section
+                key={category}
+                className="space-y-3"
+              >
+                <div className="flex items-baseline gap-3">
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: `var(${colorVar})` }}
+                    aria-hidden
+                  />
+                  <h2
+                    className="text-lg font-semibold"
+                    style={{ color: `var(${colorVar})` }}
                   >
-                    <div className="font-semibold">{entry.title}</div>
-                    <p className="text-sm text-(--color-text-muted) mt-2 whitespace-pre-line">
-                      {entry.body}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+                    {t.category(category)}
+                  </h2>
+                  <span className="text-xs text-(--color-text-muted)">{entries.length}</span>
+                </div>
+                <ul className="space-y-3">
+                  {entries.map((entry) => (
+                    <li
+                      key={entry.id}
+                      className="p-4 rounded-lg border border-(--color-border) bg-(--color-surface)"
+                      style={{ borderLeft: `3px solid var(${colorVar})` }}
+                    >
+                      <div className="font-semibold">{entry.title}</div>
+                      <p className="text-sm text-(--color-text-muted) mt-2 whitespace-pre-line">{entry.body}</p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
         </div>
       )}
 
       <p className="text-xs text-(--color-text-muted)">
-        출처:{" "}
-        <a href={patch.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">
+        {t.common.source}:{' '}
+        <a
+          href={patch.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline"
+        >
           {patch.sourceUrl}
         </a>
       </p>
@@ -69,12 +126,14 @@ export default async function PatchNoteDetailPage({ params }: Props) {
   );
 }
 
-function groupByCategory(entries: PatchNoteEntryDto[]): Array<[PatchNoteEntryDto["category"], PatchNoteEntryDto[]]> {
-  const groups = new Map<PatchNoteEntryDto["category"], PatchNoteEntryDto[]>();
+function groupByCategory(entries: PatchNoteEntryDto[]): Array<[PatchNoteEntryDto['category'], PatchNoteEntryDto[]]> {
+  const groups = new Map<PatchNoteEntryDto['category'], PatchNoteEntryDto[]>();
   for (const entry of entries) {
     const list = groups.get(entry.category) ?? [];
     list.push(entry);
     groups.set(entry.category, list);
   }
-  return Array.from(groups.entries());
+  return CATEGORY_ORDER.filter((category) => groups.has(category)).map(
+    (category) => [category, groups.get(category) ?? []] as const,
+  );
 }

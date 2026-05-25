@@ -1,8 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import * as cheerio from 'cheerio';
-
 import { AppException } from '@@exceptions';
 import type { HeroRole } from '@@prisma';
+import { Injectable, Logger } from '@nestjs/common';
+import * as cheerio from 'cheerio';
 
 import { SCRAPER_ERRORS } from '../scraper.error';
 import type { ParsedHero } from './dto/parsed-hero.dto';

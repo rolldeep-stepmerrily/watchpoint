@@ -5,8 +5,9 @@ import Joi from 'joi';
 import { PrismaModule } from '../common/prisma';
 import { ScraperModule } from '../scraper/scraper.module';
 import { HeroEditCommand } from './commands/hero-edit.command';
-import { HeroSyncAllCommand } from './commands/hero-sync-all.command';
 import { HeroSyncCommand } from './commands/hero-sync.command';
+import { HeroSyncAllCommand } from './commands/hero-sync-all.command';
+import { PatchBackfillCommand } from './commands/patch-backfill.command';
 import { PatchListCommand } from './commands/patch-list.command';
 import { PatchReviewCommand } from './commands/patch-review.command';
 import { PatchSyncCommand } from './commands/patch-sync.command';
@@ -28,6 +29,7 @@ import { PatchSyncCommand } from './commands/patch-sync.command';
   ],
   providers: [
     PatchSyncCommand,
+    PatchBackfillCommand,
     PatchListCommand,
     PatchReviewCommand,
     HeroSyncCommand,

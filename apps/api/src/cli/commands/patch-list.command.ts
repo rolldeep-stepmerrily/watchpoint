@@ -1,7 +1,6 @@
-import { Command, CommandRunner, Option } from 'nest-commander';
-
 import { PrismaService } from '@@db';
 import { PatchNoteStatus } from '@@prisma';
+import { Command, CommandRunner, Option } from 'nest-commander';
 
 interface PatchListOptions {
   status?: PatchNoteStatus | 'ALL';

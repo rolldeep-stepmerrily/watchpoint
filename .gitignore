@@ -23,6 +23,11 @@ yarn-error.log*
 coverage
 .nyc_output
 
+# Playwright
+test-results/
+playwright-report/
+.playwright/
+
 # IDEs and editors
 .idea
 .project
@@ -47,6 +52,7 @@ coverage
 # Temp
 .temp
 .tmp
+tmp/
 
 # Runtime data
 pids
