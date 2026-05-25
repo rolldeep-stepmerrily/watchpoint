@@ -17,12 +17,13 @@ interface Props {
 
 export default async function PatchNoteOgImage({ params }: Props) {
   const { version } = await params;
-  const t = getLabels(await getLocale());
+  const lang = await getLocale();
+  const t = getLabels(lang);
   const fontData = await loadPretendardBold();
 
   let patch: Awaited<ReturnType<typeof getPatchNote>> | null = null;
   try {
-    patch = await getPatchNote(version);
+    patch = await getPatchNote(version, lang);
   } catch {
     patch = null;
   }

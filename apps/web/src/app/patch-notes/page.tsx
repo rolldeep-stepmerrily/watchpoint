@@ -18,8 +18,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PatchNotesPage() {
-  const t = getLabels(await getLocale());
-  const { items, total } = await getPatchNoteList({ pageSize: 50 });
+  const lang = await getLocale();
+  const t = getLabels(lang);
+  const { items, total } = await getPatchNoteList({ pageSize: 50, lang });
 
   return (
     <div className="space-y-6">
