@@ -105,14 +105,16 @@ model PatchNote {
 }
 
 model PatchNoteEntry {
-  id          Int           @id @default(autoincrement())
-  patchNoteId Int
-  category    EntryCategory
-  heroId      Int?
-  title       String
-  body        String
-  order       Int           @default(0)
-  createdAt   DateTime      @default(now())
+  id                  Int           @id @default(autoincrement())
+  patchNoteId         Int
+  category            EntryCategory
+  heroId              Int?
+  title               String
+  titleTranslations   Json?
+  body                String
+  bodyTranslations    Json?
+  order               Int           @default(0)
+  createdAt           DateTime      @default(now())
 
   patchNote PatchNote @relation(fields: [patchNoteId], references: [id], onDelete: Cascade)
   hero      Hero?     @relation(fields: [heroId], references: [id], onDelete: SetNull)

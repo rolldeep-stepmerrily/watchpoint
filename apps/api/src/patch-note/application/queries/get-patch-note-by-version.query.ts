@@ -12,7 +12,9 @@ const ENTRY_SELECT = {
   category: true,
   heroId: true,
   title: true,
+  titleTranslations: true,
   body: true,
+  bodyTranslations: true,
   order: true,
 } as const satisfies Prisma.PatchNoteEntrySelect;
 

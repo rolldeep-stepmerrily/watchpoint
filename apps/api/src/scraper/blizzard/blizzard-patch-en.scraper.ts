@@ -4,6 +4,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
 import { BlizzardPatchParser } from './blizzard-patch.parser';
+import type { ParsedPatchEntry, ParsedPatchNote } from './dto/parsed-patch-note.dto';
 
 const PATCH_NOTES_EN_URL = 'https://overwatch.blizzard.com/en-us/news/patch-notes/';
 
@@ -11,6 +12,8 @@ interface SyncSummary {
   fetched: number;
   matched: number;
   skipped: number;
+  entriesMatched: number;
+  entriesTotal: number;
 }
 
 @Injectable()
@@ -38,18 +41,32 @@ export class BlizzardPatchEnScraper {
   }
 
   /**
-   * version 기준으로 DB의 PatchNote를 찾아 titleTranslations.en / summaryTranslations.en 병합 갱신.
+   * version 기준으로 DB의 PatchNote를 찾아 title/summary translations + entries translations 병합.
+   * Entry 매칭은 heroName(EN) 기반 — DB의 hero.nameTranslations.en으로 영문 영웅명 → hero.id → entry.heroId.
+   * 영문 영웅 데이터(hero:sync:en)가 먼저 채워져 있어야 매칭 가능.
    * 영문 페이지에만 있고 DB에 없는 patch는 skip (한국어 sync가 먼저 돌아야 함).
-   * 영문 페이지의 releasedAt은 무시 (DB의 한국어 sync 값 유지).
-   * Entry-level 번역은 본 PR 범위 외 — 별도 후속.
+   * 영문 페이지의 releasedAt은 무시.
    */
-  private async applyTranslations(patches: ReturnType<BlizzardPatchParser['parse']>): Promise<SyncSummary> {
-    const summary: SyncSummary = { fetched: patches.length, matched: 0, skipped: 0 };
+  private async applyTranslations(patches: ParsedPatchNote[]): Promise<SyncSummary> {
+    const summary: SyncSummary = {
+      fetched: patches.length,
+      matched: 0,
+      skipped: 0,
+      entriesMatched: 0,
+      entriesTotal: 0,
+    };
+
+    const heroEnIndex = await this.buildHeroEnIndex();
 
     for (const patch of patches) {
       const existing = await this.prismaService.patchNote.findUnique({
         where: { version: patch.version },
-        select: { id: true, titleTranslations: true, summaryTranslations: true },
+        select: {
+          id: true,
+          titleTranslations: true,
+          summaryTranslations: true,
+          entries: { select: { id: true, heroId: true } },
+        },
       });
       if (!existing) {
         summary.skipped += 1;
@@ -69,12 +86,79 @@ export class BlizzardPatchEnScraper {
         },
       });
       summary.matched += 1;
+
+      const entryMatched = await this.applyEntryTranslations(existing.entries, patch.entries, heroEnIndex);
+      summary.entriesMatched += entryMatched.matched;
+      summary.entriesTotal += entryMatched.total;
     }
 
     if (summary.skipped > 0) {
       this.logger.warn(`patch en sync: skipped ${summary.skipped} patches not in DB (run patch:sync first)`);
     }
     return summary;
+  }
+
+  /**
+   * heroName(EN) 기반 entry 매칭. 같은 영웅에 대해 KO/EN 양쪽에 entry가 하나씩 있는 일반적인 케이스만 처리.
+   * 같은 영웅에 KO 또는 EN에서 여러 entry가 있으면 첫 매칭만 적용하고 나머지는 skip + 경고.
+   * non-hero entry(section title 기반)는 매칭이 불안정해 본 단계에서 처리하지 않음 (KO fallback).
+   */
+  private async applyEntryTranslations(
+    dbEntries: ReadonlyArray<{ id: number; heroId: number | null }>,
+    parsedEntries: readonly ParsedPatchEntry[],
+    heroEnIndex: ReadonlyMap<string, number>,
+  ): Promise<{ matched: number; total: number }> {
+    const dbHeroEntries = dbEntries.filter((e): e is { id: number; heroId: number } => e.heroId !== null);
+    const dbByHeroId = new Map<number, number[]>();
+    for (const entry of dbHeroEntries) {
+      const list = dbByHeroId.get(entry.heroId) ?? [];
+      list.push(entry.id);
+      dbByHeroId.set(entry.heroId, list);
+    }
+
+    let matched = 0;
+    const usedDbIds = new Set<number>();
+
+    for (const parsed of parsedEntries) {
+      if (!parsed.heroName) continue;
+      const heroId = heroEnIndex.get(parsed.heroName.toLowerCase());
+      if (!heroId) continue;
+      const candidates = (dbByHeroId.get(heroId) ?? []).filter((id) => !usedDbIds.has(id));
+      if (candidates.length === 0) continue;
+
+      const dbEntryId = candidates[0];
+      usedDbIds.add(dbEntryId);
+
+      await this.prismaService.patchNoteEntry.update({
+        where: { id: dbEntryId },
+        data: {
+          titleTranslations: { en: parsed.title } as Prisma.InputJsonValue,
+          bodyTranslations: { en: parsed.body } as Prisma.InputJsonValue,
+        },
+      });
+      matched += 1;
+    }
+
+    return { matched, total: dbHeroEntries.length };
+  }
+
+  /**
+   * DB의 모든 hero를 nameTranslations.en (lower-case) → id 인덱스로 구축.
+   * 영문 영웅 데이터가 보강되지 않은 경우 매칭이 0 — hero:sync:en:all 선행 필요.
+   */
+  private async buildHeroEnIndex(): Promise<ReadonlyMap<string, number>> {
+    const heroes = await this.prismaService.hero.findMany({
+      select: { id: true, nameTranslations: true },
+    });
+    const index = new Map<string, number>();
+    for (const hero of heroes) {
+      if (!hero.nameTranslations || typeof hero.nameTranslations !== 'object') continue;
+      const en = (hero.nameTranslations as Record<string, unknown>).en;
+      if (typeof en === 'string' && en.length > 0) {
+        index.set(en.toLowerCase(), hero.id);
+      }
+    }
+    return index;
   }
 }
 
