@@ -84,15 +84,17 @@ model HeroStatRevision {
 }
 
 model PatchNote {
-  id         Int              @id @default(autoincrement())
-  version    String           @unique
-  title      String
-  releasedAt DateTime
-  sourceUrl  String           @unique
-  summary    String?
-  status     PatchNoteStatus  @default(DRAFT)
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime?        @updatedAt
+  id                  Int              @id @default(autoincrement())
+  version             String           @unique
+  title               String
+  titleTranslations   Json?
+  releasedAt          DateTime
+  sourceUrl           String           @unique
+  summary             String?
+  summaryTranslations Json?
+  status              PatchNoteStatus  @default(DRAFT)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime?        @updatedAt
 
   entries       PatchNoteEntry[]
   statRevisions HeroStatRevision[]
@@ -166,6 +168,7 @@ enum EntryCategory {
 
 enum ScrapeSource {
   BLIZZARD_PATCH_NOTES
+  BLIZZARD_PATCH_NOTES_EN
   BLIZZARD_HERO_EN
   NAMUWIKI_HERO
 }
