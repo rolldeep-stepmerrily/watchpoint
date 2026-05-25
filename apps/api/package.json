@@ -20,6 +20,8 @@
     "patch:review": "ts-node -r tsconfig-paths/register src/cli/main.ts patch:review",
     "hero:sync": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:sync",
     "hero:sync:all": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:sync:all",
+    "hero:sync:en": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:sync:en",
+    "hero:sync:en:all": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:sync:en:all",
     "hero:edit": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:edit"
   },
   "dependencies": {

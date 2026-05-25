@@ -28,6 +28,8 @@
     "patch:review": "pnpm --filter @watchpoint/api patch:review",
     "hero:sync": "pnpm --filter @watchpoint/api hero:sync",
     "hero:sync:all": "pnpm --filter @watchpoint/api hero:sync:all",
+    "hero:sync:en": "pnpm --filter @watchpoint/api hero:sync:en",
+    "hero:sync:en:all": "pnpm --filter @watchpoint/api hero:sync:en:all",
     "hero:edit": "pnpm --filter @watchpoint/api hero:edit"
   },
   "devDependencies": {

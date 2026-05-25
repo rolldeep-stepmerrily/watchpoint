@@ -5,7 +5,7 @@ import { DEFAULT_LOCALE, isSubrole, type Locale } from '@watchpoint/shared';
 import { isDefined } from 'class-validator';
 import { HERO_ERRORS } from '../../hero.error';
 import { GetHeroResponseDto } from '../../presenter/http/dto/get-hero.dto';
-import { resolveName } from '../name-resolver';
+import { resolveDescription, resolveName } from '../name-resolver';
 import { GetHeroByCodenameQuery } from '../queries/get-hero-by-codename.query';
 
 interface GetHeroUseCaseProps {
@@ -41,7 +41,7 @@ export class GetHeroUseCase {
       subrole: isSubrole(hero.subrole) ? hero.subrole : null,
       releasedAt: hero.releasedAt.toISOString(),
       portraitUrl: hero.portraitUrl,
-      description: hero.description,
+      description: resolveDescription(hero.description, hero.descriptionTranslations, lang),
       sourceUrl: hero.sourceUrl,
       stat: isDefined(hero.stat)
         ? {
@@ -57,7 +57,7 @@ export class GetHeroUseCase {
         slot: ability.slot,
         key: ability.key,
         name: resolveName(ability.name, ability.nameTranslations, lang),
-        description: ability.description,
+        description: resolveDescription(ability.description, ability.descriptionTranslations, lang) ?? ability.description,
         stats: ability.stats as Record<string, unknown> | null,
         order: ability.order,
       })),

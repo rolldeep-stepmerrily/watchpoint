@@ -46,7 +46,12 @@ export class SearchQueryHandler implements IQueryHandler<SearchQuery> {
     const [heroes, patchNotes] = await this.prisma.$transaction([
       this.prisma.hero.findMany({
         where: {
-          OR: [{ name: { contains: q, mode: 'insensitive' } }, { codename: { contains: q, mode: 'insensitive' } }],
+          OR: [
+            { name: { contains: q, mode: 'insensitive' } },
+            { codename: { contains: q, mode: 'insensitive' } },
+            { nameTranslations: { path: ['en'], string_contains: q } },
+            { nameTranslations: { path: ['ja'], string_contains: q } },
+          ],
         },
         select: {
           id: true,
