@@ -58,16 +58,19 @@ export const getHeroPatchHistory = cache((codename: string, lang?: Locale): Prom
 export interface PatchNoteListParams {
   page?: number;
   pageSize?: number;
+  lang?: Locale;
 }
 
 export function getPatchNoteList(params: PatchNoteListParams = {}): Promise<PaginatedDto<PatchNoteSummaryDto>> {
   const search = new URLSearchParams();
   if (params.page) search.set('page', String(params.page));
   if (params.pageSize) search.set('pageSize', String(params.pageSize));
+  if (params.lang) search.set('lang', params.lang);
   const qs = search.toString();
   return fetchJson<PaginatedDto<PatchNoteSummaryDto>>(`/patch-notes${qs ? `?${qs}` : ''}`, 60);
 }
 
-export const getPatchNote = cache((version: string): Promise<PatchNoteDetailDto> => {
-  return fetchJson<PatchNoteDetailDto>(`/patch-notes/${encodeURIComponent(version)}`, 600);
+export const getPatchNote = cache((version: string, lang?: Locale): Promise<PatchNoteDetailDto> => {
+  const qs = lang ? `?lang=${lang}` : '';
+  return fetchJson<PatchNoteDetailDto>(`/patch-notes/${encodeURIComponent(version)}${qs}`, 600);
 });

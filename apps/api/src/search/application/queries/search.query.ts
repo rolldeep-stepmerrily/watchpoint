@@ -23,9 +23,11 @@ export interface SearchResult {
     id: number;
     version: string;
     title: string;
+    titleTranslations: Prisma.JsonValue;
     releasedAt: Date;
     sourceUrl: string;
     summary: string | null;
+    summaryTranslations: Prisma.JsonValue;
     status: 'PUBLISHED';
   }>;
 }
@@ -73,15 +75,19 @@ export class SearchQueryHandler implements IQueryHandler<SearchQuery> {
             { version: { contains: q, mode: 'insensitive' } },
             { title: { contains: q, mode: 'insensitive' } },
             { summary: { contains: q, mode: 'insensitive' } },
+            { titleTranslations: { path: ['en'], string_contains: q } },
+            { summaryTranslations: { path: ['en'], string_contains: q } },
           ],
         },
         select: {
           id: true,
           version: true,
           title: true,
+          titleTranslations: true,
           releasedAt: true,
           sourceUrl: true,
           summary: true,
+          summaryTranslations: true,
           status: true,
         },
         orderBy: { releasedAt: 'desc' },

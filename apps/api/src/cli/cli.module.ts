@@ -13,6 +13,7 @@ import { PatchBackfillCommand } from './commands/patch-backfill.command';
 import { PatchListCommand } from './commands/patch-list.command';
 import { PatchReviewCommand } from './commands/patch-review.command';
 import { PatchSyncCommand } from './commands/patch-sync.command';
+import { PatchSyncEnCommand } from './commands/patch-sync-en.command';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { PatchSyncCommand } from './commands/patch-sync.command';
   ],
   providers: [
     PatchSyncCommand,
+    PatchSyncEnCommand,
     PatchBackfillCommand,
     PatchListCommand,
     PatchReviewCommand,
