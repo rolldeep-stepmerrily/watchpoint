@@ -4,6 +4,7 @@ import {
   BlizzardHeroEnScraper,
   BlizzardHeroParser,
   BlizzardPatchCron,
+  BlizzardPatchEnScraper,
   BlizzardPatchParser,
   BlizzardPatchScraper,
 } from './blizzard';
@@ -19,6 +20,7 @@ import { NamuwikiHeroParser, NamuwikiHeroScraper } from './namuwiki';
     /** blizzard */
     BlizzardPatchParser,
     BlizzardPatchScraper,
+    BlizzardPatchEnScraper,
     BlizzardPatchCron,
     BlizzardHeroParser,
     BlizzardHeroEnScraper,
@@ -27,6 +29,6 @@ import { NamuwikiHeroParser, NamuwikiHeroScraper } from './namuwiki';
     NamuwikiHeroParser,
     NamuwikiHeroScraper,
   ],
-  exports: [BlizzardPatchScraper, NamuwikiHeroScraper, BlizzardHeroEnScraper],
+  exports: [BlizzardPatchScraper, BlizzardPatchEnScraper, NamuwikiHeroScraper, BlizzardHeroEnScraper],
 })
 export class ScraperModule {}
