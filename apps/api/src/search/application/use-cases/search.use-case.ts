@@ -2,7 +2,7 @@ import { TypedQueryBus } from '@@cqrs';
 import { Injectable } from '@nestjs/common';
 import { DEFAULT_LOCALE, isSubrole, type Locale } from '@watchpoint/shared';
 
-import { resolveName } from '../../../hero/application/name-resolver';
+import { resolveDescription, resolveName } from '../../../hero/application/name-resolver';
 import { GetSearchResponseDto } from '../../presenter/http/dto/search.dto';
 import { SearchQuery } from '../queries/search.query';
 
@@ -38,10 +38,10 @@ export class SearchUseCase {
       patchNotes: patchNotes.map((patch) => ({
         id: patch.id,
         version: patch.version,
-        title: patch.title,
+        title: resolveName(patch.title, patch.titleTranslations, lang),
         releasedAt: patch.releasedAt.toISOString(),
         sourceUrl: patch.sourceUrl,
-        summary: patch.summary,
+        summary: resolveDescription(patch.summary, patch.summaryTranslations, lang),
         status: patch.status,
       })),
     };
