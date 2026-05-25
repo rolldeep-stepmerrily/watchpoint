@@ -20,9 +20,11 @@ const PATCH_SELECT = {
   id: true,
   version: true,
   title: true,
+  titleTranslations: true,
   releasedAt: true,
   sourceUrl: true,
   summary: true,
+  summaryTranslations: true,
   status: true,
 } as const satisfies Prisma.PatchNoteSelect;
 
