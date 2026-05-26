@@ -29,14 +29,18 @@ export default async function HeroesPage() {
 
   return (
     <div className="space-y-10">
-      <header className="flex items-end justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">{t.heroes.titleWithCount(total)}</h1>
+      <header className="border-b border-(--color-border) pb-6">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-(--color-text-muted)">Roster</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-(--color-text-strong) mt-1">
+          {t.heroes.titleWithCount(total)}
+        </h1>
+        <p className="text-sm text-(--color-text-muted) mt-2">{t.heroes.description}</p>
       </header>
 
       {items.length === 0 ? (
         <p className="text-(--color-text-muted)">{t.heroes.empty}</p>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {ROLE_ORDER.map((role) => {
             const heroes = grouped.get(role) ?? [];
             if (heroes.length === 0) return null;
@@ -44,40 +48,46 @@ export default async function HeroesPage() {
             return (
               <section
                 key={role}
-                className="space-y-3"
+                className="space-y-4"
               >
-                <div className="flex items-baseline gap-3">
-                  <span
-                    className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: `var(${colorVar})` }}
-                    aria-hidden
-                  />
+                <div
+                  className="flex items-baseline gap-3 border-l-2 pl-3"
+                  style={{ borderColor: `var(${colorVar})` }}
+                >
                   <h2
-                    className="text-sm font-semibold uppercase tracking-widest"
+                    className="text-sm font-bold uppercase tracking-widest"
                     style={{ color: `var(${colorVar})` }}
                   >
                     {t.role(role)}
                   </h2>
-                  <span className="text-xs text-(--color-text-muted)">{heroes.length}</span>
+                  <span className="text-xs text-(--color-text-faint) font-mono">{heroes.length}</span>
                 </div>
-                <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                   {heroes.map((hero) => (
                     <li key={hero.id}>
                       <Link
                         href={`/heroes/${hero.codename}`}
-                        className="flex items-center gap-3 p-3 rounded-lg border border-(--color-border) bg-(--color-surface) hover:bg-(--color-surface-hover) transition"
-                        style={{ borderLeft: `3px solid var(${colorVar})` }}
+                        className="hover-lift group block p-3 rounded-lg border border-(--color-border) bg-(--color-surface) hover:border-(--color-border-strong) hover:bg-(--color-surface-hover) relative overflow-hidden"
                       >
-                        <HeroPortrait
-                          src={hero.portraitUrl}
-                          alt={hero.name}
-                          role={hero.role}
-                          size="md"
+                        <span
+                          className="absolute top-0 left-0 h-full w-0.5"
+                          style={{ background: `var(${colorVar})` }}
+                          aria-hidden
                         />
-                        <div className="min-w-0">
-                          <div className="text-base font-semibold truncate">{hero.name}</div>
-                          <div className="text-xs text-(--color-text-muted) mt-1 truncate">
-                            {hero.subrole ? t.subrole(hero.subrole) : hero.codename}
+                        <div className="flex items-center gap-3">
+                          <HeroPortrait
+                            src={hero.portraitUrl}
+                            alt={hero.name}
+                            role={hero.role}
+                            size="md"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-bold text-(--color-text-strong) truncate group-hover:text-(--color-accent-hover) transition-colors">
+                              {hero.name}
+                            </div>
+                            <div className="text-[10px] text-(--color-text-faint) mt-0.5 font-mono uppercase tracking-wider truncate">
+                              {hero.codename}
+                            </div>
                           </div>
                         </div>
                       </Link>
