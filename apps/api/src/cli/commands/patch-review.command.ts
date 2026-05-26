@@ -1,3 +1,4 @@
+import { ResponseCache } from '@@cache';
 import { PrismaService } from '@@db';
 import { PatchNoteStatus } from '@@prisma';
 import { Command, CommandRunner } from 'nest-commander';
@@ -8,7 +9,10 @@ import { Command, CommandRunner } from 'nest-commander';
   description: '패치노트를 PUBLISHED로 승격합니다 (DRAFT/PENDING_REVIEW에서 호출).',
 })
 export class PatchReviewCommand extends CommandRunner {
-  constructor(private readonly prismaService: PrismaService) {
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly responseCache: ResponseCache,
+  ) {
     super();
   }
 
@@ -34,6 +38,7 @@ export class PatchReviewCommand extends CommandRunner {
       where: { id: patch.id },
       data: { status: PatchNoteStatus.PUBLISHED },
     });
+    await this.responseCache.invalidateAll();
 
     console.log(`${version} 상태 변경: ${patch.status} → PUBLISHED`);
   }

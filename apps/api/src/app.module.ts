@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import Joi from 'joi';
 
+import { ResponseCacheModule } from './common/cache';
 import { GlobalCqrsModule } from './common/cqrs';
 import { HttpLoggerMiddleware } from './common/middlewares';
 import { PrismaModule } from './common/prisma';
@@ -39,6 +40,7 @@ import { SearchModule } from './search/search.module';
         SCRAPER_PATCH_CRON: Joi.string().default('0 */6 * * *'),
         SCRAPER_REQUEST_DELAY_MS: Joi.number().default(2000),
         SCRAPER_CRON_ENABLED: Joi.boolean().default(false),
+        INTERNAL_API_KEY: Joi.string().min(16).optional(),
       }),
       isGlobal: true,
       envFilePath: ['.env', '../../.env'],
@@ -46,6 +48,7 @@ import { SearchModule } from './search/search.module';
     }),
     GlobalCqrsModule,
     PrismaModule,
+    ResponseCacheModule,
     HeroModule,
     InternalModule,
     PatchNoteModule,

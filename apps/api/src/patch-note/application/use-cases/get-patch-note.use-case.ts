@@ -1,3 +1,4 @@
+import { CACHE_KEYS, CACHE_TTL, ResponseCache } from '@@cache';
 import { TypedQueryBus } from '@@cqrs';
 import { AppException } from '@@exceptions';
 import { Injectable } from '@nestjs/common';
@@ -15,7 +16,10 @@ interface GetPatchNoteUseCaseProps {
 
 @Injectable()
 export class GetPatchNoteUseCase {
-  constructor(private readonly queryBus: TypedQueryBus<GetPatchNoteByVersionQuery>) {}
+  constructor(
+    private readonly queryBus: TypedQueryBus<GetPatchNoteByVersionQuery>,
+    private readonly cache: ResponseCache,
+  ) {}
 
   /**
    * version으로 패치노트 상세 조회 (entries 포함, PUBLISHED만)
@@ -25,30 +29,31 @@ export class GetPatchNoteUseCase {
    * @throws {AppException} 패치노트가 존재하지 않거나 미공개인 경우
    */
   async execute(props: GetPatchNoteUseCaseProps): Promise<GetPatchNoteResponseDto> {
-    const patch = await this.queryBus.execute(new GetPatchNoteByVersionQuery({ version: props.version }));
-
-    if (!isDefined(patch)) {
-      throw new AppException(PATCH_NOTE_ERRORS.NOT_FOUND);
-    }
-
     const lang = props.lang ?? DEFAULT_LOCALE;
+    return await this.cache.wrap(CACHE_KEYS.patchDetail(props.version, lang), CACHE_TTL.PATCH_DETAIL, async () => {
+      const patch = await this.queryBus.execute(new GetPatchNoteByVersionQuery({ version: props.version }));
 
-    return {
-      id: patch.id,
-      version: patch.version,
-      title: resolveName(patch.title, patch.titleTranslations, lang),
-      releasedAt: patch.releasedAt.toISOString(),
-      sourceUrl: patch.sourceUrl,
-      summary: resolveDescription(patch.summary, patch.summaryTranslations, lang),
-      status: patch.status,
-      entries: patch.entries.map((entry) => ({
-        id: entry.id,
-        category: entry.category,
-        heroId: entry.heroId,
-        title: resolveName(entry.title, entry.titleTranslations, lang),
-        body: resolveDescription(entry.body, entry.bodyTranslations, lang),
-        order: entry.order,
-      })),
-    };
+      if (!isDefined(patch)) {
+        throw new AppException(PATCH_NOTE_ERRORS.NOT_FOUND);
+      }
+
+      return {
+        id: patch.id,
+        version: patch.version,
+        title: resolveName(patch.title, patch.titleTranslations, lang),
+        releasedAt: patch.releasedAt.toISOString(),
+        sourceUrl: patch.sourceUrl,
+        summary: resolveDescription(patch.summary, patch.summaryTranslations, lang),
+        status: patch.status,
+        entries: patch.entries.map((entry) => ({
+          id: entry.id,
+          category: entry.category,
+          heroId: entry.heroId,
+          title: resolveName(entry.title, entry.titleTranslations, lang),
+          body: resolveDescription(entry.body, entry.bodyTranslations, lang),
+          order: entry.order,
+        })),
+      };
+    });
   }
 }

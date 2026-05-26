@@ -1,3 +1,4 @@
+import { ResponseCache } from '@@cache';
 import { PrismaService } from '@@db';
 import { AppException } from '@@exceptions';
 import { type HeroRole, Prisma, ScrapeSource } from '@@prisma';
@@ -32,25 +33,28 @@ export class NamuwikiHeroScraper {
     private readonly parser: NamuwikiHeroParser,
     private readonly recorder: ScrapeJobRecorder,
     private readonly prismaService: PrismaService,
+    private readonly responseCache: ResponseCache,
   ) {}
 
   async sync(codename: string, pageTitle: string, override: HeroSyncOverride): Promise<SyncResult> {
     const candidates = this.buildCandidateUrls(pageTitle);
     const primaryUrl = candidates[0];
 
-    return await this.recorder.run({
+    const result = await this.recorder.run({
       source: ScrapeSource.NAMUWIKI_HERO,
       target: primaryUrl,
       task: async () => {
         const fetched = await this.fetchWithFallback(candidates);
         const parsed = this.parser.parse(fetched.html, codename, fetched.url);
-        const result = await this.upsert(parsed, override);
+        const upserted = await this.upsert(parsed, override);
         return {
-          result,
-          diffSummary: { codename: result.codename, abilities: result.abilitiesCount, created: result.created },
+          result: upserted,
+          diffSummary: { codename: upserted.codename, abilities: upserted.abilitiesCount, created: upserted.created },
         };
       },
     });
+    await this.responseCache.invalidateAll();
+    return result;
   }
 
   /**

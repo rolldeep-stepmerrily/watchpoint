@@ -1,3 +1,4 @@
+import { ResponseCache } from '@@cache';
 import { PrismaService } from '@@db';
 import { HeroRole } from '@@prisma';
 import { Command, CommandRunner, Option } from 'nest-commander';
@@ -16,7 +17,10 @@ interface HeroEditOptions {
   description: '영웅 메타 필드를 수정합니다 (스탯/능력은 Prisma Studio 사용 권장).',
 })
 export class HeroEditCommand extends CommandRunner {
-  constructor(private readonly prismaService: PrismaService) {
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly responseCache: ResponseCache,
+  ) {
     super();
   }
 
@@ -56,6 +60,7 @@ export class HeroEditCommand extends CommandRunner {
     }
 
     const updated = await this.prismaService.hero.update({ where: { id: hero.id }, data: cleaned });
+    await this.responseCache.invalidateAll();
     console.log(`${codename} 수정 완료:`);
     console.table({ name: updated.name, role: updated.role, description: updated.description?.slice(0, 80) });
   }
