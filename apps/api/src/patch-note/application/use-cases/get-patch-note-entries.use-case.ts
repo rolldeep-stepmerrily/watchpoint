@@ -3,7 +3,7 @@ import { AppException } from '@@exceptions';
 import { Injectable } from '@nestjs/common';
 import { DEFAULT_LOCALE, type EntryCategory, type Locale } from '@watchpoint/shared';
 import { isDefined } from 'class-validator';
-import { resolveName } from '../../../hero/application/name-resolver';
+import { resolveDescription, resolveName } from '../../../hero/application/name-resolver';
 import { PATCH_NOTE_ERRORS } from '../../patch-note.error';
 import { GetPatchNoteEntriesResponseDto } from '../../presenter/http/dto/get-patch-note-entries.dto';
 import { GetPatchNoteByVersionQuery } from '../queries/get-patch-note-by-version.query';
@@ -42,7 +42,7 @@ export class GetPatchNoteEntriesUseCase {
         category: entry.category,
         heroId: entry.heroId,
         title: resolveName(entry.title, entry.titleTranslations, lang),
-        body: resolveName(entry.body, entry.bodyTranslations, lang),
+        body: resolveDescription(entry.body, entry.bodyTranslations, lang),
         order: entry.order,
       })),
     };

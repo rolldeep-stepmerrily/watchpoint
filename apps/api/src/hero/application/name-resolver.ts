@@ -16,16 +16,17 @@ export function resolveName(name: string, nameTranslations: unknown, locale: Loc
 }
 
 /**
- * 선택적 텍스트(description 등)의 다국어 해석. base가 null이고 번역도 없으면 null 유지.
+ * 자유 텍스트(description, body, summary 등)의 다국어 해석.
+ * base 타입을 그대로 보존: base가 string이면 string, string | null이면 string | null 반환.
  */
-export function resolveDescription(
-  description: string | null,
-  descriptionTranslations: unknown,
+export function resolveDescription<T extends string | null>(
+  base: T,
+  translations: unknown,
   locale: Locale = DEFAULT_LOCALE,
-): string | null {
-  if (locale === DEFAULT_LOCALE) return description;
-  if (descriptionTranslations === null || typeof descriptionTranslations !== 'object') return description;
-  const translated = (descriptionTranslations as Record<string, unknown>)[locale];
-  if (typeof translated === 'string' && translated.length > 0) return translated;
-  return description;
+): T {
+  if (locale === DEFAULT_LOCALE) return base;
+  if (translations === null || typeof translations !== 'object') return base;
+  const translated = (translations as Record<string, unknown>)[locale];
+  if (typeof translated === 'string' && translated.length > 0) return translated as T;
+  return base;
 }

@@ -57,7 +57,7 @@ export class GetHeroUseCase {
         slot: ability.slot,
         key: ability.key,
         name: resolveName(ability.name, ability.nameTranslations, lang),
-        description: resolveDescription(ability.description, ability.descriptionTranslations, lang) ?? ability.description,
+        description: resolveDescription(ability.description, ability.descriptionTranslations, lang),
         stats: ability.stats as Record<string, unknown> | null,
         order: ability.order,
       })),

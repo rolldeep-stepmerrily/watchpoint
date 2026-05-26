@@ -46,7 +46,7 @@ export class GetPatchNoteUseCase {
         category: entry.category,
         heroId: entry.heroId,
         title: resolveName(entry.title, entry.titleTranslations, lang),
-        body: resolveName(entry.body, entry.bodyTranslations, lang),
+        body: resolveDescription(entry.body, entry.bodyTranslations, lang),
         order: entry.order,
       })),
     };
