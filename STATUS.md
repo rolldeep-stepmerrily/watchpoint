@@ -102,10 +102,10 @@ railway run pnpm patch:sync:en      # 패치 title/summary + entry 영문
 - `Hero`: `(role)`만. 이름 검색 + 역할 필터 동시는 인덱스 1개만 활용
 - 권장: 데이터 ≥ 수백 패치 / 영웅 100+ 영문 데이터 들어오면 검토. v1 규모(50영웅, 20패치)에서는 미미
 
-**(M4) 스크래퍼 도메인 동시성이 인스턴스 메모리에만 존재**
-- 위치: `apps/api/src/scraper/common/scraper-http.client.ts:13-14` — `Map<host, ...>`
-- 영향: API 인스턴스 2개 이상 띄우면 동시 요청 가능 → Blizzard rate limit 위반 위험
-- 권장: Redis 분산 lock 또는 ScrapeJob.RUNNING 상태 기반 진입 가드. 현재 단일 인스턴스라면 비-블로커
+**(M4) ~~스크래퍼 도메인 동시성이 인스턴스 메모리에만 존재~~ → 해결됨**
+- `scraper-http.client.ts`를 Redis 기반 분산 lock으로 교체. `SET NX PX` + Lua script로 token 매칭 release
+- 호스트별 lock(`scraper:lock:<host>`, TTL 30s) + 마지막 요청 시각(`scraper:last:<host>`, TTL = delay×5)으로 다중 인스턴스에서도 도메인별 직렬화 + 2초 delay 보장
+- ConfigService 외 RedisService inject. 기존 in-memory Map(`inFlight`, `lastRequestAt`) 제거
 
 ### 4.3 LOW
 
@@ -139,9 +139,9 @@ railway run pnpm patch:sync:en      # 패치 title/summary + entry 영문
 | 2 | **Prod 환경변수에 `INTERNAL_API_KEY` 16자 이상 추가** | 1분 | High — `/internal/*` 접근 회복 |
 | 3 | **검색어 trim + Prisma 에러 코드 분기** (M1, M2) | 2시간 | Medium — UX/안정성 |
 | 4 | **Prisma 인덱스 보강** (M3) | 0.5일 + migration | Medium (장기) |
-| 5 | **스크래퍼 분산 lock** (M4) | 0.5일 | Medium — 인스턴스 ≥2 시 필요 |
+| 5 | **`/health` vs `/internal/health` SPEC 명시** (L1) | 5분 | Low — 문서 정합성 |
 
-H1(Redis 캐시) / H2(internal guard) / H3(patch entries 보호)는 별도 PR로 해결됨.
+H1(Redis 캐시) / H2(internal guard) / H3(patch entries 보호) / M4(스크래퍼 분산 lock)은 별도 PR로 해결됨.
 
 ---
 
