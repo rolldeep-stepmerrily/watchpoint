@@ -153,14 +153,17 @@ export class BlizzardPatchScraper {
         const status = hasUnmappedHero ? PatchNoteStatus.PENDING_REVIEW : PatchNoteStatus.DRAFT;
 
         if (existing) {
+          // PUBLISHED 패치는 검수/번역 완료 상태로 간주 — 메타만 갱신하고 entries는 보존.
+          // 그렇지 않으면 cron 재실행이 patch:review 보정과 entry 영문 번역(titleTranslations/bodyTranslations)을 매번 덮어씀.
+          const isPublished = existing.status === PatchNoteStatus.PUBLISHED;
           await this.prismaService.patchNote.update({
             where: { id: existing.id },
             data: {
               title: patch.title,
               releasedAt: patch.releasedAt,
               summary: patch.summary,
-              entries: { deleteMany: {}, create: entries },
-              status: existing.status === PatchNoteStatus.PUBLISHED ? existing.status : status,
+              ...(isPublished ? {} : { entries: { deleteMany: {}, create: entries } }),
+              status: isPublished ? existing.status : status,
             },
           });
           summary.updated += 1;
