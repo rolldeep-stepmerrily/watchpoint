@@ -1,22 +1,49 @@
 @import "tailwindcss";
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css");
 
 @theme {
-  --color-bg: #0b0d11;
-  --color-surface: #14171d;
-  --color-surface-hover: #1a1e26;
-  --color-border: #232830;
-  --color-text: #e6e8eb;
-  --color-text-muted: #8a8f99;
+  /* Surfaces — 깊은 배경 + 단계별 명도 */
+  --color-bg: #08090d;
+  --color-surface: #11141b;
+  --color-surface-elevated: #181c25;
+  --color-surface-hover: #1f242e;
+  --color-border: #232934;
+  --color-border-strong: #353c4a;
+  --color-overlay: rgba(0, 0, 0, 0.6);
+
+  /* Text */
+  --color-text: #e8eaed;
+  --color-text-strong: #ffffff;
+  --color-text-muted: #8a93a3;
+  --color-text-faint: #5a6271;
+
+  /* Brand */
   --color-accent: #f99e1a;
   --color-accent-hover: #ffb547;
+  --color-accent-faint: rgba(249, 158, 26, 0.12);
+
+  /* Roles */
   --color-role-tank: #6db4ff;
+  --color-role-tank-faint: rgba(109, 180, 255, 0.14);
   --color-role-damage: #f06464;
+  --color-role-damage-faint: rgba(240, 100, 100, 0.14);
   --color-role-support: #7ed957;
+  --color-role-support-faint: rgba(126, 217, 87, 0.14);
+
+  /* Categories */
   --color-cat-balance: #f5a524;
   --color-cat-bug: #ef4444;
   --color-cat-map: #22d3ee;
   --color-cat-system: #a78bfa;
   --color-cat-general: #94a3b8;
+
+  /* Ability slots — 키별 컬러 코딩 */
+  --color-slot-passive: #94a3b8;
+  --color-slot-primary: #f59e0b;
+  --color-slot-secondary: #a855f7;
+  --color-slot-ability1: #60a5fa;
+  --color-slot-ability2: #2dd4bf;
+  --color-slot-ultimate: #ef4444;
 }
 
 html,
@@ -24,9 +51,38 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    "Pretendard Variable", Pretendard, ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  font-feature-settings: "ss01", "tnum";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 a {
   color: inherit;
+}
+
+/* 미세 스크롤바 — 다크 톤 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-faint);
+}
+
+/* 시각 강조용 유틸 */
+.hover-lift {
+  transition: transform 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+.hover-lift:hover {
+  transform: translateY(-1px);
 }

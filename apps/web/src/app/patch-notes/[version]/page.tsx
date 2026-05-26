@@ -60,50 +60,76 @@ export default async function PatchNoteDetailPage({ params }: Props) {
   const grouped = groupByCategory(patch.entries);
 
   return (
-    <article className="space-y-10">
-      <header className="space-y-3">
-        <p className="text-(--color-accent) font-mono text-sm">{patch.version}</p>
-        <h1 className="text-3xl font-semibold tracking-tight">{patch.title}</h1>
-        <p className="text-xs text-(--color-text-muted)">
-          {t.patchNotes.released}: {t.date(patch.releasedAt)}
-        </p>
-        {patch.summary && <p className="text-(--color-text-muted) max-w-2xl leading-relaxed">{patch.summary}</p>}
+    <article className="space-y-12">
+      <header className="border-b border-(--color-border) pb-6">
+        <div className="flex items-baseline gap-3">
+          <p className="text-(--color-accent) font-mono text-base font-bold">{patch.version}</p>
+          <span className="text-[11px] text-(--color-text-faint) font-mono">{t.date(patch.releasedAt)}</span>
+        </div>
+        <h1 className="text-3xl font-extrabold tracking-tight text-(--color-text-strong) mt-2 leading-tight">
+          {patch.title}
+        </h1>
+        {patch.summary && <p className="text-(--color-text-muted) max-w-3xl leading-relaxed mt-4">{patch.summary}</p>}
+        {/* Category distribution mini-bar */}
+        {grouped.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-5">
+            {grouped.map(([category, entries]) => {
+              const color = `var(${categoryColorVar(category)})`;
+              return (
+                <span
+                  key={category}
+                  className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded"
+                  style={{ color, backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)` }}
+                >
+                  {t.category(category)}
+                  <span className="font-mono">{entries.length}</span>
+                </span>
+              );
+            })}
+          </div>
+        )}
       </header>
 
       {grouped.length === 0 ? (
         <p className="text-(--color-text-muted)">{t.patchNotes.noChanges}</p>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {grouped.map(([category, entries]) => {
             const colorVar = categoryColorVar(category);
             return (
               <section
                 key={category}
-                className="space-y-3"
+                className="space-y-4"
               >
-                <div className="flex items-baseline gap-3">
-                  <span
-                    className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: `var(${colorVar})` }}
-                    aria-hidden
-                  />
+                <div
+                  className="flex items-baseline gap-3 border-l-2 pl-3"
+                  style={{ borderColor: `var(${colorVar})` }}
+                >
                   <h2
-                    className="text-lg font-semibold"
+                    className="text-base font-bold uppercase tracking-widest"
                     style={{ color: `var(${colorVar})` }}
                   >
                     {t.category(category)}
                   </h2>
-                  <span className="text-xs text-(--color-text-muted)">{entries.length}</span>
+                  <span className="text-xs text-(--color-text-faint) font-mono">{entries.length}</span>
                 </div>
                 <ul className="space-y-3">
                   {entries.map((entry) => (
                     <li
                       key={entry.id}
-                      className="p-4 rounded-lg border border-(--color-border) bg-(--color-surface)"
-                      style={{ borderLeft: `3px solid var(${colorVar})` }}
+                      className="relative p-4 rounded-lg border border-(--color-border) bg-(--color-surface) overflow-hidden"
                     >
-                      <div className="font-semibold">{entry.title}</div>
-                      <p className="text-sm text-(--color-text-muted) mt-2 whitespace-pre-line">{entry.body}</p>
+                      <span
+                        className="absolute top-0 left-0 h-full w-1"
+                        style={{ background: `var(${colorVar})` }}
+                        aria-hidden
+                      />
+                      <div className="pl-2">
+                        <div className="font-bold text-(--color-text-strong)">{entry.title}</div>
+                        <p className="text-sm text-(--color-text-muted) mt-2 whitespace-pre-line leading-relaxed">
+                          {entry.body}
+                        </p>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -113,13 +139,13 @@ export default async function PatchNoteDetailPage({ params }: Props) {
         </div>
       )}
 
-      <p className="text-xs text-(--color-text-muted)">
+      <p className="text-xs text-(--color-text-muted) pt-6 border-t border-(--color-border)">
         {t.common.source}:{' '}
         <a
           href={patch.sourceUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline"
+          className="text-(--color-accent) hover:text-(--color-accent-hover) underline decoration-dotted underline-offset-2"
         >
           {patch.sourceUrl}
         </a>
