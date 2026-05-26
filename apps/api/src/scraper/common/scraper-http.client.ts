@@ -1,21 +1,39 @@
 import { AppException } from '@@exceptions';
+import { RedisService } from '@@redis';
+import { randomUUID } from 'node:crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { request } from 'undici';
 
 import { SCRAPER_ERRORS } from '../scraper.error';
 
+const LOCK_TTL_MS = 30_000;
+const LOCK_POLL_MS = 200;
+const LAST_REQUEST_TTL_MULTIPLIER = 5;
+
+/**
+ * Redis Lua script — lock token이 일치할 때만 DEL. TTL 만료로 다른 워커가 잡은 lock을 실수로 해제하지 않게.
+ */
+const RELEASE_LOCK_SCRIPT = `
+if redis.call("GET", KEYS[1]) == ARGV[1] then
+  return redis.call("DEL", KEYS[1])
+else
+  return 0
+end
+`;
+
 @Injectable()
 export class ScraperHttpClient {
   private readonly logger = new Logger(ScraperHttpClient.name);
   private readonly userAgent: string;
   private readonly delayMs: number;
-  private readonly lastRequestAt = new Map<string, number>();
-  private readonly inFlight = new Map<string, Promise<void>>();
 
-  constructor(private readonly configService: ConfigService) {
-    this.userAgent = this.configService.getOrThrow<string>('SCRAPER_USER_AGENT');
-    this.delayMs = this.configService.getOrThrow<number>('SCRAPER_REQUEST_DELAY_MS');
+  constructor(
+    configService: ConfigService,
+    private readonly redisService: RedisService,
+  ) {
+    this.userAgent = configService.getOrThrow<string>('SCRAPER_USER_AGENT');
+    this.delayMs = configService.getOrThrow<number>('SCRAPER_REQUEST_DELAY_MS');
   }
 
   async fetchHtml(url: string): Promise<string> {
@@ -36,7 +54,7 @@ export class ScraperHttpClient {
 
   private async fetchHtmlInternal(url: string): Promise<string | null> {
     const host = this.hostOf(url);
-    await this.acquireSlot(host);
+    const release = await this.acquireSlot(host);
 
     try {
       const { statusCode, body } = await request(url, {
@@ -68,7 +86,7 @@ export class ScraperHttpClient {
       this.logger.error(`fetch ${url} failed`, error as Error);
       throw new AppException(SCRAPER_ERRORS.FETCH_FAILED);
     } finally {
-      this.lastRequestAt.set(host, Date.now());
+      await release();
     }
   }
 
@@ -76,29 +94,42 @@ export class ScraperHttpClient {
     return new URL(url).host;
   }
 
-  private async acquireSlot(host: string): Promise<void> {
-    const previous = this.inFlight.get(host) ?? Promise.resolve();
-    let release!: () => void;
-    const slot = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    this.inFlight.set(
-      host,
-      previous.then(() => slot),
-    );
+  /**
+   * Redis 기반 호스트별 직렬화 + delay 보장.
+   * - 분산 환경에서 다중 인스턴스가 동일 도메인에 동시 요청하지 않도록 SET NX PX로 lock 획득.
+   * - lock 안에서 마지막 요청 시각을 읽어 SCRAPER_REQUEST_DELAY_MS 보장 후 fetch.
+   * - 반환된 release()를 finally에서 호출해 last 시각 갱신 + token 매칭 lock 해제.
+   */
+  private async acquireSlot(host: string): Promise<() => Promise<void>> {
+    const client = this.redisService.getClient();
+    const lockKey = `scraper:lock:${host}`;
+    const lastKey = `scraper:last:${host}`;
+    const token = randomUUID();
 
-    await previous;
-    const waitMs = this.computeWaitMs(host);
-    if (waitMs > 0) {
-      await new Promise((resolve) => setTimeout(resolve, waitMs));
+    while (true) {
+      const ok = await client.set(lockKey, token, 'PX', LOCK_TTL_MS, 'NX');
+      if (ok === 'OK') break;
+      await this.sleep(LOCK_POLL_MS);
     }
-    queueMicrotask(release);
+
+    const lastStr = await client.get(lastKey);
+    if (lastStr !== null) {
+      const elapsed = Date.now() - Number(lastStr);
+      const wait = this.delayMs - elapsed;
+      if (wait > 0) await this.sleep(wait);
+    }
+
+    return async () => {
+      try {
+        await client.set(lastKey, String(Date.now()), 'PX', this.delayMs * LAST_REQUEST_TTL_MULTIPLIER);
+        await client.eval(RELEASE_LOCK_SCRIPT, 1, lockKey, token);
+      } catch (error) {
+        this.logger.warn(`release scraper lock for ${host} failed: ${(error as Error).message}`);
+      }
+    };
   }
 
-  private computeWaitMs(host: string): number {
-    const last = this.lastRequestAt.get(host);
-    if (!last) return 0;
-    const elapsed = Date.now() - last;
-    return Math.max(0, this.delayMs - elapsed);
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
