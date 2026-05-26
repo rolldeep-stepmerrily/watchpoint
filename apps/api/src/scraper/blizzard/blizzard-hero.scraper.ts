@@ -129,7 +129,12 @@ export class BlizzardHeroEnScraper {
   }
 
   private matchAbilities(
-    dbAbilities: ReadonlyArray<{ id: number; slot: AbilitySlot; nameTranslations: unknown; descriptionTranslations: unknown }>,
+    dbAbilities: ReadonlyArray<{
+      id: number;
+      slot: AbilitySlot;
+      nameTranslations: unknown;
+      descriptionTranslations: unknown;
+    }>,
     parsedAbilities: readonly ParsedAbilityEn[],
   ): Array<{ dbAbility: (typeof dbAbilities)[number]; parsed: ParsedAbilityEn }> {
     if (parsedAbilities.length === 0) return [];

@@ -25,10 +25,7 @@ export class HeroHttpController {
   @ApiOperation({ summary: '영웅 목록 조회' })
   @ApiQuery({ name: 'lang', enum: LOCALES, required: false, description: '응답 언어 (기본 ko)' })
   @Get(HeroRouter.Http.GetList)
-  async getList(
-    @Query() queryDto: GetHeroListRequestDto,
-    @LangQuery() lang: Locale,
-  ): Promise<GetHeroListResponseDto> {
+  async getList(@Query() queryDto: GetHeroListRequestDto, @LangQuery() lang: Locale): Promise<GetHeroListResponseDto> {
     return await this.getHeroListUseCase.execute({ ...queryDto, lang });
   }
 
