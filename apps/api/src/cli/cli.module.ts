@@ -7,10 +7,13 @@ import { ScraperModule } from '../scraper/scraper.module';
 import { HeroEditCommand } from './commands/hero-edit.command';
 import { HeroSyncCommand } from './commands/hero-sync.command';
 import { HeroSyncAllCommand } from './commands/hero-sync-all.command';
+import { HeroSyncEnCommand } from './commands/hero-sync-en.command';
+import { HeroSyncEnAllCommand } from './commands/hero-sync-en-all.command';
 import { PatchBackfillCommand } from './commands/patch-backfill.command';
 import { PatchListCommand } from './commands/patch-list.command';
 import { PatchReviewCommand } from './commands/patch-review.command';
 import { PatchSyncCommand } from './commands/patch-sync.command';
+import { PatchSyncEnCommand } from './commands/patch-sync-en.command';
 
 @Module({
   imports: [
@@ -29,11 +32,14 @@ import { PatchSyncCommand } from './commands/patch-sync.command';
   ],
   providers: [
     PatchSyncCommand,
+    PatchSyncEnCommand,
     PatchBackfillCommand,
     PatchListCommand,
     PatchReviewCommand,
     HeroSyncCommand,
     HeroSyncAllCommand,
+    HeroSyncEnCommand,
+    HeroSyncEnAllCommand,
     HeroEditCommand,
   ],
 })

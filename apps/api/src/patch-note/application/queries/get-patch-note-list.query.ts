@@ -1,4 +1,5 @@
 import { PrismaService } from '@@db';
+import { type Prisma } from '@@prisma';
 import { IQueryHandler, Query, QueryHandler } from '@nestjs/cqrs';
 
 interface GetPatchNoteListQueryProps {
@@ -11,9 +12,11 @@ interface PatchNoteListResult {
     id: number;
     version: string;
     title: string;
+    titleTranslations: Prisma.JsonValue;
     releasedAt: Date;
     sourceUrl: string;
     summary: string | null;
+    summaryTranslations: Prisma.JsonValue;
     status: 'PUBLISHED';
   }>;
   total: number;
@@ -41,9 +44,11 @@ export class GetPatchNoteListQueryHandler implements IQueryHandler<GetPatchNoteL
           id: true,
           version: true,
           title: true,
+          titleTranslations: true,
           releasedAt: true,
           sourceUrl: true,
           summary: true,
+          summaryTranslations: true,
           status: true,
         },
         orderBy: { releasedAt: 'desc' },

@@ -12,7 +12,9 @@ const ENTRY_SELECT = {
   category: true,
   heroId: true,
   title: true,
+  titleTranslations: true,
   body: true,
+  bodyTranslations: true,
   order: true,
 } as const satisfies Prisma.PatchNoteEntrySelect;
 
@@ -20,9 +22,11 @@ const PATCH_SELECT = {
   id: true,
   version: true,
   title: true,
+  titleTranslations: true,
   releasedAt: true,
   sourceUrl: true,
   summary: true,
+  summaryTranslations: true,
   status: true,
 } as const satisfies Prisma.PatchNoteSelect;
 

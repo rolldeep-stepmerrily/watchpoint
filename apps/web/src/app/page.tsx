@@ -9,7 +9,7 @@ export const revalidate = 3600;
 export default async function HomePage() {
   const lang = await getLocale();
   const t = getLabels(lang);
-  const { items } = await getPatchNoteList({ pageSize: 3 });
+  const { items } = await getPatchNoteList({ pageSize: 3, lang });
 
   return (
     <div className="space-y-12">

@@ -16,9 +16,10 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { version } = await params;
-  const t = getLabels(await getLocale());
+  const lang = await getLocale();
+  const t = getLabels(lang);
   try {
-    const patch = await getPatchNote(version);
+    const patch = await getPatchNote(version, lang);
     const title = `${patch.version} · ${patch.title}`;
     const description = patch.summary ?? t.patchNotes.descriptionFallback(patch.version, patch.title);
     const url = absoluteUrl(`/patch-notes/${patch.version}`);
@@ -46,11 +47,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PatchNoteDetailPage({ params }: Props) {
   const { version } = await params;
-  const t = getLabels(await getLocale());
+  const lang = await getLocale();
+  const t = getLabels(lang);
 
   let patch: PatchNoteDetailDto;
   try {
-    patch = await getPatchNote(version);
+    patch = await getPatchNote(version, lang);
   } catch {
     notFound();
   }

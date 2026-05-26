@@ -1,5 +1,5 @@
 import { PrismaService } from '@@db';
-import { type HeroRole as PrismaHeroRole, type Prisma } from '@@prisma';
+import { type Prisma, type HeroRole as PrismaHeroRole } from '@@prisma';
 import { IQueryHandler, Query, QueryHandler } from '@nestjs/cqrs';
 
 const RESULT_LIMIT = 10;
@@ -23,9 +23,11 @@ export interface SearchResult {
     id: number;
     version: string;
     title: string;
+    titleTranslations: Prisma.JsonValue;
     releasedAt: Date;
     sourceUrl: string;
     summary: string | null;
+    summaryTranslations: Prisma.JsonValue;
     status: 'PUBLISHED';
   }>;
 }
@@ -46,7 +48,12 @@ export class SearchQueryHandler implements IQueryHandler<SearchQuery> {
     const [heroes, patchNotes] = await this.prisma.$transaction([
       this.prisma.hero.findMany({
         where: {
-          OR: [{ name: { contains: q, mode: 'insensitive' } }, { codename: { contains: q, mode: 'insensitive' } }],
+          OR: [
+            { name: { contains: q, mode: 'insensitive' } },
+            { codename: { contains: q, mode: 'insensitive' } },
+            { nameTranslations: { path: ['en'], string_contains: q } },
+            { nameTranslations: { path: ['ja'], string_contains: q } },
+          ],
         },
         select: {
           id: true,
@@ -68,15 +75,19 @@ export class SearchQueryHandler implements IQueryHandler<SearchQuery> {
             { version: { contains: q, mode: 'insensitive' } },
             { title: { contains: q, mode: 'insensitive' } },
             { summary: { contains: q, mode: 'insensitive' } },
+            { titleTranslations: { path: ['en'], string_contains: q } },
+            { summaryTranslations: { path: ['en'], string_contains: q } },
           ],
         },
         select: {
           id: true,
           version: true,
           title: true,
+          titleTranslations: true,
           releasedAt: true,
           sourceUrl: true,
           summary: true,
+          summaryTranslations: true,
           status: true,
         },
         orderBy: { releasedAt: 'desc' },

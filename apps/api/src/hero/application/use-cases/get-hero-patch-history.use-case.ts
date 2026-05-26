@@ -10,7 +10,7 @@ import {
   PatchNoteEntryItemDto,
   PatchNoteSummaryItemDto,
 } from '../../presenter/http/dto/get-hero-patch-history.dto';
-import { resolveName } from '../name-resolver';
+import { resolveDescription, resolveName } from '../name-resolver';
 import { GetHeroByCodenameQuery } from '../queries/get-hero-by-codename.query';
 import { GetHeroPatchHistoryQuery, type PatchEntryWithPatch } from '../queries/get-hero-patch-history.query';
 
@@ -39,9 +39,8 @@ export class GetHeroPatchHistoryUseCase {
 
     const entries = await this.queryBus.execute(new GetHeroPatchHistoryQuery({ heroId: hero.id }));
 
-    const grouped = this.groupEntriesByPatch(entries);
-
     const lang = props.lang ?? DEFAULT_LOCALE;
+    const grouped = this.groupEntriesByPatch(entries, lang);
 
     return {
       hero: {
@@ -63,7 +62,7 @@ export class GetHeroPatchHistoryUseCase {
    * @param {PatchEntryWithPatch[]} entries patchNote include된 entry 목록
    * @returns {HeroPatchHistoryItemResponseDto[]} 패치별 그룹 (releasedAt 최신순 유지)
    */
-  private groupEntriesByPatch(entries: PatchEntryWithPatch[]): HeroPatchHistoryItemResponseDto[] {
+  private groupEntriesByPatch(entries: PatchEntryWithPatch[], lang: Locale): HeroPatchHistoryItemResponseDto[] {
     const groups = new Map<number, HeroPatchHistoryItemResponseDto>();
 
     for (const entry of entries) {
@@ -72,8 +71,8 @@ export class GetHeroPatchHistoryUseCase {
         id: entry.id,
         category: entry.category,
         heroId: entry.heroId,
-        title: entry.title,
-        body: entry.body,
+        title: resolveName(entry.title, entry.titleTranslations, lang),
+        body: resolveDescription(entry.body, entry.bodyTranslations, lang),
         order: entry.order,
       };
 
@@ -85,10 +84,10 @@ export class GetHeroPatchHistoryUseCase {
       const patchSummary: PatchNoteSummaryItemDto = {
         id: entry.patchNote.id,
         version: entry.patchNote.version,
-        title: entry.patchNote.title,
+        title: resolveName(entry.patchNote.title, entry.patchNote.titleTranslations, lang),
         releasedAt: entry.patchNote.releasedAt.toISOString(),
         sourceUrl: entry.patchNote.sourceUrl,
-        summary: entry.patchNote.summary,
+        summary: resolveDescription(entry.patchNote.summary, entry.patchNote.summaryTranslations, lang),
         status: entry.patchNote.status,
       };
 

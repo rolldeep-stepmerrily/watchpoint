@@ -8,18 +8,19 @@ datasource db {
 }
 
 model Hero {
-  id                Int       @id @default(autoincrement())
-  codename          String    @unique
-  name              String
-  nameTranslations  Json?
-  role              HeroRole
-  subrole           String?
-  releasedAt        DateTime
-  portraitUrl       String?
-  description       String?
-  sourceUrl         String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime? @updatedAt
+  id                       Int       @id @default(autoincrement())
+  codename                 String    @unique
+  name                     String
+  nameTranslations         Json?
+  role                     HeroRole
+  subrole                  String?
+  releasedAt               DateTime
+  portraitUrl              String?
+  description              String?
+  descriptionTranslations  Json?
+  sourceUrl                String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime? @updatedAt
 
   stat          HeroStat?
   abilities     HeroAbility[]
@@ -47,17 +48,18 @@ model HeroStat {
 }
 
 model HeroAbility {
-  id                Int          @id @default(autoincrement())
-  heroId            Int
-  slot              AbilitySlot
-  key               String?
-  name              String
-  nameTranslations  Json?
-  description       String
-  stats             Json?
-  order             Int          @default(0)
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime?    @updatedAt
+  id                       Int          @id @default(autoincrement())
+  heroId                   Int
+  slot                     AbilitySlot
+  key                      String?
+  name                     String
+  nameTranslations         Json?
+  description              String
+  descriptionTranslations  Json?
+  stats                    Json?
+  order                    Int          @default(0)
+  createdAt                DateTime     @default(now())
+  updatedAt                DateTime?    @updatedAt
 
   hero Hero @relation(fields: [heroId], references: [id], onDelete: Cascade)
 
@@ -82,15 +84,17 @@ model HeroStatRevision {
 }
 
 model PatchNote {
-  id         Int              @id @default(autoincrement())
-  version    String           @unique
-  title      String
-  releasedAt DateTime
-  sourceUrl  String           @unique
-  summary    String?
-  status     PatchNoteStatus  @default(DRAFT)
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime?        @updatedAt
+  id                  Int              @id @default(autoincrement())
+  version             String           @unique
+  title               String
+  titleTranslations   Json?
+  releasedAt          DateTime
+  sourceUrl           String           @unique
+  summary             String?
+  summaryTranslations Json?
+  status              PatchNoteStatus  @default(DRAFT)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime?        @updatedAt
 
   entries       PatchNoteEntry[]
   statRevisions HeroStatRevision[]
@@ -101,14 +105,16 @@ model PatchNote {
 }
 
 model PatchNoteEntry {
-  id          Int           @id @default(autoincrement())
-  patchNoteId Int
-  category    EntryCategory
-  heroId      Int?
-  title       String
-  body        String
-  order       Int           @default(0)
-  createdAt   DateTime      @default(now())
+  id                  Int           @id @default(autoincrement())
+  patchNoteId         Int
+  category            EntryCategory
+  heroId              Int?
+  title               String
+  titleTranslations   Json?
+  body                String
+  bodyTranslations    Json?
+  order               Int           @default(0)
+  createdAt           DateTime      @default(now())
 
   patchNote PatchNote @relation(fields: [patchNoteId], references: [id], onDelete: Cascade)
   hero      Hero?     @relation(fields: [heroId], references: [id], onDelete: SetNull)
@@ -164,6 +170,8 @@ enum EntryCategory {
 
 enum ScrapeSource {
   BLIZZARD_PATCH_NOTES
+  BLIZZARD_PATCH_NOTES_EN
+  BLIZZARD_HERO_EN
   NAMUWIKI_HERO
 }
 

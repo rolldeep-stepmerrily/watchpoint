@@ -5,7 +5,7 @@ import { DEFAULT_LOCALE, type Locale } from '@watchpoint/shared';
 import { isDefined } from 'class-validator';
 import { HERO_ERRORS } from '../../hero.error';
 import { GetHeroAbilitiesResponseDto } from '../../presenter/http/dto/get-hero-abilities.dto';
-import { resolveName } from '../name-resolver';
+import { resolveDescription, resolveName } from '../name-resolver';
 import { GetHeroByCodenameQuery } from '../queries/get-hero-by-codename.query';
 
 interface GetHeroAbilitiesUseCaseProps {
@@ -39,7 +39,7 @@ export class GetHeroAbilitiesUseCase {
         slot: ability.slot,
         key: ability.key,
         name: resolveName(ability.name, ability.nameTranslations, lang),
-        description: ability.description,
+        description: resolveDescription(ability.description, ability.descriptionTranslations, lang),
         stats: ability.stats as Record<string, unknown> | null,
         order: ability.order,
       })),

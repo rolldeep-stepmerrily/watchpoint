@@ -1,13 +1,16 @@
 import { TypedQueryBus } from '@@cqrs';
 import { AppException } from '@@exceptions';
 import { Injectable } from '@nestjs/common';
+import { DEFAULT_LOCALE, type Locale } from '@watchpoint/shared';
 import { isDefined } from 'class-validator';
+import { resolveDescription, resolveName } from '../../../hero/application/name-resolver';
 import { PATCH_NOTE_ERRORS } from '../../patch-note.error';
 import { GetPatchNoteResponseDto } from '../../presenter/http/dto/get-patch-note.dto';
 import { GetPatchNoteByVersionQuery } from '../queries/get-patch-note-by-version.query';
 
 interface GetPatchNoteUseCaseProps {
   version: string;
+  lang?: Locale;
 }
 
 @Injectable()
@@ -28,20 +31,22 @@ export class GetPatchNoteUseCase {
       throw new AppException(PATCH_NOTE_ERRORS.NOT_FOUND);
     }
 
+    const lang = props.lang ?? DEFAULT_LOCALE;
+
     return {
       id: patch.id,
       version: patch.version,
-      title: patch.title,
+      title: resolveName(patch.title, patch.titleTranslations, lang),
       releasedAt: patch.releasedAt.toISOString(),
       sourceUrl: patch.sourceUrl,
-      summary: patch.summary,
+      summary: resolveDescription(patch.summary, patch.summaryTranslations, lang),
       status: patch.status,
       entries: patch.entries.map((entry) => ({
         id: entry.id,
         category: entry.category,
         heroId: entry.heroId,
-        title: entry.title,
-        body: entry.body,
+        title: resolveName(entry.title, entry.titleTranslations, lang),
+        body: resolveDescription(entry.body, entry.bodyTranslations, lang),
         order: entry.order,
       })),
     };
