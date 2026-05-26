@@ -1,5 +1,5 @@
 import { PrismaService } from '@@db';
-import { type HeroRole as PrismaHeroRole, type Prisma } from '@@prisma';
+import { type Prisma, type HeroRole as PrismaHeroRole } from '@@prisma';
 import { IQueryHandler, Query, QueryHandler } from '@nestjs/cqrs';
 
 const RESULT_LIMIT = 10;

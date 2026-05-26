@@ -39,7 +39,7 @@ export class BlizzardHeroParser {
     $('blz-feature[slot="slide"]').each((index, element) => {
       const $el = $(element);
       const name = $el.find('h3.heading').first().text().trim();
-      const description = this.extractDescription($, $el.find('p[slot="description"]').first());
+      const description = this.extractDescription($el.find('p[slot="description"]').first());
       if (name && description) {
         abilities.push({ index, name, description });
       }
@@ -52,7 +52,7 @@ export class BlizzardHeroParser {
    * `<p slot="description">` 안의 텍스트만 추출 (이미지 아이콘은 무시).
    * 텍스트 노드 사이 공백을 정규화.
    */
-  private extractDescription(_$: cheerio.CheerioAPI, $p: cheerio.Cheerio<AnyNode>): string {
+  private extractDescription($p: cheerio.Cheerio<AnyNode>): string {
     const clone = $p.clone();
     clone.find('img').remove();
     return clone.text().replace(/\s+/g, ' ').trim();
