@@ -1,3 +1,4 @@
+import { ResponseCache } from '@@cache';
 import { PrismaService } from '@@db';
 import { PatchNoteStatus, ScrapeSource } from '@@prisma';
 import { Injectable, Logger } from '@nestjs/common';
@@ -40,19 +41,24 @@ export class BlizzardPatchScraper {
     private readonly parser: BlizzardPatchParser,
     private readonly recorder: ScrapeJobRecorder,
     private readonly prismaService: PrismaService,
+    private readonly responseCache: ResponseCache,
   ) {}
 
   async sync(): Promise<SyncSummary> {
-    return await this.recorder.run({
+    const summary = await this.recorder.run({
       source: ScrapeSource.BLIZZARD_PATCH_NOTES,
       target: PATCH_NOTES_URL,
       task: async () => {
         const html = await this.httpClient.fetchHtml(PATCH_NOTES_URL);
         const parsed = this.parser.parse(html, PATCH_NOTES_URL);
-        const summary = await this.persist(parsed);
-        return { result: summary, diffSummary: { ...summary } };
+        const persisted = await this.persist(parsed);
+        return { result: persisted, diffSummary: { ...persisted } };
       },
     });
+    if (summary.created > 0 || summary.updated > 0) {
+      await this.responseCache.invalidateAll();
+    }
+    return summary;
   }
 
   /**
@@ -119,6 +125,9 @@ export class BlizzardPatchScraper {
       total.stoppedAt = `maxPages=${maxPages} 도달`;
     }
 
+    if (total.created > 0 || total.updated > 0) {
+      await this.responseCache.invalidateAll();
+    }
     this.logger.log(
       `backfill 완료 — pages=${total.pagesFetched} patches=${total.patchesFetched} created=${total.created} stopped=${total.stoppedAt}`,
     );

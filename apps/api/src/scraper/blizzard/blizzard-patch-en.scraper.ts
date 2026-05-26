@@ -1,3 +1,4 @@
+import { ResponseCache } from '@@cache';
 import { PrismaService } from '@@db';
 import { Prisma, ScrapeSource } from '@@prisma';
 import { Injectable, Logger } from '@nestjs/common';
@@ -25,19 +26,24 @@ export class BlizzardPatchEnScraper {
     private readonly parser: BlizzardPatchParser,
     private readonly recorder: ScrapeJobRecorder,
     private readonly prismaService: PrismaService,
+    private readonly responseCache: ResponseCache,
   ) {}
 
   async sync(): Promise<SyncSummary> {
-    return await this.recorder.run({
+    const summary = await this.recorder.run({
       source: ScrapeSource.BLIZZARD_PATCH_NOTES_EN,
       target: PATCH_NOTES_EN_URL,
       task: async () => {
         const html = await this.httpClient.fetchHtml(PATCH_NOTES_EN_URL);
         const parsed = this.parser.parse(html, PATCH_NOTES_EN_URL);
-        const summary = await this.applyTranslations(parsed);
-        return { result: summary, diffSummary: { ...summary } };
+        const result = await this.applyTranslations(parsed);
+        return { result, diffSummary: { ...result } };
       },
     });
+    if (summary.matched > 0 || summary.entriesMatched > 0) {
+      await this.responseCache.invalidateAll();
+    }
+    return summary;
   }
 
   /**

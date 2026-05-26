@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import Joi from 'joi';
 
+import { ResponseCacheModule } from '../common/cache';
 import { PrismaModule } from '../common/prisma';
+import { RedisModule } from '../common/redis';
 import { ScraperModule } from '../scraper/scraper.module';
 import { HeroEditCommand } from './commands/hero-edit.command';
 import { HeroSyncCommand } from './commands/hero-sync.command';
@@ -23,11 +25,16 @@ import { PatchSyncEnCommand } from './commands/patch-sync-en.command';
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('local', 'development', 'production').default('local'),
         DATABASE_URL: Joi.string().required(),
+        REDIS_HOST: Joi.string().required(),
+        REDIS_PORT: Joi.number().default(6379),
+        REDIS_PASSWORD: Joi.string().allow('').optional(),
         SCRAPER_USER_AGENT: Joi.string().default('WatchpointBot/0.1'),
         SCRAPER_REQUEST_DELAY_MS: Joi.number().default(2000),
       }).unknown(true),
     }),
     PrismaModule,
+    RedisModule,
+    ResponseCacheModule,
     ScraperModule,
   ],
   providers: [

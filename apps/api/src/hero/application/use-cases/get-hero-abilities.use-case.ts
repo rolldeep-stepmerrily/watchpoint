@@ -1,3 +1,4 @@
+import { CACHE_KEYS, CACHE_TTL, ResponseCache } from '@@cache';
 import { TypedQueryBus } from '@@cqrs';
 import { AppException } from '@@exceptions';
 import { Injectable } from '@nestjs/common';
@@ -15,7 +16,10 @@ interface GetHeroAbilitiesUseCaseProps {
 
 @Injectable()
 export class GetHeroAbilitiesUseCase {
-  constructor(private readonly queryBus: TypedQueryBus<GetHeroByCodenameQuery>) {}
+  constructor(
+    private readonly queryBus: TypedQueryBus<GetHeroByCodenameQuery>,
+    private readonly cache: ResponseCache,
+  ) {}
 
   /**
    * codename으로 영웅의 능력 목록만 조회
@@ -25,24 +29,25 @@ export class GetHeroAbilitiesUseCase {
    * @throws {AppException} 영웅이 존재하지 않는 경우
    */
   async execute(props: GetHeroAbilitiesUseCaseProps): Promise<GetHeroAbilitiesResponseDto> {
-    const hero = await this.queryBus.execute(new GetHeroByCodenameQuery({ codename: props.codename }));
-
-    if (!isDefined(hero)) {
-      throw new AppException(HERO_ERRORS.NOT_FOUND);
-    }
-
     const lang = props.lang ?? DEFAULT_LOCALE;
+    return await this.cache.wrap(CACHE_KEYS.heroAbilities(props.codename, lang), CACHE_TTL.HERO_ABILITIES, async () => {
+      const hero = await this.queryBus.execute(new GetHeroByCodenameQuery({ codename: props.codename }));
 
-    return {
-      abilities: hero.abilities.map((ability) => ({
-        id: ability.id,
-        slot: ability.slot,
-        key: ability.key,
-        name: resolveName(ability.name, ability.nameTranslations, lang),
-        description: resolveDescription(ability.description, ability.descriptionTranslations, lang),
-        stats: ability.stats as Record<string, unknown> | null,
-        order: ability.order,
-      })),
-    };
+      if (!isDefined(hero)) {
+        throw new AppException(HERO_ERRORS.NOT_FOUND);
+      }
+
+      return {
+        abilities: hero.abilities.map((ability) => ({
+          id: ability.id,
+          slot: ability.slot,
+          key: ability.key,
+          name: resolveName(ability.name, ability.nameTranslations, lang),
+          description: resolveDescription(ability.description, ability.descriptionTranslations, lang),
+          stats: ability.stats as Record<string, unknown> | null,
+          order: ability.order,
+        })),
+      };
+    });
   }
 }
