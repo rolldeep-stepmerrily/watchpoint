@@ -1,3 +1,4 @@
+import { ResponseCache } from '@@cache';
 import { PrismaService } from '@@db';
 import { type AbilitySlot, Prisma, ScrapeSource } from '@@prisma';
 import { Injectable, Logger } from '@nestjs/common';
@@ -37,26 +38,31 @@ export class BlizzardHeroEnScraper {
     private readonly parser: BlizzardHeroParser,
     private readonly recorder: ScrapeJobRecorder,
     private readonly prismaService: PrismaService,
+    private readonly responseCache: ResponseCache,
   ) {}
 
   async sync(codename: string): Promise<SyncResult> {
     const slug = CODENAME_TO_BLIZZARD_SLUG[codename] ?? codename;
     const url = `${BLIZZARD_HERO_BASE}${slug}/`;
 
-    return await this.recorder.run({
+    const result = await this.recorder.run({
       source: ScrapeSource.BLIZZARD_HERO_EN,
       target: url,
       task: async () => {
         const html = await this.httpClient.fetchHtmlOrNullOnClientError(url);
         if (html === null) {
-          const result: SyncResult = { codename, matched: false, abilitiesMatched: 0, abilitiesTotal: 0 };
-          return { result, diffSummary: { ...result } };
+          const summary: SyncResult = { codename, matched: false, abilitiesMatched: 0, abilitiesTotal: 0 };
+          return { result: summary, diffSummary: { ...summary } };
         }
         const parsed = this.parser.parse(html, codename, url);
-        const result = await this.applyTranslations(parsed);
-        return { result, diffSummary: { ...result } };
+        const summary = await this.applyTranslations(parsed);
+        return { result: summary, diffSummary: { ...summary } };
       },
     });
+    if (result.matched) {
+      await this.responseCache.invalidateAll();
+    }
+    return result;
   }
 
   /**

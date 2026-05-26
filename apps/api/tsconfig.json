@@ -4,6 +4,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
+      "@@cache": ["src/common/cache/index"],
       "@@cqrs": ["src/common/cqrs/index"],
       "@@db": ["src/common/prisma/index"],
       "@@decorators": ["src/common/decorators/index"],

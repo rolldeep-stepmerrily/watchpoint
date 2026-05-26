@@ -1,3 +1,4 @@
+import { CACHE_KEYS, CACHE_TTL, ResponseCache } from '@@cache';
 import { TypedQueryBus } from '@@cqrs';
 import { AppException } from '@@exceptions';
 import { Injectable } from '@nestjs/common';
@@ -16,7 +17,10 @@ interface GetPatchNoteEntriesUseCaseProps {
 
 @Injectable()
 export class GetPatchNoteEntriesUseCase {
-  constructor(private readonly queryBus: TypedQueryBus<GetPatchNoteByVersionQuery>) {}
+  constructor(
+    private readonly queryBus: TypedQueryBus<GetPatchNoteByVersionQuery>,
+    private readonly cache: ResponseCache,
+  ) {}
 
   /**
    * 특정 패치의 entry 목록 조회 (category 필터 가능)
@@ -26,25 +30,30 @@ export class GetPatchNoteEntriesUseCase {
    * @throws {AppException} 패치노트가 존재하지 않거나 미공개인 경우
    */
   async execute(props: GetPatchNoteEntriesUseCaseProps): Promise<GetPatchNoteEntriesResponseDto> {
-    const patch = await this.queryBus.execute(
-      new GetPatchNoteByVersionQuery({ version: props.version, category: props.category }),
-    );
-
-    if (!isDefined(patch)) {
-      throw new AppException(PATCH_NOTE_ERRORS.NOT_FOUND);
-    }
-
     const lang = props.lang ?? DEFAULT_LOCALE;
+    return await this.cache.wrap(
+      CACHE_KEYS.patchEntries(props.version, props.category, lang),
+      CACHE_TTL.PATCH_ENTRIES,
+      async () => {
+        const patch = await this.queryBus.execute(
+          new GetPatchNoteByVersionQuery({ version: props.version, category: props.category }),
+        );
 
-    return {
-      entries: patch.entries.map((entry) => ({
-        id: entry.id,
-        category: entry.category,
-        heroId: entry.heroId,
-        title: resolveName(entry.title, entry.titleTranslations, lang),
-        body: resolveDescription(entry.body, entry.bodyTranslations, lang),
-        order: entry.order,
-      })),
-    };
+        if (!isDefined(patch)) {
+          throw new AppException(PATCH_NOTE_ERRORS.NOT_FOUND);
+        }
+
+        return {
+          entries: patch.entries.map((entry) => ({
+            id: entry.id,
+            category: entry.category,
+            heroId: entry.heroId,
+            title: resolveName(entry.title, entry.titleTranslations, lang),
+            body: resolveDescription(entry.body, entry.bodyTranslations, lang),
+            order: entry.order,
+          })),
+        };
+      },
+    );
   }
 }

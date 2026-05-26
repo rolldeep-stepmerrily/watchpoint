@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import Joi from 'joi';
 
+import { ResponseCacheModule } from './common/cache';
 import { GlobalCqrsModule } from './common/cqrs';
 import { HttpLoggerMiddleware } from './common/middlewares';
 import { PrismaModule } from './common/prisma';
@@ -46,6 +47,7 @@ import { SearchModule } from './search/search.module';
     }),
     GlobalCqrsModule,
     PrismaModule,
+    ResponseCacheModule,
     HeroModule,
     InternalModule,
     PatchNoteModule,

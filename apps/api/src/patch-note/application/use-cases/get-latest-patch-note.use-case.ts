@@ -1,3 +1,4 @@
+import { CACHE_KEYS, CACHE_TTL, ResponseCache } from '@@cache';
 import { TypedQueryBus } from '@@cqrs';
 import { AppException } from '@@exceptions';
 import { Injectable } from '@nestjs/common';
@@ -14,28 +15,32 @@ interface GetLatestPatchNoteUseCaseProps {
 
 @Injectable()
 export class GetLatestPatchNoteUseCase {
-  constructor(private readonly queryBus: TypedQueryBus<GetLatestPatchNoteQuery>) {}
+  constructor(
+    private readonly queryBus: TypedQueryBus<GetLatestPatchNoteQuery>,
+    private readonly cache: ResponseCache,
+  ) {}
 
   /**
    * 가장 최근 PUBLISHED 패치노트 1건을 반환
    */
   async execute(props: GetLatestPatchNoteUseCaseProps = {}): Promise<GetLatestPatchNoteResponseDto> {
-    const patch = await this.queryBus.execute(new GetLatestPatchNoteQuery());
-
-    if (!isDefined(patch)) {
-      throw new AppException(PATCH_NOTE_ERRORS.NOT_FOUND);
-    }
-
     const lang = props.lang ?? DEFAULT_LOCALE;
+    return await this.cache.wrap(CACHE_KEYS.patchLatest(lang), CACHE_TTL.PATCH_LATEST, async () => {
+      const patch = await this.queryBus.execute(new GetLatestPatchNoteQuery());
 
-    return {
-      id: patch.id,
-      version: patch.version,
-      title: resolveName(patch.title, patch.titleTranslations, lang),
-      releasedAt: patch.releasedAt.toISOString(),
-      sourceUrl: patch.sourceUrl,
-      summary: resolveDescription(patch.summary, patch.summaryTranslations, lang),
-      status: patch.status as 'PUBLISHED',
-    };
+      if (!isDefined(patch)) {
+        throw new AppException(PATCH_NOTE_ERRORS.NOT_FOUND);
+      }
+
+      return {
+        id: patch.id,
+        version: patch.version,
+        title: resolveName(patch.title, patch.titleTranslations, lang),
+        releasedAt: patch.releasedAt.toISOString(),
+        sourceUrl: patch.sourceUrl,
+        summary: resolveDescription(patch.summary, patch.summaryTranslations, lang),
+        status: patch.status as 'PUBLISHED',
+      };
+    });
   }
 }

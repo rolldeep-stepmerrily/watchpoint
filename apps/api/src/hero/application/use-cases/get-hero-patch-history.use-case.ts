@@ -1,3 +1,4 @@
+import { CACHE_KEYS, CACHE_TTL, ResponseCache } from '@@cache';
 import { TypedQueryBus } from '@@cqrs';
 import { AppException } from '@@exceptions';
 import { Injectable } from '@nestjs/common';
@@ -21,7 +22,10 @@ interface GetHeroPatchHistoryUseCaseProps {
 
 @Injectable()
 export class GetHeroPatchHistoryUseCase {
-  constructor(private readonly queryBus: TypedQueryBus<GetHeroByCodenameQuery | GetHeroPatchHistoryQuery>) {}
+  constructor(
+    private readonly queryBus: TypedQueryBus<GetHeroByCodenameQuery | GetHeroPatchHistoryQuery>,
+    private readonly cache: ResponseCache,
+  ) {}
 
   /**
    * 영웅의 패치 이력 조회 (PUBLISHED 패치만, 최신순)
@@ -31,29 +35,34 @@ export class GetHeroPatchHistoryUseCase {
    * @throws {AppException} 영웅이 존재하지 않는 경우
    */
   async execute(props: GetHeroPatchHistoryUseCaseProps): Promise<GetHeroPatchHistoryResponseDto> {
-    const hero = await this.queryBus.execute(new GetHeroByCodenameQuery({ codename: props.codename }));
-
-    if (!isDefined(hero)) {
-      throw new AppException(HERO_ERRORS.NOT_FOUND);
-    }
-
-    const entries = await this.queryBus.execute(new GetHeroPatchHistoryQuery({ heroId: hero.id }));
-
     const lang = props.lang ?? DEFAULT_LOCALE;
-    const grouped = this.groupEntriesByPatch(entries, lang);
+    return await this.cache.wrap(
+      CACHE_KEYS.heroPatchHistory(props.codename, lang),
+      CACHE_TTL.HERO_PATCH_HISTORY,
+      async () => {
+        const hero = await this.queryBus.execute(new GetHeroByCodenameQuery({ codename: props.codename }));
 
-    return {
-      hero: {
-        id: hero.id,
-        codename: hero.codename,
-        name: resolveName(hero.name, hero.nameTranslations, lang),
-        role: hero.role,
-        subrole: isSubrole(hero.subrole) ? hero.subrole : null,
-        releasedAt: hero.releasedAt.toISOString(),
-        portraitUrl: hero.portraitUrl,
+        if (!isDefined(hero)) {
+          throw new AppException(HERO_ERRORS.NOT_FOUND);
+        }
+
+        const entries = await this.queryBus.execute(new GetHeroPatchHistoryQuery({ heroId: hero.id }));
+        const grouped = this.groupEntriesByPatch(entries, lang);
+
+        return {
+          hero: {
+            id: hero.id,
+            codename: hero.codename,
+            name: resolveName(hero.name, hero.nameTranslations, lang),
+            role: hero.role,
+            subrole: isSubrole(hero.subrole) ? hero.subrole : null,
+            releasedAt: hero.releasedAt.toISOString(),
+            portraitUrl: hero.portraitUrl,
+          },
+          history: grouped,
+        };
       },
-      history: grouped,
-    };
+    );
   }
 
   /**
