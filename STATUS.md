@@ -75,19 +75,14 @@ railway run pnpm patch:sync:en      # 패치 title/summary + entry 영문
 - scraper 4종 + hero:edit / patch:review CLI 성공 후 `invalidateAll()` (hero:* + patch:*) 호출
 - Search는 결과 변동성과 캐시 효율 트레이드오프 고려해 미적용
 
-**(H2) `IsLocalhostGuard` Railway 환경에서 항상 차단됨**
-- 위치: `apps/api/src/internal/guards/is-localhost.guard.ts:17`
-- 코드: `request.socket.remoteAddress`만 검사. Railway는 reverse proxy 뒤라 socket remote가 proxy IP → loopback 아님 → 모든 `/internal/*` 요청 FORBIDDEN
-- 영향: 운영 가시성 상실. `/internal/scrape-jobs` 접근 불가 → 스크래핑 실패 추적 어려움
-- 권장: `NODE_ENV=production`에서 `X-Forwarded-For` 신뢰 + 환경변수 화이트리스트(`INTERNAL_ALLOWED_IPS`) 또는 API Key 헤더로 전환. 또는 Railway private networking으로 분리
+**(H2) ~~`IsLocalhostGuard` Railway 환경에서 항상 차단됨~~ → 해결됨**
+- `INTERNAL_API_KEY` env 설정 시 `x-internal-key` 헤더 매칭 모드, 미설정이면 기존 loopback IP fallback (dev 호환)
+- prod 배포 시 Railway env에 `INTERNAL_API_KEY` (16자 이상) 추가하면 `/internal/*` 접근 가능
 
-**(H3) PENDING_REVIEW 패치의 수동 보정 entries가 다음 cron에서 삭제됨**
-- 위치: `apps/api/src/scraper/blizzard/blizzard-patch.scraper.ts:153` — `entries: { deleteMany: {}, create: entries }`
-- 동작: `existing.status === PUBLISHED`면 status만 보존하지만, **entries는 무조건 전부 delete 후 재생성**. PUBLISHED 패치든 PENDING_REVIEW 패치든 cron 재실행 시 cli로 보정한 데이터 손실
-- 권장:
-  - PUBLISHED는 entries upsert도 skip (전체 patch update를 가드)
-  - PENDING_REVIEW는 사용자가 의도적으로 재처리하길 원할 때만 CLI로 강제 sync
-  - 또는 entry-level upsert (heroId+order로 매칭)
+**(H3) ~~PENDING_REVIEW 패치의 수동 보정 entries가 다음 cron에서 삭제됨~~ → 해결됨**
+- `existing.status === PUBLISHED`면 entries 변경 skip, 메타(title/summary/releasedAt)만 갱신
+- DRAFT/PENDING_REVIEW는 기존처럼 replace 유지 — 검수 전 재파싱 워크플로우 보존
+- 영문 번역(`titleTranslations`/`bodyTranslations`)도 PUBLISHED 보호 대상에 포함됨
 
 ### 4.2 MEDIUM
 
@@ -141,12 +136,12 @@ railway run pnpm patch:sync:en      # 패치 title/summary + entry 영문
 | # | 항목 | 노력 | 영향 |
 |---|---|---|---|
 | 1 | **Prod에서 hero:sync:en:all + patch:sync:en 실행** | 5분 (대기 + 검증) | High — 영문 다국어 실데이터 노출 |
-| 2 | **`IsLocalhostGuard` Railway 대응** (H2) | 1시간 | High — 운영 가시성 회복 |
-| 3 | **Patch sync 의 entries delete+recreate 안전화** (H3) | 2~3시간 | Med-High — 보정 데이터 손실 방지 |
-| 4 | **검색어 trim + Prisma 에러 코드 분기** (M1, M2) | 2시간 | Medium — UX/안정성 |
-| 5 | **Prisma 인덱스 보강** (M3) | 0.5일 + migration | Medium (장기) |
+| 2 | **Prod 환경변수에 `INTERNAL_API_KEY` 16자 이상 추가** | 1분 | High — `/internal/*` 접근 회복 |
+| 3 | **검색어 trim + Prisma 에러 코드 분기** (M1, M2) | 2시간 | Medium — UX/안정성 |
+| 4 | **Prisma 인덱스 보강** (M3) | 0.5일 + migration | Medium (장기) |
+| 5 | **스크래퍼 분산 lock** (M4) | 0.5일 | Medium — 인스턴스 ≥2 시 필요 |
 
-H1(Redis 캐시)는 별도 PR로 해결됨.
+H1(Redis 캐시) / H2(internal guard) / H3(patch entries 보호)는 별도 PR로 해결됨.
 
 ---
 
