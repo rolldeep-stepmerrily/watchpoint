@@ -33,12 +33,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
 
     if (this.isPrismaKnownError(exception)) {
-      this.logger.error(`Prisma error code=${exception.code}: ${exception.message ?? ''}`);
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorCode: GLOBAL_ERRORS.DATABASE_ERROR.errorCode,
-        message: GLOBAL_ERRORS.DATABASE_ERROR.message,
-      };
+      return this.resolvePrismaError(exception);
     }
 
     this.logger.error('Unhandled exception', exception instanceof Error ? exception.stack : exception);
@@ -92,5 +87,30 @@ export class HttpExceptionFilter implements ExceptionFilter {
       typeof (exception as { code: unknown }).code === 'string' &&
       (exception as { code: string }).code.startsWith('P')
     );
+  }
+
+  /**
+   * Prisma 에러 코드를 SPEC 응답 형식으로 매핑. 4xx로 분류 가능한 코드는 분리하고, 나머지는 500.
+   *
+   * @param {{ code: string; message?: string }} exception Prisma known error
+   * @returns {{ statusCode: number; errorCode: string; message: string }} 정규화된 에러 응답
+   */
+  private resolvePrismaError(exception: { code: string; message?: string }): {
+    statusCode: number;
+    errorCode: string;
+    message: string;
+  } {
+    if (exception.code === 'P2002') {
+      this.logger.warn(`Prisma P2002 (unique violation): ${exception.message ?? ''}`);
+      return GLOBAL_ERRORS.RESOURCE_CONFLICT;
+    }
+
+    if (exception.code === 'P2025') {
+      this.logger.warn(`Prisma P2025 (record not found): ${exception.message ?? ''}`);
+      return GLOBAL_ERRORS.RESOURCE_NOT_FOUND;
+    }
+
+    this.logger.error(`Prisma error code=${exception.code}: ${exception.message ?? ''}`);
+    return GLOBAL_ERRORS.DATABASE_ERROR;
   }
 }

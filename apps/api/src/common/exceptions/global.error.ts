@@ -16,6 +16,16 @@ export const GLOBAL_ERRORS = {
     errorCode: 'TOO_MANY_REQUESTS',
     message: 'Too many requests. Please try again later.',
   },
+  RESOURCE_CONFLICT: {
+    statusCode: HttpStatus.CONFLICT,
+    errorCode: 'RESOURCE_CONFLICT',
+    message: 'Resource already exists',
+  },
+  RESOURCE_NOT_FOUND: {
+    statusCode: HttpStatus.NOT_FOUND,
+    errorCode: 'RESOURCE_NOT_FOUND',
+    message: 'Resource not found',
+  },
   DATABASE_ERROR: {
     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
     errorCode: 'DATABASE_ERROR',
