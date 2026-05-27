@@ -52,7 +52,11 @@ export class BlizzardHeroEnScraper {
         const html = await this.httpClient.fetchHtmlOrNullOnClientError(url);
         if (html === null) {
           const summary: SyncResult = { codename, matched: false, abilitiesMatched: 0, abilitiesTotal: 0 };
-          return { result: summary, diffSummary: { ...summary } };
+          return {
+            result: summary,
+            diffSummary: { ...summary },
+            skipped: { reason: `Blizzard EN page 4xx (likely KR-only hero: ${codename})` },
+          };
         }
         const parsed = this.parser.parse(html, codename, url);
         const summary = await this.applyTranslations(parsed);
@@ -79,7 +83,14 @@ export class BlizzardHeroEnScraper {
         nameTranslations: true,
         descriptionTranslations: true,
         abilities: {
-          select: { id: true, slot: true, order: true, nameTranslations: true, descriptionTranslations: true },
+          select: {
+            id: true,
+            slot: true,
+            order: true,
+            name: true,
+            nameTranslations: true,
+            descriptionTranslations: true,
+          },
         },
       },
     });
@@ -105,6 +116,8 @@ export class BlizzardHeroEnScraper {
       .sort((a, b) => MATCH_SLOT_ORDER.indexOf(a.slot) - MATCH_SLOT_ORDER.indexOf(b.slot) || a.order - b.order);
 
     const matches = this.matchAbilities(matchable, parsed.abilities);
+    this.warnSuspiciousMatches(parsed.codename, matches);
+
     let abilitiesMatched = 0;
 
     for (const { dbAbility, parsed: parsedAbility } of matches) {
@@ -134,10 +147,35 @@ export class BlizzardHeroEnScraper {
     };
   }
 
+  /**
+   * 매칭된 능력 중 parsed.name이 비정상(빈값/2자 미만)이거나 KR name보다 현저히 짧으면 경고.
+   * Blizzard 영문 페이지의 카드 순서가 DB MATCH_SLOT_ORDER와 어긋났을 가능성 신호.
+   */
+  private warnSuspiciousMatches(
+    codename: string,
+    matches: ReadonlyArray<{ dbAbility: { slot: AbilitySlot; name: string }; parsed: ParsedAbilityEn }>,
+  ): void {
+    const suspicious = matches.filter(({ dbAbility, parsed }) => {
+      const enName = parsed.name?.trim() ?? '';
+      if (enName.length < 2) return true;
+      if (dbAbility.name.length > 0 && enName.length < dbAbility.name.length / 2) return true;
+      return false;
+    });
+    if (suspicious.length === 0) return;
+
+    this.logger.warn(
+      `${codename}: ${suspicious.length}개 능력 매칭 의심 — Blizzard 카드 순서가 MATCH_SLOT_ORDER와 어긋났을 수 있음`,
+    );
+    for (const { dbAbility, parsed } of suspicious) {
+      this.logger.warn(`  slot=${dbAbility.slot}: db="${dbAbility.name}" ↔ parsed="${parsed.name ?? ''}"`);
+    }
+  }
+
   private matchAbilities(
     dbAbilities: ReadonlyArray<{
       id: number;
       slot: AbilitySlot;
+      name: string;
       nameTranslations: unknown;
       descriptionTranslations: unknown;
     }>,
