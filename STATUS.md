@@ -115,7 +115,7 @@ railway run pnpm patch:sync:en      # 패치 title/summary + entry 영문
 - **(L5) ja path 검색 OR 절이 데이터 없는데 항상 포함됨** — ja 활성화 전엔 제거 가능
 - **(L6) Playwright fallback 부재** — SPEC에서 "필요 시"라 미구현. Blizzard가 동적 렌더링 도입 시에만 작업
 - **(L7) Ability slot mis-match silent 위험** — DB MATCH_SLOT_ORDER ↔ Blizzard slide 순서가 같다는 가정. 신규 영웅에서 sanity check (parsed.name 길이/유사도) 없음
-- **(L8) `.gitattributes` 부재** — Windows 환경에서 매번 100+ 파일 CRLF noise. `* text=auto eol=lf` 한 줄로 해결
+- **(L8) ~~`.gitattributes` 부재~~ → 해결됨** — `* text=auto eol=lf` + 이미지/폰트 binary 표기 추가. Windows 체크아웃 시 CRLF noise 차단
 - **(L9) search subrole silent drop** — `search.use-case.ts:34` `isSubrole(hero.subrole) ? ... : null`. invalid subrole 들어오면 조용히 null. `Logger.warn` 권장
 
 ### 4.4 잘된 부분
@@ -136,9 +136,9 @@ railway run pnpm patch:sync:en      # 패치 title/summary + entry 영문
 |---|---|---|---|
 | 1 | **Prod에서 hero:sync:en:all + patch:sync:en 실행** | 5분 (대기 + 검증) | High — 영문 다국어 실데이터 노출 |
 | 2 | **Prod 환경변수에 `INTERNAL_API_KEY` 16자 이상 추가** | 1분 | High — `/internal/*` 접근 회복 |
-| 3 | **`.gitattributes` 추가** (L8) | 5분 | Low — CRLF noise 제거 |
+| 3 | **통합 테스트 골든패스 5개** | 0.5일 | Medium — 안전망 |
 | 4 | **Prisma 인덱스 보강** (M3) | 0.5일 + migration | Medium (장기) |
-| 5 | **통합 테스트 골든패스 5개** | 0.5일 | Medium — 안전망 |
+| 5 | **scraper 코드 정리** (L3+L4+L9) | 1시간 | Low — 가독성/성능 |
 
 H1(Redis 캐시) / H2(internal guard) / H3(patch entries 보호) / M1(검색 trim) / M2(Prisma 4xx 분기) / M4(스크래퍼 분산 lock)은 별도 PR로 해결됨.
 
