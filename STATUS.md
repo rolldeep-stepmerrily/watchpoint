@@ -113,13 +113,13 @@ railway run pnpm patch:sync:en      # 패치 title/summary + entry 영문
 
 ### 4.3 LOW
 
-- **(L1) `/health` (공개) + `/internal/health` (guard) 중복** — Railway probe용으로 의도된 분리지만 SPEC.md에 명시 안 됨. SPEC update만 필요
-- **(L2) `BlizzardHeroEnScraper`의 KR-한정 영웅 404 시 ScrapeJob status가 SUCCESS** — 의미상 SKIPPED. `recorder.run` 결과에 skip 분기 추가
+- **(L1) ~~`/health` (공개) + `/internal/health` (guard) 중복~~ → 해결됨** — SPEC.md에 두 라우트와 접근 정책(공개 throttler vs guard) 명시
+- **(L2) ~~`BlizzardHeroEnScraper`의 KR-한정 영웅 404 시 ScrapeJob status가 SUCCESS~~ → 해결됨** — `ScrapeJobRecorder.run`에 `skipped` 옵션 추가, 4xx 시 SKIPPED 상태로 기록
 - **(L3) ~~`mergeTranslation` 중복 정의~~ → 해결됨** — `scraper/common/merge-translation.ts`로 추출, hero/patch-en 양쪽 import
 - **(L4) ~~Patch entry 영문 매칭의 sequential update~~ → 해결됨** — `applyEntryTranslations` 매칭은 동기로 모으고 `Promise.all`로 일괄 update
-- **(L5) ja path 검색 OR 절이 데이터 없는데 항상 포함됨** — ja 활성화 전엔 제거 가능
-- **(L6) Playwright fallback 부재** — SPEC에서 "필요 시"라 미구현. Blizzard가 동적 렌더링 도입 시에만 작업
-- **(L7) Ability slot mis-match silent 위험** — DB MATCH_SLOT_ORDER ↔ Blizzard slide 순서가 같다는 가정. 신규 영웅에서 sanity check (parsed.name 길이/유사도) 없음
+- **(L5) ~~ja path 검색 OR 절이 데이터 없는데 항상 포함됨~~ → 해결됨** — `SearchQueryHandler`에서 `nameTranslations.ja` 절 제거. ja 데이터 수집 시 재추가
+- **(L6) Playwright fallback 부재** — namuwiki Vue SPA로 메타 외 자동 추출 봉쇄됨. 능력/스탯 자동 보정 원하면 필수
+- **(L7) ~~Ability slot mis-match silent 위험~~ → 해결됨** — `BlizzardHeroEnScraper.warnSuspiciousMatches` 추가. parsed.name이 비정상(빈값/2자 미만)이거나 KR name보다 현저히 짧으면 slot별 매핑을 warn 로그로 출력
 - **(L8) ~~`.gitattributes` 부재~~ → 해결됨** — `* text=auto eol=lf` + 이미지/폰트 binary 표기 추가. Windows 체크아웃 시 CRLF noise 차단
 - **(L9) ~~search subrole silent drop~~ → 해결됨** — `SearchUseCase.resolveSubrole`에서 invalid 시 `logger.warn(codename, subrole)` 후 null
 
@@ -142,8 +142,8 @@ railway run pnpm patch:sync:en      # 패치 title/summary + entry 영문
 | 1 | **Prod에서 hero:sync:en:all + patch:sync:en 실행** | 5분 (대기 + 검증) | High — 영문 다국어 실데이터 노출 |
 | 2 | **Prod 환경변수에 `INTERNAL_API_KEY` 16자 이상 추가** | 1분 | High — `/internal/*` 접근 회복 |
 | 3 | **통합 테스트 골든패스 5개** | 0.5일 | Medium — 안전망 |
-| 4 | **Prisma 인덱스 보강** (M3) | 0.5일 + migration | Medium (장기) |
-| 5 | **L5/L7 잔여 정리** | <1시간 | Low — 가독성/안전성 |
+| 4 | **이미지 자체 호스팅 (S3 등)** | 1일 | Medium — 핫링크 차단 회피 + 로딩 개선 |
+| 5 | **Prisma 인덱스 보강** (M3) | 0.5일 + migration | Low (v1 규모) |
 
 H1(Redis 캐시) / H2(internal guard) / H3(patch entries 보호) / M1(검색 trim) / M2(Prisma 4xx 분기) / M4(스크래퍼 분산 lock) / M5(undici redirect)은 별도 PR로 해결됨.
 
