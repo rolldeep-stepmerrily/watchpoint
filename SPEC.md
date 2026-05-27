@@ -135,11 +135,17 @@
 |---|---|---|
 | `GET` | `/search?q=` | 영웅·패치노트 통합 검색 |
 
+### 헬스체크
+
+| Method | Path | 접근 | 설명 |
+|---|---|---|---|
+| `GET` | `/health` | 공개 | Railway/배포 환경 probe용 DB+Redis 헬스체크. throttler 적용 |
+| `GET` | `/internal/health` | localhost / `x-internal-key` | guard 적용한 동일 헬스체크 (내부 운영 도구가 부하 분리할 때 사용) |
+
 ### 운영(내부, 외부 노출 금지)
 
 | Method | Path | 설명 |
 |---|---|---|
-| `GET` | `/internal/health` | 헬스체크 |
 | `GET` | `/internal/scrape-jobs` | 최근 스크래핑 잡 상태 (로컬·내부망에서만 접근) |
 
 ---
