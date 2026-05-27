@@ -1,6 +1,6 @@
 import { TypedQueryBus } from '@@cqrs';
-import { Injectable } from '@nestjs/common';
-import { DEFAULT_LOCALE, isSubrole, type Locale } from '@watchpoint/shared';
+import { Injectable, Logger } from '@nestjs/common';
+import { DEFAULT_LOCALE, isSubrole, type Locale, type Subrole } from '@watchpoint/shared';
 
 import { resolveDescription, resolveName } from '../../../hero/application/name-resolver';
 import { GetSearchResponseDto } from '../../presenter/http/dto/search.dto';
@@ -13,6 +13,8 @@ interface SearchUseCaseProps {
 
 @Injectable()
 export class SearchUseCase {
+  private readonly logger = new Logger(SearchUseCase.name);
+
   constructor(private readonly queryBus: TypedQueryBus<SearchQuery>) {}
 
   /**
@@ -31,7 +33,7 @@ export class SearchUseCase {
         codename: hero.codename,
         name: resolveName(hero.name, hero.nameTranslations, lang),
         role: hero.role,
-        subrole: isSubrole(hero.subrole) ? hero.subrole : null,
+        subrole: this.resolveSubrole(hero.codename, hero.subrole),
         releasedAt: hero.releasedAt.toISOString(),
         portraitUrl: hero.portraitUrl,
       })),
@@ -45,5 +47,12 @@ export class SearchUseCase {
         status: patch.status,
       })),
     };
+  }
+
+  private resolveSubrole(codename: string, subrole: string | null): Subrole | null {
+    if (subrole === null) return null;
+    if (isSubrole(subrole)) return subrole;
+    this.logger.warn(`hero ${codename}: invalid subrole "${subrole}" dropped to null`);
+    return null;
   }
 }

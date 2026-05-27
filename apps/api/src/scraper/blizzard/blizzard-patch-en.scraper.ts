@@ -3,7 +3,7 @@ import { PrismaService } from '@@db';
 import { Prisma, ScrapeSource } from '@@prisma';
 import { Injectable, Logger } from '@nestjs/common';
 
-import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
+import { mergeTranslation, ScrapeJobRecorder, ScraperHttpClient } from '../common';
 import { BlizzardPatchParser } from './blizzard-patch.parser';
 import type { ParsedPatchEntry, ParsedPatchNote } from './dto/parsed-patch-note.dto';
 
@@ -122,7 +122,7 @@ export class BlizzardPatchEnScraper {
       dbByHeroId.set(entry.heroId, list);
     }
 
-    let matched = 0;
+    const updates: Array<{ id: number; title: string; body: string }> = [];
     const usedDbIds = new Set<number>();
 
     for (const parsed of parsedEntries) {
@@ -134,18 +134,22 @@ export class BlizzardPatchEnScraper {
 
       const dbEntryId = candidates[0];
       usedDbIds.add(dbEntryId);
-
-      await this.prismaService.patchNoteEntry.update({
-        where: { id: dbEntryId },
-        data: {
-          titleTranslations: { en: parsed.title } as Prisma.InputJsonValue,
-          bodyTranslations: { en: parsed.body } as Prisma.InputJsonValue,
-        },
-      });
-      matched += 1;
+      updates.push({ id: dbEntryId, title: parsed.title, body: parsed.body });
     }
 
-    return { matched, total: dbHeroEntries.length };
+    await Promise.all(
+      updates.map((u) =>
+        this.prismaService.patchNoteEntry.update({
+          where: { id: u.id },
+          data: {
+            titleTranslations: { en: u.title } as Prisma.InputJsonValue,
+            bodyTranslations: { en: u.body } as Prisma.InputJsonValue,
+          },
+        }),
+      ),
+    );
+
+    return { matched: updates.length, total: dbHeroEntries.length };
   }
 
   /**
@@ -166,9 +170,4 @@ export class BlizzardPatchEnScraper {
     }
     return index;
   }
-}
-
-function mergeTranslation(current: unknown, locale: string, value: string): Record<string, string> {
-  const base = current && typeof current === 'object' ? (current as Record<string, string>) : {};
-  return { ...base, [locale]: value };
 }

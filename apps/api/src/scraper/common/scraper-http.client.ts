@@ -3,13 +3,14 @@ import { RedisService } from '@@redis';
 import { randomUUID } from 'node:crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { request } from 'undici';
+import { Agent, type Dispatcher, interceptors, request } from 'undici';
 
 import { SCRAPER_ERRORS } from '../scraper.error';
 
 const LOCK_TTL_MS = 30_000;
 const LOCK_POLL_MS = 200;
 const LAST_REQUEST_TTL_MULTIPLIER = 5;
+const MAX_REDIRECTIONS = 5;
 
 /**
  * Redis Lua script — lock token이 일치할 때만 DEL. TTL 만료로 다른 워커가 잡은 lock을 실수로 해제하지 않게.
@@ -27,6 +28,7 @@ export class ScraperHttpClient {
   private readonly logger = new Logger(ScraperHttpClient.name);
   private readonly userAgent: string;
   private readonly delayMs: number;
+  private readonly dispatcher: Dispatcher;
 
   constructor(
     configService: ConfigService,
@@ -34,6 +36,11 @@ export class ScraperHttpClient {
   ) {
     this.userAgent = configService.getOrThrow<string>('SCRAPER_USER_AGENT');
     this.delayMs = configService.getOrThrow<number>('SCRAPER_REQUEST_DELAY_MS');
+    // 자체 dispatcher 사용: global dispatcher가 undici v7로 잡힌 경우 request 옵션의 maxRedirections가
+    // "use the redirect interceptor" 에러로 throw됨. compose(interceptors.redirect)는 v6/v7 양쪽 호환.
+    this.dispatcher = new Agent({ headersTimeout: 10_000, bodyTimeout: 15_000 }).compose(
+      interceptors.redirect({ maxRedirections: MAX_REDIRECTIONS }),
+    );
   }
 
   async fetchHtml(url: string): Promise<string> {
@@ -64,9 +71,7 @@ export class ScraperHttpClient {
           accept: 'text/html,application/xhtml+xml',
           'accept-language': 'ko-KR,ko;q=0.9',
         },
-        maxRedirections: 5,
-        headersTimeout: 10_000,
-        bodyTimeout: 15_000,
+        dispatcher: this.dispatcher,
       });
 
       if (statusCode >= 400 && statusCode < 500) {
