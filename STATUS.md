@@ -106,6 +106,11 @@ railway run pnpm patch:sync:en      # 패치 title/summary + entry 영문
 - 호스트별 lock(`scraper:lock:<host>`, TTL 30s) + 마지막 요청 시각(`scraper:last:<host>`, TTL = delay×5)으로 다중 인스턴스에서도 도메인별 직렬화 + 2초 delay 보장
 - ConfigService 외 RedisService inject. 기존 in-memory Map(`inFlight`, `lastRequestAt`) 제거
 
+**(M5) ~~스크래퍼 fetch 전 요청 단계에서 throw — undici v7 글로벌 dispatcher와 `maxRedirections` 옵션 비호환~~ → 해결됨**
+- `apps/api/package.json`은 `undici@^6.20.0` 핀이지만 transitive로 undici@7.25.0이 함께 설치돼 글로벌 dispatcher가 v7로 잡힘
+- v7에서 `maxRedirections`는 제거됨 → 호출 시 `InvalidArgumentError: maxRedirections is not supported, use the redirect interceptor`로 모든 스크래핑이 502 실패
+- 해결: ScraperHttpClient가 자체 `Agent().compose(interceptors.redirect({maxRedirections}))` dispatcher를 보유, `request(url, { dispatcher })`로 명시 주입. v6/v7 모두 호환
+
 ### 4.3 LOW
 
 - **(L1) `/health` (공개) + `/internal/health` (guard) 중복** — Railway probe용으로 의도된 분리지만 SPEC.md에 명시 안 됨. SPEC update만 필요
@@ -140,19 +145,21 @@ railway run pnpm patch:sync:en      # 패치 title/summary + entry 영문
 | 4 | **Prisma 인덱스 보강** (M3) | 0.5일 + migration | Medium (장기) |
 | 5 | **L5/L7 잔여 정리** | <1시간 | Low — 가독성/안전성 |
 
-H1(Redis 캐시) / H2(internal guard) / H3(patch entries 보호) / M1(검색 trim) / M2(Prisma 4xx 분기) / M4(스크래퍼 분산 lock)은 별도 PR로 해결됨.
+H1(Redis 캐시) / H2(internal guard) / H3(patch entries 보호) / M1(검색 trim) / M2(Prisma 4xx 분기) / M4(스크래퍼 분산 lock) / M5(undici redirect)은 별도 PR로 해결됨.
 
 ---
 
 ## 6. 장기 / 검토 후 결정
 
+- **이미지 자체 호스팅 (S3 등)** — 현재 `hero.portraitUrl`이 `i.namu.wiki` 핫링크. namu Cloudflare가 referrer 기반으로 부분 차단(403)해서 사용자 화면에서 이미지 깨짐. 작업 범위: scraper 또는 별도 cron이 portraitUrl을 fetch → S3/R2/Railway volume에 저장 → DB의 portraitUrl을 자체 도메인 URL로 치환. 이미지 의존도 namu→0, hotlink 차단 회피 + 로딩 속도 개선
+- **불완전 영웅 능력/스탯 수동 보정** — 현재 1 ability만 있는 emre/jetpack-cat/mizuki/vendetta/wuyang + 0 ability인 anran/domina는 `pnpm hero:edit <codename>` + Prisma Studio로 채워야 함 (parser는 og:meta만 추출하는 정책. namuwiki Vue SPA로 자동 추출 불가)
 - 통합 테스트 (jest + supertest) — 최소 골든 패스 5개 (heroes list, hero detail, patch list, patch detail, search)
 - Cron success 후 web `revalidatePath` 호출 — ISR 즉시 무효화
 - `nameTranslations`/`titleTranslations` 검색 case-insensitive (raw SQL `LOWER()` 또는 pg_trgm)
 - ja 데이터 수집 (현재 토글 disabled) — Blizzard 일본어 페이지가 영문과 동일 selector 사용 가능성 검토
 - KR 한정 영웅(domina/anran/sierra/jetpack-cat/mizuki/wuyang) 영문 명/설명 — Blizzard 페이지 없음. fallback source 또는 manual `hero:edit`
 - SUBROLE_PASSIVES 영문 verbatim — `apps/web/src/lib/labels.ts`가 직역. Blizzard 공식 영문 확인 후 갱신
-- Playwright fallback (SPEC 옵션) — Blizzard 동적 렌더링 도입 시
+- Playwright fallback — namuwiki Vue SPA로 메타 외 자동 추출 봉쇄됨. 능력/스탯 자동 보정 원하면 필수
 - Hero 신규 추가 시 catalog/registry 누락 방지 — script로 hero-catalog ↔ DB diff 비교
 
 ---
