@@ -3,7 +3,7 @@ import { PrismaService } from '@@db';
 import { type AbilitySlot, Prisma, ScrapeSource } from '@@prisma';
 import { Injectable, Logger } from '@nestjs/common';
 
-import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
+import { mergeTranslation, ScrapeJobRecorder, ScraperHttpClient } from '../common';
 import { BlizzardHeroParser } from './blizzard-hero.parser';
 import type { ParsedAbilityEn, ParsedHeroEn } from './dto/parsed-hero-en.dto';
 
@@ -166,9 +166,4 @@ export class BlizzardHeroEnScraper {
 
     return [];
   }
-}
-
-function mergeTranslation(current: unknown, locale: string, value: string): Record<string, string> {
-  const base = current && typeof current === 'object' ? (current as Record<string, string>) : {};
-  return { ...base, [locale]: value };
 }
