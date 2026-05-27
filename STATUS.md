@@ -86,15 +86,14 @@ railway run pnpm patch:sync:en      # 패치 title/summary + entry 영문
 
 ### 4.2 MEDIUM
 
-**(M1) 검색어 trim/공백 처리 부재**
-- 위치: `apps/api/src/search/presenter/http/dto/search.dto.ts:18` — `@MinLength(1)`만 있고 `@Transform(trim)` 없음
-- 동작: `q="   "` 통과 → `contains: "   "` 로 DB 풀스캔 가능
-- 권장: `@Transform(({ value }) => value?.trim())` 추가 + `MinLength(1)` 재검증
+**(M1) ~~검색어 trim/공백 처리 부재~~ → 해결됨**
+- `SearchRequestDto.q`에 `@Transform(({ value }) => value?.trim())` 적용. `ValidationPipe`가 `transform: true`라 동작 보장
+- `q="   "`는 trim 후 빈 문자열 → `@MinLength(1)`에서 400 INVALID_REQUEST
 
-**(M2) Prisma 에러 코드 분류 부족 → 모든 P-* 가 500**
-- 위치: `apps/api/src/common/filters/http-exception.filter.ts:35-42, 87-94`
-- 영향: P2002(unique violation), P2025(record not found) 모두 500 DATABASE_ERROR로 응답. 클라이언트가 4xx vs 5xx 구분 못함
-- 권장: P2002 → 409 CONFLICT, P2025 → 404 NOT_FOUND 매핑
+**(M2) ~~Prisma 에러 코드 분류 부족 → 모든 P-* 가 500~~ → 해결됨**
+- `HttpExceptionFilter.resolvePrismaError`에 코드별 분기 추가
+- P2002 → 409 RESOURCE_CONFLICT, P2025 → 404 RESOURCE_NOT_FOUND, 그 외 P-* → 500 DATABASE_ERROR (기존 유지)
+- `GLOBAL_ERRORS`에 `RESOURCE_CONFLICT`/`RESOURCE_NOT_FOUND` 추가
 
 **(M3) Prisma 인덱스 누락**
 - `PatchNote`: `(releasedAt)`, `(status)` 단일 인덱스만. `GetLatestPatchNote`는 `where status='PUBLISHED' orderBy releasedAt desc` — 복합 인덱스 `(status, releasedAt)` 가 더 적합
@@ -137,11 +136,11 @@ railway run pnpm patch:sync:en      # 패치 title/summary + entry 영문
 |---|---|---|---|
 | 1 | **Prod에서 hero:sync:en:all + patch:sync:en 실행** | 5분 (대기 + 검증) | High — 영문 다국어 실데이터 노출 |
 | 2 | **Prod 환경변수에 `INTERNAL_API_KEY` 16자 이상 추가** | 1분 | High — `/internal/*` 접근 회복 |
-| 3 | **검색어 trim + Prisma 에러 코드 분기** (M1, M2) | 2시간 | Medium — UX/안정성 |
+| 3 | **`.gitattributes` 추가** (L8) | 5분 | Low — CRLF noise 제거 |
 | 4 | **Prisma 인덱스 보강** (M3) | 0.5일 + migration | Medium (장기) |
-| 5 | **`/health` vs `/internal/health` SPEC 명시** (L1) | 5분 | Low — 문서 정합성 |
+| 5 | **통합 테스트 골든패스 5개** | 0.5일 | Medium — 안전망 |
 
-H1(Redis 캐시) / H2(internal guard) / H3(patch entries 보호) / M4(스크래퍼 분산 lock)은 별도 PR로 해결됨.
+H1(Redis 캐시) / H2(internal guard) / H3(patch entries 보호) / M1(검색 trim) / M2(Prisma 4xx 분기) / M4(스크래퍼 분산 lock)은 별도 PR로 해결됨.
 
 ---
 
