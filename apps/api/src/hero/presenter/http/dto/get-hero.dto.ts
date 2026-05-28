@@ -5,8 +5,11 @@ import {
   HERO_ROLES,
   type HeroAbilityDto,
   type HeroDetailDto,
+  type HeroPerkDto,
   type HeroRole,
   type HeroStatDto,
+  PERK_TIERS,
+  type PerkTier,
   SUBROLES,
   type Subrole,
 } from '@watchpoint/shared';
@@ -51,6 +54,29 @@ export class HeroAbilityItemDto implements HeroAbilityDto {
   order!: number;
 }
 
+export class HeroPerkItemDto implements HeroPerkDto {
+  @ApiProperty()
+  id!: number;
+
+  @ApiProperty({ enum: PERK_TIERS, description: '보조(MINOR) / 주요(MAJOR) 특전 구분' })
+  tier!: PerkTier;
+
+  @ApiProperty({ description: '같은 tier 내 선택지 인덱스 (1 또는 2)' })
+  slot!: number;
+
+  @ApiProperty()
+  name!: string;
+
+  @ApiProperty()
+  description!: string;
+
+  @ApiProperty({ nullable: true, description: '특전별 수치 (자유 형식)' })
+  stats!: Record<string, unknown> | null;
+
+  @ApiProperty({ nullable: true, description: '특전 아이콘 URL (이미지 자체 호스팅 도입 전까지 미충전)' })
+  iconUrl!: string | null;
+}
+
 export class GetHeroResponseDto implements HeroDetailDto {
   @ApiProperty()
   id!: number;
@@ -84,4 +110,7 @@ export class GetHeroResponseDto implements HeroDetailDto {
 
   @ApiProperty({ type: [HeroAbilityItemDto] })
   abilities!: HeroAbilityItemDto[];
+
+  @ApiProperty({ type: [HeroPerkItemDto], description: '특전 (영웅당 MINOR 2 + MAJOR 2 = 최대 4개)' })
+  perks!: HeroPerkItemDto[];
 }
