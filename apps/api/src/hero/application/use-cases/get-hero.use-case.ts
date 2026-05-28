@@ -65,6 +65,15 @@ export class GetHeroUseCase {
           stats: ability.stats as Record<string, unknown> | null,
           order: ability.order,
         })),
+        perks: hero.perks.map((perk) => ({
+          id: perk.id,
+          tier: perk.tier,
+          slot: perk.slot,
+          name: resolveName(perk.name, perk.nameTranslations, lang),
+          description: resolveDescription(perk.description, perk.descriptionTranslations, lang),
+          stats: perk.stats as Record<string, unknown> | null,
+          iconUrl: perk.iconUrl,
+        })),
       };
     });
   }

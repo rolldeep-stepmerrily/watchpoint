@@ -10,6 +10,7 @@ type HeroWithRelations = Prisma.HeroGetPayload<{
   include: {
     stat: true;
     abilities: { orderBy: [{ slot: 'asc' }, { order: 'asc' }] };
+    perks: { orderBy: [{ tier: 'asc' }, { slot: 'asc' }] };
   };
 }>;
 
@@ -31,6 +32,7 @@ export class GetHeroByCodenameQueryHandler implements IQueryHandler<GetHeroByCod
       include: {
         stat: true,
         abilities: { orderBy: [{ slot: 'asc' }, { order: 'asc' }] },
+        perks: { orderBy: [{ tier: 'asc' }, { slot: 'asc' }] },
       },
     });
   }
