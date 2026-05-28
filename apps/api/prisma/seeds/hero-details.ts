@@ -911,6 +911,86 @@ export const HERO_DETAIL_SEEDS: readonly HeroDetailSeed[] = [
   },
 ];
 
+async function applyHeroMeta(
+  prisma: PrismaClient,
+  heroId: number,
+  seed: HeroDetailSeed,
+): Promise<void> {
+  await prisma.hero.update({
+    where: { id: heroId },
+    data: {
+      description: seed.description,
+      ...(seed.nameTranslations && {
+        nameTranslations: seed.nameTranslations as Prisma.InputJsonValue,
+      }),
+    },
+  });
+}
+
+async function upsertHeroStat(prisma: PrismaClient, heroId: number, stat: HeroDetailSeed['stat']): Promise<void> {
+  await prisma.heroStat.upsert({
+    where: { heroId },
+    update: {},
+    create: {
+      heroId,
+      health: stat.health,
+      armor: stat.armor ?? 0,
+      shield: stat.shield ?? 0,
+      moveSpeed: stat.moveSpeed,
+      extras: (stat.extras ?? Prisma.JsonNull) as Prisma.InputJsonValue,
+    },
+  });
+}
+
+async function upsertHeroAbility(
+  prisma: PrismaClient,
+  heroId: number,
+  ability: HeroDetailSeed['abilities'][number],
+): Promise<void> {
+  const order = ability.order ?? 0;
+  const nameTranslationsValue =
+    ability.nameTranslations !== undefined
+      ? (ability.nameTranslations as Prisma.InputJsonValue)
+      : Prisma.JsonNull;
+  await prisma.heroAbility.upsert({
+    where: { heroId_slot_order: { heroId, slot: ability.slot, order } },
+    update: {
+      name: ability.name,
+      nameTranslations: nameTranslationsValue,
+    },
+    create: {
+      heroId,
+      slot: ability.slot,
+      key: ability.key,
+      name: ability.name,
+      nameTranslations: nameTranslationsValue,
+      description: ability.description,
+      stats: (ability.stats ?? Prisma.JsonNull) as Prisma.InputJsonValue,
+      order,
+    },
+  });
+}
+
+async function upsertHeroPerk(
+  prisma: PrismaClient,
+  heroId: number,
+  perk: NonNullable<HeroDetailSeed['perks']>[number],
+): Promise<void> {
+  await prisma.heroPerk.upsert({
+    where: { heroId_tier_slot: { heroId, tier: perk.tier, slot: perk.slot } },
+    update: { name: perk.name },
+    create: {
+      heroId,
+      tier: perk.tier,
+      slot: perk.slot,
+      name: perk.name,
+      description: perk.description,
+      stats: (perk.stats ?? Prisma.JsonNull) as Prisma.InputJsonValue,
+      iconUrl: perk.iconUrl ?? null,
+    },
+  });
+}
+
 export async function applyHeroDetailSeeds(
   prisma: PrismaClient,
 ): Promise<{ stat: number; abilities: number; perks: number }> {
@@ -922,73 +1002,18 @@ export async function applyHeroDetailSeeds(
     const hero = await prisma.hero.findUnique({ where: { codename: seed.codename } });
     if (!hero) continue;
 
-    await prisma.hero.update({
-      where: { id: hero.id },
-      data: {
-        description: seed.description,
-        ...(seed.nameTranslations && {
-          nameTranslations: seed.nameTranslations as Prisma.InputJsonValue,
-        }),
-      },
-    });
-
-    await prisma.heroStat.upsert({
-      where: { heroId: hero.id },
-      update: {},
-      create: {
-        heroId: hero.id,
-        health: seed.stat.health,
-        armor: seed.stat.armor ?? 0,
-        shield: seed.stat.shield ?? 0,
-        moveSpeed: seed.stat.moveSpeed,
-        extras: (seed.stat.extras ?? Prisma.JsonNull) as Prisma.InputJsonValue,
-      },
-    });
+    await applyHeroMeta(prisma, hero.id, seed);
+    await upsertHeroStat(prisma, hero.id, seed.stat);
     statApplied += 1;
 
     for (const ability of seed.abilities) {
-      const order = ability.order ?? 0;
-      const nameTranslationsValue =
-        ability.nameTranslations !== undefined
-          ? (ability.nameTranslations as Prisma.InputJsonValue)
-          : Prisma.JsonNull;
-      await prisma.heroAbility.upsert({
-        where: { heroId_slot_order: { heroId: hero.id, slot: ability.slot, order } },
-        update: {
-          name: ability.name,
-          nameTranslations: nameTranslationsValue,
-        },
-        create: {
-          heroId: hero.id,
-          slot: ability.slot,
-          key: ability.key,
-          name: ability.name,
-          nameTranslations: nameTranslationsValue,
-          description: ability.description,
-          stats: (ability.stats ?? Prisma.JsonNull) as Prisma.InputJsonValue,
-          order,
-        },
-      });
+      await upsertHeroAbility(prisma, hero.id, ability);
       abilitiesApplied += 1;
     }
 
-    if (seed.perks) {
-      for (const perk of seed.perks) {
-        await prisma.heroPerk.upsert({
-          where: { heroId_tier_slot: { heroId: hero.id, tier: perk.tier, slot: perk.slot } },
-          update: { name: perk.name },
-          create: {
-            heroId: hero.id,
-            tier: perk.tier,
-            slot: perk.slot,
-            name: perk.name,
-            description: perk.description,
-            stats: (perk.stats ?? Prisma.JsonNull) as Prisma.InputJsonValue,
-            iconUrl: perk.iconUrl ?? null,
-          },
-        });
-        perksApplied += 1;
-      }
+    for (const perk of seed.perks ?? []) {
+      await upsertHeroPerk(prisma, hero.id, perk);
+      perksApplied += 1;
     }
   }
 
