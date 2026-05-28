@@ -52,7 +52,6 @@ export class SearchQueryHandler implements IQueryHandler<SearchQuery> {
             { name: { contains: q, mode: 'insensitive' } },
             { codename: { contains: q, mode: 'insensitive' } },
             { nameTranslations: { path: ['en'], string_contains: q } },
-            { nameTranslations: { path: ['ja'], string_contains: q } },
           ],
         },
         select: {
