@@ -8,6 +8,8 @@ export type { Locale } from './locale';
 export { DEFAULT_LOCALE, LOCALES, isLocale } from './locale';
 export type { PatchNoteStatus } from './patch-note-status';
 export { PATCH_NOTE_STATUSES } from './patch-note-status';
+export type { PerkTier } from './perk-tier';
+export { PERK_TIERS, isPerkTier } from './perk-tier';
 export type { ScrapeSource } from './scrape-source';
 export { SCRAPE_SOURCES } from './scrape-source';
 export type { ScrapeStatus } from './scrape-status';

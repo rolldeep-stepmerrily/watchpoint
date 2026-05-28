@@ -55,8 +55,8 @@ async function main(): Promise<void> {
   const { created, updated } = await seedCatalog();
   console.log(`hero catalog seeded — created ${created}, updated ${updated}`);
 
-  const { stat, abilities } = await applyHeroDetailSeeds(prisma);
-  console.log(`hero details seeded — stat upserts ${stat}, abilities inserted ${abilities}`);
+  const { stat, abilities, perks } = await applyHeroDetailSeeds(prisma);
+  console.log(`hero details seeded — stat upserts ${stat}, abilities inserted ${abilities}, perks inserted ${perks}`);
 }
 
 main()

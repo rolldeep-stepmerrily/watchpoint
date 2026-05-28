@@ -1,4 +1,4 @@
-import { type AbilitySlot, Prisma, type PrismaClient } from '../../src/generated/prisma/client';
+import { type AbilitySlot, type PerkTier, Prisma, type PrismaClient } from '../../src/generated/prisma/client';
 
 /**
  * 풀데이터(stat + abilities)가 들어가는 영웅의 정적 시드.
@@ -35,6 +35,15 @@ export interface HeroDetailSeed {
     description: string;
     stats?: Record<string, unknown>;
     order?: number;
+  }>;
+  /** 특전: 영웅당 MINOR 2 + MAJOR 2 = 최대 4개. patch마다 교체 가능. */
+  perks?: Array<{
+    tier: PerkTier;
+    slot: 1 | 2;
+    name: string;
+    description: string;
+    stats?: Record<string, unknown>;
+    iconUrl?: string;
   }>;
 }
 
@@ -135,6 +144,42 @@ export const HERO_DETAIL_SEEDS: readonly HeroDetailSeed[] = [
         name: '메카 호출',
         description: '조종사 상태에서 처치 기여 시 새 메카를 호출 가능.',
         stats: { meka: 'recall on charge' },
+      },
+    ],
+    perks: [
+      {
+        tier: 'MINOR',
+        slot: 1,
+        name: '토끼 파워',
+        description: '비상 탈출 후 일시적으로 75의 추가 생명력을 얻고, 메카 호출의 피해 반경이 50% 증가합니다.',
+        stats: { '호출 피해 범위': '4.5m', '추가 생명력 감소량': '비상 탈출 10초 후, 초당 25' },
+      },
+      {
+        tier: 'MINOR',
+        slot: 2,
+        name: '확장 부스터',
+        description: '부스터가 적에게 적중하면 40% 증가한 피해를 주며 지속 시간이 0.5초 연장됩니다.',
+        stats: { 공격력: '35', '추가 지속 시간': '0.5초' },
+      },
+      {
+        tier: 'MAJOR',
+        slot: 1,
+        name: '보호막 시스템',
+        description: '생명력 150을 보호막으로 전환합니다. 방어 매트릭스가 흡수한 피해의 25%만큼 보호막을 회복합니다.',
+      },
+      {
+        tier: 'MAJOR',
+        slot: 2,
+        name: '집중 융합',
+        description: 'R키를 누르면 3초 동안 융합포의 산탄 범위가 75% 감소합니다.',
+        stats: {
+          '재사용 대기시간': '8초',
+          '지속 시간': '3초',
+          공격력: '1×11(15m)~0.3×11(30m) (발당 최대 11~3.3)',
+          '공격 속도': '초당 약 13.3발 (DPS: 146.67)',
+          집탄율: '약 0.85°',
+          '치명타 판정': true,
+        },
       },
     ],
   },
@@ -866,9 +911,12 @@ export const HERO_DETAIL_SEEDS: readonly HeroDetailSeed[] = [
   },
 ];
 
-export async function applyHeroDetailSeeds(prisma: PrismaClient): Promise<{ stat: number; abilities: number }> {
+export async function applyHeroDetailSeeds(
+  prisma: PrismaClient,
+): Promise<{ stat: number; abilities: number; perks: number }> {
   let statApplied = 0;
   let abilitiesApplied = 0;
+  let perksApplied = 0;
 
   for (const seed of HERO_DETAIL_SEEDS) {
     const hero = await prisma.hero.findUnique({ where: { codename: seed.codename } });
@@ -923,7 +971,26 @@ export async function applyHeroDetailSeeds(prisma: PrismaClient): Promise<{ stat
       });
       abilitiesApplied += 1;
     }
+
+    if (seed.perks) {
+      for (const perk of seed.perks) {
+        await prisma.heroPerk.upsert({
+          where: { heroId_tier_slot: { heroId: hero.id, tier: perk.tier, slot: perk.slot } },
+          update: { name: perk.name },
+          create: {
+            heroId: hero.id,
+            tier: perk.tier,
+            slot: perk.slot,
+            name: perk.name,
+            description: perk.description,
+            stats: (perk.stats ?? Prisma.JsonNull) as Prisma.InputJsonValue,
+            iconUrl: perk.iconUrl ?? null,
+          },
+        });
+        perksApplied += 1;
+      }
+    }
   }
 
-  return { stat: statApplied, abilities: abilitiesApplied };
+  return { stat: statApplied, abilities: abilitiesApplied, perks: perksApplied };
 }
