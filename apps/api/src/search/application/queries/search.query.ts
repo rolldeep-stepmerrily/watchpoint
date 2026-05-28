@@ -38,62 +38,65 @@ export class SearchQuery extends Query<SearchResult> {
   }
 }
 
+/**
+ * LIKE/ILIKE의 와일드카드(%, _)와 escape 문자(\)를 리터럴로 다루기 위해 이스케이프.
+ * PostgreSQL 기본 escape character는 백슬래시.
+ */
+function escapeLikePattern(value: string): string {
+  return value.replace(/[\\%_]/g, '\\$&');
+}
+
 @QueryHandler(SearchQuery)
 export class SearchQueryHandler implements IQueryHandler<SearchQuery> {
   constructor(private readonly prisma: PrismaService) {}
 
   async execute(query: SearchQuery): Promise<SearchResult> {
     const { q } = query.props;
+    const pattern = `%${escapeLikePattern(q)}%`;
 
     const [heroes, patchNotes] = await this.prisma.$transaction([
-      this.prisma.hero.findMany({
-        where: {
-          OR: [
-            { name: { contains: q, mode: 'insensitive' } },
-            { codename: { contains: q, mode: 'insensitive' } },
-            { nameTranslations: { path: ['en'], string_contains: q } },
-          ],
-        },
-        select: {
-          id: true,
-          codename: true,
-          name: true,
-          nameTranslations: true,
-          role: true,
-          subrole: true,
-          releasedAt: true,
-          portraitUrl: true,
-        },
-        orderBy: [{ role: 'asc' }, { name: 'asc' }],
-        take: RESULT_LIMIT,
-      }),
-      this.prisma.patchNote.findMany({
-        where: {
-          status: 'PUBLISHED',
-          OR: [
-            { version: { contains: q, mode: 'insensitive' } },
-            { title: { contains: q, mode: 'insensitive' } },
-            { summary: { contains: q, mode: 'insensitive' } },
-            { titleTranslations: { path: ['en'], string_contains: q } },
-            { summaryTranslations: { path: ['en'], string_contains: q } },
-          ],
-        },
-        select: {
-          id: true,
-          version: true,
-          title: true,
-          titleTranslations: true,
-          releasedAt: true,
-          sourceUrl: true,
-          summary: true,
-          summaryTranslations: true,
-          status: true,
-        },
-        orderBy: { releasedAt: 'desc' },
-        take: RESULT_LIMIT,
-      }),
+      this.prisma.$queryRaw<SearchResult['heroes']>`
+        SELECT
+          id,
+          codename,
+          name,
+          name_translations AS "nameTranslations",
+          role,
+          subrole,
+          released_at AS "releasedAt",
+          portrait_url AS "portraitUrl"
+        FROM heroes
+        WHERE name ILIKE ${pattern}
+           OR codename ILIKE ${pattern}
+           OR (name_translations ->> 'en') ILIKE ${pattern}
+        ORDER BY role ASC, name ASC
+        LIMIT ${RESULT_LIMIT}
+      `,
+      this.prisma.$queryRaw<SearchResult['patchNotes']>`
+        SELECT
+          id,
+          version,
+          title,
+          title_translations AS "titleTranslations",
+          released_at AS "releasedAt",
+          source_url AS "sourceUrl",
+          summary,
+          summary_translations AS "summaryTranslations",
+          status
+        FROM patch_notes
+        WHERE status = 'PUBLISHED'
+          AND (
+               version ILIKE ${pattern}
+            OR title ILIKE ${pattern}
+            OR summary ILIKE ${pattern}
+            OR (title_translations ->> 'en') ILIKE ${pattern}
+            OR (summary_translations ->> 'en') ILIKE ${pattern}
+          )
+        ORDER BY released_at DESC
+        LIMIT ${RESULT_LIMIT}
+      `,
     ]);
 
-    return { heroes, patchNotes: patchNotes as SearchResult['patchNotes'] };
+    return { heroes, patchNotes };
   }
 }
