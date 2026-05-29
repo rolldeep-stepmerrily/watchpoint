@@ -44,6 +44,10 @@
   --color-slot-ability1: #60a5fa;
   --color-slot-ability2: #2dd4bf;
   --color-slot-ultimate: #ef4444;
+
+  /* Perk tiers — minor는 차분, major는 강조 */
+  --color-perk-minor: #94a3b8;
+  --color-perk-major: #facc15;
 }
 
 html,
@@ -51,8 +55,8 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family:
-    "Pretendard Variable", Pretendard, ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    "Pretendard Variable", Pretendard, ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", sans-serif;
   font-feature-settings: "ss01", "tnum";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -81,7 +85,10 @@ a {
 
 /* 시각 강조용 유틸 */
 .hover-lift {
-  transition: transform 150ms ease, background-color 150ms ease, border-color 150ms ease;
+  transition:
+    transform 150ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease;
 }
 .hover-lift:hover {
   transform: translateY(-1px);

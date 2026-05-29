@@ -5,7 +5,14 @@ import { notFound } from 'next/navigation';
 
 import { HeroPortrait } from '@/components/hero-portrait';
 import { getHero, getHeroPatchHistory } from '@/lib/api';
-import { categoryColorVar, roleColorVar, slotColorVar, statKeyLabel } from '@/lib/format';
+import {
+  categoryColorVar,
+  PERK_TIER_ORDER,
+  perkTierColorVar,
+  roleColorVar,
+  slotColorVar,
+  statKeyLabel,
+} from '@/lib/format';
 import { getLocale } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 import { absoluteUrl } from '@/lib/seo';
@@ -239,6 +246,75 @@ export default async function HeroDetailPage({ params }: Props) {
             })}
           </ul>
         </section>
+
+        {(hero.perks?.length ?? 0) > 0 && (
+          <section className="space-y-4">
+            <div className="flex items-baseline justify-between">
+              <h2 className="text-lg font-bold text-(--color-text-strong)">{t.hero.perks}</h2>
+              <span className="text-xs text-(--color-text-faint) font-mono">{hero.perks.length}</span>
+            </div>
+            <div className="space-y-6">
+              {PERK_TIER_ORDER.map((tier) => {
+                const tierPerks = hero.perks.filter((perk) => perk.tier === tier);
+                if (tierPerks.length === 0) return null;
+                const tierColor = `var(${perkTierColorVar(tier)})`;
+                return (
+                  <div
+                    key={tier}
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-1.5 w-1.5 rounded-full"
+                        style={{ backgroundColor: tierColor }}
+                        aria-hidden
+                      />
+                      <span
+                        className="text-[10px] uppercase tracking-widest font-bold"
+                        style={{ color: tierColor }}
+                      >
+                        {t.perkTier(tier)}
+                      </span>
+                    </div>
+                    <ul className="grid gap-3 sm:grid-cols-2">
+                      {tierPerks.map((perk) => (
+                        <li
+                          key={perk.id}
+                          className="relative p-4 rounded-lg border border-(--color-border) bg-(--color-surface) overflow-hidden"
+                        >
+                          <span
+                            className="absolute top-0 left-0 h-full w-1"
+                            style={{ background: tierColor }}
+                            aria-hidden
+                          />
+                          <div className="pl-2 space-y-1.5">
+                            <div className="font-bold text-base text-(--color-text-strong)">{perk.name}</div>
+                            <p className="text-sm text-(--color-text-muted) whitespace-pre-line leading-relaxed">
+                              {perk.description}
+                            </p>
+                            {perk.stats && Object.keys(perk.stats).length > 0 && (
+                              <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 text-xs">
+                                {Object.entries(perk.stats).map(([key, value]) => (
+                                  <div
+                                    key={key}
+                                    className="flex items-baseline gap-1.5 py-1 border-b border-(--color-border)"
+                                  >
+                                    <dt className="text-(--color-text-muted)">{statKeyLabel(key)}:</dt>
+                                    <dd className="font-mono">{String(value)}</dd>
+                                  </div>
+                                ))}
+                              </dl>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {history.history.length > 0 && (
           <section className="space-y-4">
