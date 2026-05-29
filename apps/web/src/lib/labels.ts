@@ -221,6 +221,13 @@ interface Copy {
     description: string;
     empty: string;
     loading: string;
+    allLabel: string;
+    columns: {
+      hero: string;
+      role: string;
+      subrole: string;
+      released: string;
+    };
     notFound: {
       title: string;
       kicker: string;
@@ -320,6 +327,13 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       description: '오버워치 전체 영웅 목록 — 역할별 분류, 능력 수치, 패치 이력으로 연결.',
       empty: '아직 등록된 영웅이 없습니다.',
       loading: '영웅 목록 불러오는 중',
+      allLabel: '전체',
+      columns: {
+        hero: '영웅',
+        role: '역할',
+        subrole: '서브 역할',
+        released: '출시일',
+      },
       notFound: {
         title: '영웅을 찾을 수 없음',
         kicker: '404 · Hero',
@@ -417,6 +431,13 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       description: 'Full Overwatch hero roster — grouped by role, with ability stats and linked patch history.',
       empty: 'No heroes yet.',
       loading: 'Loading heroes',
+      allLabel: 'All',
+      columns: {
+        hero: 'Hero',
+        role: 'Role',
+        subrole: 'Subrole',
+        released: 'Released',
+      },
       notFound: {
         title: 'Hero not found',
         kicker: '404 · Hero',
