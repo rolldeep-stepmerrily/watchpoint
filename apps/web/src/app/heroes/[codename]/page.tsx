@@ -101,14 +101,12 @@ export default async function HeroDetailPage({ params }: Props) {
                 />
                 {t.role(hero.role)}
               </span>
-              {hero.subrole && (
-                <span
-                  className="inline-flex items-center text-[10px] font-medium px-2 py-1 ml-2 rounded border border-(--color-border) text-(--color-text-muted)"
-                  title={t.subrolePassive(hero.subrole)}
-                >
-                  {t.subrole(hero.subrole)}
-                </span>
-              )}
+              <span
+                className="inline-flex items-center text-[10px] font-medium px-2 py-1 ml-2 rounded border border-(--color-border) text-(--color-text-muted)"
+                title={t.subrolePassive(hero.subrole)}
+              >
+                {t.subrole(hero.subrole)}
+              </span>
               <h1 className="text-2xl font-extrabold tracking-tight mt-3 text-(--color-text-strong)">{hero.name}</h1>
               <p className="text-[11px] text-(--color-text-faint) mt-1 font-mono uppercase tracking-wider">
                 {hero.codename}
@@ -117,28 +115,26 @@ export default async function HeroDetailPage({ params }: Props) {
           </div>
         </div>
 
-        {hero.subrole && (
-          <div className="rounded-lg border border-(--color-border) bg-(--color-surface) p-4 space-y-2">
-            <p className="text-xs text-(--color-text-muted)">
-              <span className="font-semibold text-(--color-text)">
-                {t.hero.subPassive} · {t.subrole(hero.subrole)}
-              </span>
-              {' — '}
-              {t.subrolePassive(hero.subrole)}
-            </p>
-            <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
-              {t.subroleStats(hero.subrole).map((stat) => (
-                <div
-                  key={stat.label}
-                  className="contents"
-                >
-                  <dt className="text-(--color-text-muted)">{stat.label}</dt>
-                  <dd className="font-mono">{stat.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        )}
+        <div className="rounded-lg border border-(--color-border) bg-(--color-surface) p-4 space-y-2">
+          <p className="text-xs text-(--color-text-muted)">
+            <span className="font-semibold text-(--color-text)">
+              {t.hero.subPassive} · {t.subrole(hero.subrole)}
+            </span>
+            {' — '}
+            {t.subrolePassive(hero.subrole)}
+          </p>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
+            {t.subroleStats(hero.subrole).map((stat) => (
+              <div
+                key={stat.label}
+                className="contents"
+              >
+                <dt className="text-(--color-text-muted)">{stat.label}</dt>
+                <dd className="font-mono">{stat.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
 
         {hero.description && <p className="text-sm text-(--color-text-muted) leading-relaxed">{hero.description}</p>}
 

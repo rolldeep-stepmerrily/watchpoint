@@ -90,8 +90,8 @@ export class GetHeroResponseDto implements HeroDetailDto {
   @ApiProperty({ enum: HERO_ROLES })
   role!: HeroRole;
 
-  @ApiProperty({ enum: SUBROLES, nullable: true, description: '서브 역할군 (Reign of Talon 시즌1 도입)' })
-  subrole!: Subrole | null;
+  @ApiProperty({ enum: SUBROLES, description: '서브 역할군 (Reign of Talon 시즌1 도입)' })
+  subrole!: Subrole;
 
   @ApiProperty({ description: 'ISO 8601 datetime' })
   releasedAt!: string;

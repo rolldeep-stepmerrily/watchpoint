@@ -1,5 +1,5 @@
 import { PrismaService } from '@@db';
-import { type Prisma, type HeroRole as PrismaHeroRole } from '@@prisma';
+import { type Prisma, type HeroRole as PrismaHeroRole, type Subrole as PrismaSubrole } from '@@prisma';
 import { IQueryHandler, Query, QueryHandler } from '@nestjs/cqrs';
 
 const RESULT_LIMIT = 10;
@@ -15,7 +15,7 @@ export interface SearchResult {
     name: string;
     nameTranslations: Prisma.JsonValue;
     role: PrismaHeroRole;
-    subrole: string | null;
+    subrole: PrismaSubrole;
     releasedAt: Date;
     portraitUrl: string | null;
   }>;
