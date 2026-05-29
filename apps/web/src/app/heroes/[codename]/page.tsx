@@ -247,7 +247,7 @@ export default async function HeroDetailPage({ params }: Props) {
           </ul>
         </section>
 
-        {hero.perks.length > 0 && (
+        {(hero.perks?.length ?? 0) > 0 && (
           <section className="space-y-4">
             <div className="flex items-baseline justify-between">
               <h2 className="text-lg font-bold text-(--color-text-strong)">{t.hero.perks}</h2>
