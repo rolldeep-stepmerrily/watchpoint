@@ -1,4 +1,4 @@
-import type { AbilitySlot, EntryCategory, HeroRole, Locale, Subrole } from '@@shared';
+import type { AbilitySlot, EntryCategory, HeroRole, Locale, PerkTier, Subrole } from '@@shared';
 
 /**
  * 실제 번역이 준비된 로케일. Locale 타입의 ja는 잠정적으로 en으로 fallback한다.
@@ -53,6 +53,11 @@ const CATEGORY_LABELS: Record<SupportedLocale, Record<EntryCategory, string>> = 
     SYSTEM: 'System',
     GENERAL: 'General',
   },
+};
+
+const PERK_TIER_LABELS: Record<SupportedLocale, Record<PerkTier, string>> = {
+  ko: { MINOR: '보조 특전', MAJOR: '주요 특전' },
+  en: { MINOR: 'Minor Perk', MAJOR: 'Major Perk' },
 };
 
 const SUBROLE_LABELS: Record<SupportedLocale, Record<Subrole, string>> = {
@@ -232,6 +237,7 @@ interface Copy {
     stats: string;
     statLabels: { health: string; armor: string; shield: string; moveSpeed: string };
     abilities: string;
+    perks: string;
     patchHistory: string;
     descriptionFallback: (name: string) => string;
   };
@@ -330,6 +336,7 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       stats: '기본 스탯',
       statLabels: { health: '생명력', armor: '방어력', shield: '보호막', moveSpeed: '이동 속도' },
       abilities: '능력',
+      perks: '특전',
       patchHistory: '패치 이력',
       descriptionFallback: (name) => `오버워치 영웅 ${name}의 능력 수치와 패치 이력.`,
     },
@@ -426,6 +433,7 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       stats: 'Base stats',
       statLabels: { health: 'Health', armor: 'Armor', shield: 'Shield', moveSpeed: 'Move speed' },
       abilities: 'Abilities',
+      perks: 'Perks',
       patchHistory: 'Patch history',
       descriptionFallback: (name) => `Ability stats and patch history for Overwatch hero ${name}.`,
     },
@@ -479,6 +487,7 @@ export function getLabels(locale: Locale) {
     role: (key: HeroRole): string => ROLE_LABELS[l][key],
     slot: (key: AbilitySlot): string => SLOT_LABELS[l][key],
     category: (key: EntryCategory): string => CATEGORY_LABELS[l][key],
+    perkTier: (key: PerkTier): string => PERK_TIER_LABELS[l][key],
     subrole: (key: Subrole): string => SUBROLE_LABELS[l][key],
     subrolePassive: (key: Subrole): string => SUBROLE_PASSIVES[l][key],
     subroleStats: (key: Subrole): readonly SubroleStat[] => SUBROLE_STATS[l][key],
