@@ -18,7 +18,9 @@ export class BlizzardPatchCron {
 
   @Cron(process.env.SCRAPER_PATCH_CRON ?? '0 */6 * * *', { name: 'blizzard-patch-sync' })
   async run(): Promise<void> {
-    if (!this.enabled) return;
+    if (!this.enabled) {
+      return;
+    }
 
     this.logger.log('blizzard patch cron tick');
     try {

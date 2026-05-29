@@ -7,7 +7,9 @@ const FONT_URL =
 let cachedFont: ArrayBuffer | undefined;
 
 export async function loadPretendardBold(): Promise<ArrayBuffer> {
-  if (cachedFont) return cachedFont;
+  if (cachedFont) {
+    return cachedFont;
+  }
   const response = await fetch(FONT_URL, { cache: 'force-cache' });
   if (!response.ok) {
     throw new Error(`Pretendard font fetch failed: ${response.status}`);

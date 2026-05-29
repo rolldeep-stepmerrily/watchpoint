@@ -43,7 +43,9 @@ export default async function HeroesPage() {
         <div className="space-y-10">
           {ROLE_ORDER.map((role) => {
             const heroes = grouped.get(role) ?? [];
-            if (heroes.length === 0) return null;
+            if (heroes.length === 0) {
+              return null;
+            }
             const colorVar = roleColorVar(role);
             return (
               <section

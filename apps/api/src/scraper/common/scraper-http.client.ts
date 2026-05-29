@@ -87,7 +87,9 @@ export class ScraperHttpClient {
 
       return await body.text();
     } catch (error) {
-      if (error instanceof AppException) throw error;
+      if (error instanceof AppException) {
+        throw error;
+      }
       this.logger.error(`fetch ${url} failed`, error as Error);
       throw new AppException(SCRAPER_ERRORS.FETCH_FAILED);
     } finally {
@@ -113,7 +115,9 @@ export class ScraperHttpClient {
 
     while (true) {
       const ok = await client.set(lockKey, token, 'PX', LOCK_TTL_MS, 'NX');
-      if (ok === 'OK') break;
+      if (ok === 'OK') {
+        break;
+      }
       await this.sleep(LOCK_POLL_MS);
     }
 
@@ -121,7 +125,9 @@ export class ScraperHttpClient {
     if (lastStr !== null) {
       const elapsed = Date.now() - Number(lastStr);
       const wait = this.delayMs - elapsed;
-      if (wait > 0) await this.sleep(wait);
+      if (wait > 0) {
+        await this.sleep(wait);
+      }
     }
 
     return async () => {

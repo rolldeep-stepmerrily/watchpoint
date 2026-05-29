@@ -45,7 +45,9 @@ export function SearchBar() {
           `/api/search?q=${encodeURIComponent(trimmed)}&lang=${encodeURIComponent(locale)}`,
           { signal: controller.signal },
         );
-        if (!response.ok) throw new Error(`status ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`status ${response.status}`);
+        }
         const data = (await response.json()) as SearchResponse;
         setResults(data);
       } catch (error) {
@@ -80,7 +82,9 @@ export function SearchBar() {
   };
 
   const flatHrefs = useMemo(() => {
-    if (!results) return [] as string[];
+    if (!results) {
+      return [] as string[];
+    }
     return [
       ...results.heroes.map((hero) => `/heroes/${hero.codename}`),
       ...results.patchNotes.map((patch) => `/patch-notes/${patch.version}`),
@@ -93,7 +97,9 @@ export function SearchBar() {
   }, [results]);
 
   useEffect(() => {
-    if (activeIndex < 0) return;
+    if (activeIndex < 0) {
+      return;
+    }
     const node = listRef.current?.querySelector<HTMLElement>(`[data-index="${activeIndex}"]`);
     node?.scrollIntoView({ block: 'nearest' });
   }, [activeIndex]);
@@ -109,7 +115,9 @@ export function SearchBar() {
 
   const submitActive = () => {
     const href = activeIndex >= 0 ? flatHrefs[activeIndex] : flatHrefs[0];
-    if (!href) return;
+    if (!href) {
+      return;
+    }
     router.push(href);
     close();
   };
@@ -119,7 +127,9 @@ export function SearchBar() {
       close();
       return;
     }
-    if (!showDropdown || flatHrefs.length === 0) return;
+    if (!showDropdown || flatHrefs.length === 0) {
+      return;
+    }
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       moveActive(1);
@@ -158,9 +168,7 @@ export function SearchBar() {
           id="search-results"
           className="absolute left-0 right-0 mt-2 rounded-lg border border-(--color-border) bg-(--color-surface) shadow-lg overflow-hidden max-h-[60vh] overflow-y-auto"
         >
-          {isLoading && !results && (
-            <p className="px-3 py-3 text-xs text-(--color-text-muted)">{t.search.searching}</p>
-          )}
+          {isLoading && !results && <p className="px-3 py-3 text-xs text-(--color-text-muted)">{t.search.searching}</p>}
           {isEmpty && <p className="px-3 py-3 text-xs text-(--color-text-muted)">{t.search.empty}</p>}
           {results && results.heroes.length > 0 && (
             <section>

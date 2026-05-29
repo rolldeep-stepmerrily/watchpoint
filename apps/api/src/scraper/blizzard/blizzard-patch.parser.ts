@@ -53,7 +53,9 @@ export class BlizzardPatchParser {
   extractPrevPageUrl(html: string, currentUrl: string): string | null {
     const $ = cheerio.load(html);
     const href = $('.PatchNotesPaginationLink--prev').first().attr('href');
-    if (!href) return null;
+    if (!href) {
+      return null;
+    }
     return new URL(href, currentUrl).toString();
   }
 
@@ -71,7 +73,9 @@ export class BlizzardPatchParser {
         sectionNode.find('.PatchNotesHeroUpdate').each((_index, heroElement) => {
           const heroNode = $(heroElement);
           const heroName = heroNode.find('.PatchNotesHeroUpdate-name').first().text().trim();
-          if (!heroName) return;
+          if (!heroName) {
+            return;
+          }
 
           const devNote = heroNode.find('.PatchNotesHeroUpdate-dev').first().text().trim();
           const abilityChanges = this.collectAbilityChanges($, heroNode);
@@ -88,7 +92,9 @@ export class BlizzardPatchParser {
         });
       } else {
         const body = [sectionDescription, this.collectListItems($, sectionNode)].filter(Boolean).join('\n\n');
-        if (!(sectionTitle || body)) return;
+        if (!(sectionTitle || body)) {
+          return;
+        }
 
         entries.push({
           category: this.inferGenericCategory(sectionTitle),
@@ -116,7 +122,9 @@ export class BlizzardPatchParser {
         .filter(Boolean);
       if (name) {
         lines.push(`■ ${name}`);
-        for (const detail of details) lines.push(`  - ${detail}`);
+        for (const detail of details) {
+          lines.push(`  - ${detail}`);
+        }
       }
     });
     return lines.join('\n');
@@ -132,30 +140,44 @@ export class BlizzardPatchParser {
   }
 
   private extractSectionType(className: string): 'hero_update' | 'generic_update' | 'unknown' {
-    if (className.includes('hero_update')) return 'hero_update';
-    if (className.includes('generic_update')) return 'generic_update';
+    if (className.includes('hero_update')) {
+      return 'hero_update';
+    }
+    if (className.includes('generic_update')) {
+      return 'generic_update';
+    }
     return 'unknown';
   }
 
   private inferGenericCategory(title: string): EntryCategory {
     const lower = title.toLowerCase();
-    if (lower.includes('버그') || lower.includes('수정')) return 'BUG_FIX';
-    if (lower.includes('지도') || lower.includes('맵')) return 'MAP';
-    if (lower.includes('시스템') || lower.includes('인터페이스') || lower.includes('UI')) return 'SYSTEM';
+    if (lower.includes('버그') || lower.includes('수정')) {
+      return 'BUG_FIX';
+    }
+    if (lower.includes('지도') || lower.includes('맵')) {
+      return 'MAP';
+    }
+    if (lower.includes('시스템') || lower.includes('인터페이스') || lower.includes('UI')) {
+      return 'SYSTEM';
+    }
     return 'GENERAL';
   }
 
   private extractVersionFromAnchor(anchorId: string): string | null {
     // patch-2026-05-12 → 2026.05.12
     const match = anchorId.match(/^patch-(\d{4})-(\d{2})-(\d{2})$/);
-    if (!match) return null;
+    if (!match) {
+      return null;
+    }
     return `${match[1]}.${match[2]}.${match[3]}`;
   }
 
   private parseKoreanDate(text: string): Date | null {
     // "2026년 5월 12일"
     const match = text.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
-    if (!match) return null;
+    if (!match) {
+      return null;
+    }
     const [, y, m, d] = match;
     const date = new Date(`${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T00:00:00Z`);
     return Number.isNaN(date.getTime()) ? null : date;

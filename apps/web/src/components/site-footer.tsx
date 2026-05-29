@@ -20,9 +20,7 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-(--color-text-muted) mb-3">
-            탐색
-          </div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-(--color-text-muted) mb-3">탐색</div>
           <ul className="space-y-2">
             <li>
               <Link

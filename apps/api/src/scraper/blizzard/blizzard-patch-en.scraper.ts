@@ -126,11 +126,17 @@ export class BlizzardPatchEnScraper {
     const usedDbIds = new Set<number>();
 
     for (const parsed of parsedEntries) {
-      if (!parsed.heroName) continue;
+      if (!parsed.heroName) {
+        continue;
+      }
       const heroId = heroEnIndex.get(parsed.heroName.toLowerCase());
-      if (!heroId) continue;
+      if (!heroId) {
+        continue;
+      }
       const candidates = (dbByHeroId.get(heroId) ?? []).filter((id) => !usedDbIds.has(id));
-      if (candidates.length === 0) continue;
+      if (candidates.length === 0) {
+        continue;
+      }
 
       const dbEntryId = candidates[0];
       usedDbIds.add(dbEntryId);
@@ -162,7 +168,9 @@ export class BlizzardPatchEnScraper {
     });
     const index = new Map<string, number>();
     for (const hero of heroes) {
-      if (!hero.nameTranslations || typeof hero.nameTranslations !== 'object') continue;
+      if (!hero.nameTranslations || typeof hero.nameTranslations !== 'object') {
+        continue;
+      }
       const en = (hero.nameTranslations as Record<string, unknown>).en;
       if (typeof en === 'string' && en.length > 0) {
         index.set(en.toLowerCase(), hero.id);

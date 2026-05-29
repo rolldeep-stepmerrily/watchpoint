@@ -9,8 +9,12 @@ import { DEFAULT_LOCALE, type Locale } from '@watchpoint/shared';
  *   resolveName('파멸의 일격', null,                     'en') // → '파멸의 일격' (fallback)
  */
 export function resolveName(name: string, nameTranslations: unknown, locale: Locale = DEFAULT_LOCALE): string {
-  if (locale === DEFAULT_LOCALE) return name;
-  if (nameTranslations === null || typeof nameTranslations !== 'object') return name;
+  if (locale === DEFAULT_LOCALE) {
+    return name;
+  }
+  if (nameTranslations === null || typeof nameTranslations !== 'object') {
+    return name;
+  }
   const translated = (nameTranslations as Record<string, unknown>)[locale];
   return typeof translated === 'string' && translated.length > 0 ? translated : name;
 }
@@ -24,9 +28,15 @@ export function resolveDescription<T extends string | null>(
   translations: unknown,
   locale: Locale = DEFAULT_LOCALE,
 ): T {
-  if (locale === DEFAULT_LOCALE) return base;
-  if (translations === null || typeof translations !== 'object') return base;
+  if (locale === DEFAULT_LOCALE) {
+    return base;
+  }
+  if (translations === null || typeof translations !== 'object') {
+    return base;
+  }
   const translated = (translations as Record<string, unknown>)[locale];
-  if (typeof translated === 'string' && translated.length > 0) return translated as T;
+  if (typeof translated === 'string' && translated.length > 0) {
+    return translated as T;
+  }
   return base;
 }

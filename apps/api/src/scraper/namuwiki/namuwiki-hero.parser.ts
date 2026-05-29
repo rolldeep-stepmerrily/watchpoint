@@ -54,14 +54,20 @@ export class NamuwikiHeroParser {
 
   private inferRole(text: string): HeroRole {
     for (const { role, keywords } of ROLE_KEYWORDS) {
-      if (keywords.some((keyword) => text.includes(keyword))) return role;
+      if (keywords.some((keyword) => text.includes(keyword))) {
+        return role;
+      }
     }
     return 'DAMAGE';
   }
 
   private normalizeUrl(url: string | undefined): string | null {
-    if (!url) return null;
-    if (url.startsWith('//')) return `https:${url}`;
+    if (!url) {
+      return null;
+    }
+    if (url.startsWith('//')) {
+      return `https:${url}`;
+    }
     return url;
   }
 }

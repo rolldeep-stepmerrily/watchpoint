@@ -74,7 +74,9 @@ export class NamuwikiHeroScraper {
   private async fetchWithFallback(urls: string[]): Promise<{ url: string; html: string }> {
     for (const url of urls) {
       const html = await this.httpClient.fetchHtmlOrNullOnClientError(url);
-      if (html !== null) return { url, html };
+      if (html !== null) {
+        return { url, html };
+      }
     }
     throw new AppException(SCRAPER_ERRORS.FETCH_FAILED);
   }

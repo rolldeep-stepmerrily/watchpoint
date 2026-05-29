@@ -36,11 +36,21 @@ export interface HeroListParams {
 
 export function getHeroList(params: HeroListParams = {}): Promise<PaginatedDto<HeroSummaryDto>> {
   const search = new URLSearchParams();
-  if (params.role) search.set('role', params.role);
-  if (params.q) search.set('q', params.q);
-  if (params.page) search.set('page', String(params.page));
-  if (params.pageSize) search.set('pageSize', String(params.pageSize));
-  if (params.lang) search.set('lang', params.lang);
+  if (params.role) {
+    search.set('role', params.role);
+  }
+  if (params.q) {
+    search.set('q', params.q);
+  }
+  if (params.page) {
+    search.set('page', String(params.page));
+  }
+  if (params.pageSize) {
+    search.set('pageSize', String(params.pageSize));
+  }
+  if (params.lang) {
+    search.set('lang', params.lang);
+  }
   const qs = search.toString();
   return fetchJson<PaginatedDto<HeroSummaryDto>>(`/heroes${qs ? `?${qs}` : ''}`, 300);
 }
@@ -63,9 +73,15 @@ export interface PatchNoteListParams {
 
 export function getPatchNoteList(params: PatchNoteListParams = {}): Promise<PaginatedDto<PatchNoteSummaryDto>> {
   const search = new URLSearchParams();
-  if (params.page) search.set('page', String(params.page));
-  if (params.pageSize) search.set('pageSize', String(params.pageSize));
-  if (params.lang) search.set('lang', params.lang);
+  if (params.page) {
+    search.set('page', String(params.page));
+  }
+  if (params.pageSize) {
+    search.set('pageSize', String(params.pageSize));
+  }
+  if (params.lang) {
+    search.set('lang', params.lang);
+  }
   const qs = search.toString();
   return fetchJson<PaginatedDto<PatchNoteSummaryDto>>(`/patch-notes${qs ? `?${qs}` : ''}`, 60);
 }

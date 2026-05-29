@@ -62,7 +62,9 @@ export class BlizzardHeroParser {
    * "Ana - Overwatch", "D.Va | Overwatch" 등 사이트별 접미사 제거.
    */
   private cleanName(raw: string | undefined): string | null {
-    if (!raw) return null;
+    if (!raw) {
+      return null;
+    }
     return raw.replace(/\s*[-|·–—]\s*Overwatch.*$/i, '').trim() || null;
   }
 }

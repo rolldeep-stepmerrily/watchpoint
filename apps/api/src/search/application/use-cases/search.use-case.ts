@@ -50,8 +50,12 @@ export class SearchUseCase {
   }
 
   private resolveSubrole(codename: string, subrole: string | null): Subrole | null {
-    if (subrole === null) return null;
-    if (isSubrole(subrole)) return subrole;
+    if (subrole === null) {
+      return null;
+    }
+    if (isSubrole(subrole)) {
+      return subrole;
+    }
     this.logger.warn(`hero ${codename}: invalid subrole "${subrole}" dropped to null`);
     return null;
   }
