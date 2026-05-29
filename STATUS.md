@@ -1,12 +1,19 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-05-26 기준. SPEC.md의 도메인/엔드포인트 명세 + i18n 릴리스 (#30~#35) 머지 직후 시점의 스냅샷.
+> 2026-05-28 기준. 특전(Perks) 시스템 인프라 도입(PR #52 develop 머지) 직후 시점의 스냅샷.
+
+## 0. 다음 작업 순서 (사용자 합의 2026-05-28)
+
+1. **main 릴리스** — PR #52 (HeroPerk 시스템 + PR #50 search 컬럼명 핫픽스). search 핫픽스가 prod에 가야 search 정상화. develop = `e28efee`, main = `275043f`
+2. **perks UI 추가** — `apps/web` 영웅 상세 페이지에 perks 섹션. 현재 API에는 나오지만 화면에 렌더링 안 됨
+3. **perks 데이터 삽입** — 영웅별로 사용자가 namu.wiki 본문 붙여넣기 → 정리 후 `pnpm hero:perks:edit` 또는 seed 추가. subrole 그룹 단위로 진행 권장
 
 ## 1. 한눈에
 
 | 영역 | 상태 | 비고 |
 |---|---|---|
-| 도메인 모델 (Hero/PatchNote/Entry/Scrape) | ✅ 완료 | SPEC 일치 + i18n 필드 6개 추가 |
+| 도메인 모델 (Hero/PatchNote/Entry/Scrape/HeroPerk) | ✅ 완료 | SPEC 일치 + i18n 필드 6개 + HeroPerk 추가 |
+| 특전 시스템 (HeroPerk + tier/slot + iconUrl) | 🟡 인프라/API/CLI 완료, 데이터 1/53 영웅 | D.Va만 입력. UI 미구현. 데이터 입력은 수동 |
 | 공개 API (GET 7종) | ✅ 완료 | `?lang=` 지원, validation 적용 |
 | 인증/권한 | ✅ v1 정책 통과 | 공개 read-only, `/internal/*`은 localhost guard |
 | 스크래퍼 (Blizzard 패치노트, 나무위키 영웅, Blizzard 영문 영웅/패치) | ✅ 코드 완료 | Cron + CLI |
@@ -135,23 +142,30 @@ railway run pnpm patch:sync:en      # 패치 title/summary + entry 영문
 
 ---
 
-## 5. 우선순위 다음 단계 (top 5)
+## 5. 우선순위 다음 단계 (2026-05-28 갱신)
 
 | # | 항목 | 노력 | 영향 |
 |---|---|---|---|
-| 1 | **Prod에서 hero:sync:en:all + patch:sync:en 실행** | 5분 (대기 + 검증) | High — 영문 다국어 실데이터 노출 |
-| 2 | **Prod 환경변수에 `INTERNAL_API_KEY` 16자 이상 추가** | 1분 | High — `/internal/*` 접근 회복 |
-| 3 | **통합 테스트 골든패스 5개** | 0.5일 | Medium — 안전망 |
-| 4 | **이미지 자체 호스팅 (S3 등)** | 1일 | Medium — 핫링크 차단 회피 + 로딩 개선 |
-| 5 | **Prisma 인덱스 보강** (M3) | 0.5일 + migration | Low (v1 규모) |
+| 1 | **main 릴리스 (PR #52)** | 2분 | **Critical** — search 핫픽스 prod 진입 |
+| 2 | **apps/web 영웅 상세에 perks 섹션** | 0.5일 | High — perks가 사용자 화면에 표시됨 |
+| 3 | **영웅별 perks 데이터 입력** | 영웅당 5~10분 × 52명 | High — D.Va 외 모두 빈 배열 |
+| 4 | **Prod에서 hero:sync:en:all + patch:sync:en 실행** | 5분 (Railway 켤 때) | High — 영문 다국어 실데이터 노출 |
+| 5 | **Prod 환경변수에 `INTERNAL_API_KEY` 16자 이상 추가** | 1분 | High — `/internal/*` 접근 회복 |
+| 6 | **통합 테스트 골든패스 5개** | 0.5일 | Medium — 안전망 |
+| 7 | **이미지 자체 호스팅 (S3 등)** | 1일 | Medium — perks iconUrl 채움 + portrait 핫링크 회피 |
+| 8 | **Prisma 인덱스 보강** (M3) | 0.5일 + migration | Low (v1 규모) |
 
-H1(Redis 캐시) / H2(internal guard) / H3(patch entries 보호) / M1(검색 trim) / M2(Prisma 4xx 분기) / M4(스크래퍼 분산 lock) / M5(undici redirect)은 별도 PR로 해결됨.
+H1(Redis 캐시) / H2(internal guard) / H3(patch entries 보호) / M1(검색 trim) / M2(Prisma 4xx 분기) / M4(스크래퍼 분산 lock) / M5(undici redirect) / search case-insensitive(PR #50+#52) / HeroPerk 모델(PR #52)은 별도 PR로 해결됨.
+
+Railway 배포 작업(#4, #5)은 사용자가 "한참 미룬다" 결정 — 우선순위에 있지만 차단 상태.
 
 ---
 
 ## 6. 장기 / 검토 후 결정
 
-- **이미지 자체 호스팅 (S3 등)** — 현재 `hero.portraitUrl`이 `i.namu.wiki` 핫링크. namu Cloudflare가 referrer 기반으로 부분 차단(403)해서 사용자 화면에서 이미지 깨짐. 작업 범위: scraper 또는 별도 cron이 portraitUrl을 fetch → S3/R2/Railway volume에 저장 → DB의 portraitUrl을 자체 도메인 URL로 치환. 이미지 의존도 namu→0, hotlink 차단 회피 + 로딩 속도 개선
+- **HeroPerk i18n 영문 데이터** — 컬럼은 있지만 데이터 0건. Blizzard 영문 perk 페이지 구조 미검증. 일단 KO만 채우고 영문은 후속
+- **PatchNoteEntry.perkId 자동 매핑** — FK는 있지만 patch scraper는 perk 변경을 인식 못 함. 패치마다 perk 수치 바뀔 때 entry에 perkId 채우는 워크플로우/CLI 미구현
+- **이미지 자체 호스팅 (S3 등)** — 현재 `hero.portraitUrl`이 `i.namu.wiki` 핫링크. namu Cloudflare가 referrer 기반으로 부분 차단(403)해서 사용자 화면에서 이미지 깨짐. perks의 iconUrl도 같은 문제. 작업 범위: scraper 또는 별도 cron이 portraitUrl/iconUrl을 fetch → S3/R2/Railway volume에 저장 → DB URL을 자체 도메인으로 치환. 이미지 의존도 namu→0, hotlink 차단 회피 + 로딩 속도 개선
 - **불완전 영웅 능력/스탯 수동 보정** — 현재 1 ability만 있는 emre/jetpack-cat/mizuki/vendetta/wuyang + 0 ability인 anran/domina는 `pnpm hero:edit <codename>` + Prisma Studio로 채워야 함 (parser는 og:meta만 추출하는 정책. namuwiki Vue SPA로 자동 추출 불가)
 - 통합 테스트 (jest + supertest) — 최소 골든 패스 5개 (heroes list, hero detail, patch list, patch detail, search)
 - Cron success 후 web `revalidatePath` 호출 — ISR 즉시 무효화

@@ -24,6 +24,7 @@ model Hero {
 
   stat          HeroStat?
   abilities     HeroAbility[]
+  perks         HeroPerk[]
   statRevisions HeroStatRevision[]
   patchEntries  PatchNoteEntry[]
 
@@ -68,6 +69,28 @@ model HeroAbility {
   @@map("hero_abilities")
 }
 
+model HeroPerk {
+  id                       Int       @id @default(autoincrement())
+  heroId                   Int
+  tier                     PerkTier
+  slot                     Int
+  name                     String
+  nameTranslations         Json?
+  description              String
+  descriptionTranslations  Json?
+  stats                    Json?
+  iconUrl                  String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime? @updatedAt
+
+  hero         Hero             @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  patchEntries PatchNoteEntry[]
+
+  @@unique([heroId, tier, slot])
+  @@index([heroId])
+  @@map("hero_perks")
+}
+
 model HeroStatRevision {
   id          Int      @id @default(autoincrement())
   heroId      Int
@@ -109,6 +132,7 @@ model PatchNoteEntry {
   patchNoteId         Int
   category            EntryCategory
   heroId              Int?
+  perkId              Int?
   title               String
   titleTranslations   Json?
   body                String
@@ -118,9 +142,11 @@ model PatchNoteEntry {
 
   patchNote PatchNote @relation(fields: [patchNoteId], references: [id], onDelete: Cascade)
   hero      Hero?     @relation(fields: [heroId], references: [id], onDelete: SetNull)
+  perk      HeroPerk? @relation(fields: [perkId], references: [id], onDelete: SetNull)
 
   @@index([patchNoteId, order])
   @@index([heroId])
+  @@index([perkId])
   @@map("patch_note_entries")
 }
 
@@ -143,6 +169,11 @@ enum HeroRole {
   TANK
   DAMAGE
   SUPPORT
+}
+
+enum PerkTier {
+  MINOR
+  MAJOR
 }
 
 enum AbilitySlot {

@@ -1,4 +1,4 @@
-import type { AbilitySlot, HeroRole, Subrole } from '../enums';
+import type { AbilitySlot, HeroRole, PerkTier, Subrole } from '../enums';
 
 export interface HeroSummaryDto {
   id: number;
@@ -15,6 +15,7 @@ export interface HeroDetailDto extends HeroSummaryDto {
   sourceUrl: string | null;
   stat: HeroStatDto | null;
   abilities: HeroAbilityDto[];
+  perks: HeroPerkDto[];
 }
 
 export interface HeroStatDto {
@@ -33,4 +34,14 @@ export interface HeroAbilityDto {
   description: string;
   stats: Record<string, unknown> | null;
   order: number;
+}
+
+export interface HeroPerkDto {
+  id: number;
+  tier: PerkTier;
+  slot: number;
+  name: string;
+  description: string;
+  stats: Record<string, unknown> | null;
+  iconUrl: string | null;
 }

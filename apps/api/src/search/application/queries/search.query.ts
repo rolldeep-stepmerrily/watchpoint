@@ -60,15 +60,15 @@ export class SearchQueryHandler implements IQueryHandler<SearchQuery> {
           id,
           codename,
           name,
-          name_translations AS "nameTranslations",
+          "nameTranslations",
           role,
           subrole,
-          released_at AS "releasedAt",
-          portrait_url AS "portraitUrl"
+          "releasedAt",
+          "portraitUrl"
         FROM heroes
         WHERE name ILIKE ${pattern}
            OR codename ILIKE ${pattern}
-           OR (name_translations ->> 'en') ILIKE ${pattern}
+           OR ("nameTranslations" ->> 'en') ILIKE ${pattern}
         ORDER BY role ASC, name ASC
         LIMIT ${RESULT_LIMIT}
       `,
@@ -77,11 +77,11 @@ export class SearchQueryHandler implements IQueryHandler<SearchQuery> {
           id,
           version,
           title,
-          title_translations AS "titleTranslations",
-          released_at AS "releasedAt",
-          source_url AS "sourceUrl",
+          "titleTranslations",
+          "releasedAt",
+          "sourceUrl",
           summary,
-          summary_translations AS "summaryTranslations",
+          "summaryTranslations",
           status
         FROM patch_notes
         WHERE status = 'PUBLISHED'
@@ -89,10 +89,10 @@ export class SearchQueryHandler implements IQueryHandler<SearchQuery> {
                version ILIKE ${pattern}
             OR title ILIKE ${pattern}
             OR summary ILIKE ${pattern}
-            OR (title_translations ->> 'en') ILIKE ${pattern}
-            OR (summary_translations ->> 'en') ILIKE ${pattern}
+            OR ("titleTranslations" ->> 'en') ILIKE ${pattern}
+            OR ("summaryTranslations" ->> 'en') ILIKE ${pattern}
           )
-        ORDER BY released_at DESC
+        ORDER BY "releasedAt" DESC
         LIMIT ${RESULT_LIMIT}
       `,
     ]);
