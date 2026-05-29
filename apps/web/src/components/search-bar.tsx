@@ -158,9 +158,7 @@ export function SearchBar() {
           id="search-results"
           className="absolute left-0 right-0 mt-2 rounded-lg border border-(--color-border) bg-(--color-surface) shadow-lg overflow-hidden max-h-[60vh] overflow-y-auto"
         >
-          {isLoading && !results && (
-            <p className="px-3 py-3 text-xs text-(--color-text-muted)">{t.search.searching}</p>
-          )}
+          {isLoading && !results && <p className="px-3 py-3 text-xs text-(--color-text-muted)">{t.search.searching}</p>}
           {isEmpty && <p className="px-3 py-3 text-xs text-(--color-text-muted)">{t.search.empty}</p>}
           {results && results.heroes.length > 0 && (
             <section>

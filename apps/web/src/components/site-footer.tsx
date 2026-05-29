@@ -20,14 +20,12 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-(--color-text-muted) mb-3">
-            탐색
-          </div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-(--color-text-muted) mb-3">탐색</div>
           <ul className="space-y-2">
             <li>
               <Link
                 href="/heroes"
-                className="hover:text-(--color-accent-hover)"
+                className="hover:text-(--color-accent) transition-colors"
               >
                 영웅
               </Link>
@@ -35,7 +33,7 @@ export function SiteFooter() {
             <li>
               <Link
                 href="/patch-notes"
-                className="hover:text-(--color-accent-hover)"
+                className="hover:text-(--color-accent) transition-colors"
               >
                 패치노트
               </Link>
@@ -53,7 +51,7 @@ export function SiteFooter() {
                 href="https://overwatch.blizzard.com/ko-kr/news/patch-notes/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-(--color-accent-hover)"
+                className="hover:text-(--color-accent) transition-colors"
               >
                 Blizzard 공식 패치노트 →
               </a>
@@ -63,7 +61,7 @@ export function SiteFooter() {
                 href="https://namu.wiki/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-(--color-accent-hover)"
+                className="hover:text-(--color-accent) transition-colors"
               >
                 나무위키 (CC BY-NC-SA 2.0 KR) →
               </a>
@@ -73,7 +71,7 @@ export function SiteFooter() {
                 href="https://github.com/rolldeep-stepmerrily/watchpoint"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-(--color-accent-hover)"
+                className="hover:text-(--color-accent) transition-colors"
               >
                 GitHub →
               </a>
