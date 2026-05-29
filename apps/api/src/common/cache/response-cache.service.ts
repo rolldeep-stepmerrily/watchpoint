@@ -17,7 +17,9 @@ export class ResponseCache {
 
   async wrap<T>(key: string, ttlSeconds: number, loader: () => Promise<T>): Promise<T> {
     const cached = await this.redisService.getJson<T>(key);
-    if (cached !== null) return cached;
+    if (cached !== null) {
+      return cached;
+    }
 
     const fresh = await loader();
     await this.redisService.setJson(key, fresh, ttlSeconds);

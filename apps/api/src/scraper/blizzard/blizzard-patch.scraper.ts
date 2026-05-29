@@ -182,7 +182,9 @@ export class BlizzardPatchScraper {
           summary.created += 1;
         }
 
-        if (status === PatchNoteStatus.PENDING_REVIEW) summary.pendingReview += 1;
+        if (status === PatchNoteStatus.PENDING_REVIEW) {
+          summary.pendingReview += 1;
+        }
       } catch (error) {
         this.logger.warn(`persist patch ${patch.version} failed: ${(error as Error).message}`);
         summary.skipped += 1;
@@ -210,7 +212,9 @@ export class BlizzardPatchScraper {
     let hasUnmappedHero = false;
     const entries = parsed.map(({ heroCodename: _codename, heroName, ...entry }) => {
       const heroId = heroName ? (heroByName.get(heroName) ?? null) : null;
-      if (heroName && heroId === null) hasUnmappedHero = true;
+      if (heroName && heroId === null) {
+        hasUnmappedHero = true;
+      }
       return { ...entry, heroId };
     });
 
