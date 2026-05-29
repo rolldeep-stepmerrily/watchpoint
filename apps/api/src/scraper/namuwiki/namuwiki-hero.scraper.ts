@@ -1,7 +1,7 @@
 import { ResponseCache } from '@@cache';
 import { PrismaService } from '@@db';
 import { AppException } from '@@exceptions';
-import { type HeroRole, Prisma, ScrapeSource } from '@@prisma';
+import { type HeroRole, Prisma, ScrapeSource, type Subrole } from '@@prisma';
 import { Injectable } from '@nestjs/common';
 
 import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
@@ -16,6 +16,7 @@ const NAMUWIKI_BASE = 'https://namu.wiki/w/';
  */
 export interface HeroSyncOverride {
   role: HeroRole;
+  subrole: Subrole;
   releasedAt: Date;
 }
 
@@ -87,6 +88,7 @@ export class NamuwikiHeroScraper {
     const updateData = {
       name: parsed.name,
       role: override.role,
+      subrole: override.subrole,
       releasedAt: override.releasedAt,
       portraitUrl: parsed.portraitUrl,
       description: parsed.description,

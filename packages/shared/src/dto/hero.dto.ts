@@ -5,7 +5,7 @@ export interface HeroSummaryDto {
   codename: string;
   name: string;
   role: HeroRole;
-  subrole: Subrole | null;
+  subrole: Subrole;
   releasedAt: string;
   portraitUrl: string | null;
 }
