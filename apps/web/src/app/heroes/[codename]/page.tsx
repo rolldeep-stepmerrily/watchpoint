@@ -72,7 +72,7 @@ export default async function HeroDetailPage({ params }: Props) {
       <HeroDetailTabs
         hero={hero}
         history={history}
-        t={t}
+        locale={lang}
       />
     </article>
   );

@@ -1,21 +1,22 @@
 'use client';
 
-import type { HeroDetailDto, HeroPatchHistoryDto } from '@@shared';
+import type { HeroDetailDto, HeroPatchHistoryDto, Locale } from '@@shared';
 import Link from 'next/link';
 import { useState } from 'react';
 
 import { categoryColorVar, PERK_TIER_ORDER, perkTierColorVar, slotColorVar, statKeyLabel } from '@/lib/format';
-import { type Labels } from '@/lib/labels';
+import { getLabels, type Labels } from '@/lib/labels';
 
 type TabKey = 'abilities' | 'perks' | 'history';
 
 interface Props {
   hero: HeroDetailDto;
   history: HeroPatchHistoryDto;
-  t: Labels;
+  locale: Locale;
 }
 
-export function HeroDetailTabs({ hero, history, t }: Props) {
+export function HeroDetailTabs({ hero, history, locale }: Props) {
+  const t = getLabels(locale);
   const perksCount = hero.perks?.length ?? 0;
   const historyCount = history.history.length;
   const tabs: { key: TabKey; label: string; count: number; disabled?: boolean }[] = [
