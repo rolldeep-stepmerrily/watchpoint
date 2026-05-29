@@ -7,6 +7,8 @@ import { PrismaModule } from '../common/prisma';
 import { RedisModule } from '../common/redis';
 import { ScraperModule } from '../scraper/scraper.module';
 import { HeroEditCommand } from './commands/hero-edit.command';
+import { HeroIconsDownloadCommand } from './commands/hero-icons-download.command';
+import { HeroIconsDownloadAllCommand } from './commands/hero-icons-download-all.command';
 import { HeroPerksEditCommand } from './commands/hero-perks-edit.command';
 import { HeroSyncCommand } from './commands/hero-sync.command';
 import { HeroSyncAllCommand } from './commands/hero-sync-all.command';
@@ -50,6 +52,8 @@ import { PatchSyncEnCommand } from './commands/patch-sync-en.command';
     HeroSyncEnAllCommand,
     HeroEditCommand,
     HeroPerksEditCommand,
+    HeroIconsDownloadCommand,
+    HeroIconsDownloadAllCommand,
   ],
 })
 export class CliModule {}

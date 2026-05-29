@@ -29,6 +29,12 @@ import { NamuwikiHeroParser, NamuwikiHeroScraper } from './namuwiki';
     NamuwikiHeroParser,
     NamuwikiHeroScraper,
   ],
-  exports: [BlizzardPatchScraper, BlizzardPatchEnScraper, NamuwikiHeroScraper, BlizzardHeroEnScraper],
+  exports: [
+    BlizzardPatchScraper,
+    BlizzardPatchEnScraper,
+    NamuwikiHeroScraper,
+    BlizzardHeroEnScraper,
+    ScraperHttpClient,
+  ],
 })
 export class ScraperModule {}

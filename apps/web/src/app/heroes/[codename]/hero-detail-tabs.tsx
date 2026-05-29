@@ -112,20 +112,34 @@ function AbilitiesPanel({ hero, t }: { hero: HeroDetailDto; t: Labels }) {
               aria-hidden
             />
             <div className="pl-2">
-              <div className="flex items-baseline justify-between gap-3">
-                <span
-                  className="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded"
-                  style={{
-                    color: slotColor,
-                    backgroundColor: `color-mix(in srgb, ${slotColor} 12%, transparent)`,
-                  }}
-                >
-                  {t.slot(ability.slot)}
-                </span>
-                {ability.key && <span className="text-[11px] text-(--color-text-faint) font-mono">{ability.key}</span>}
+              <div className="flex items-start gap-3">
+                {ability.iconUrl && (
+                  // biome-ignore lint/performance/noImgElement: local self-hosted icon
+                  <img
+                    src={ability.iconUrl}
+                    alt=""
+                    className="h-10 w-10 shrink-0 rounded border border-(--color-border) bg-(--color-bg) p-0.5"
+                  />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span
+                      className="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded"
+                      style={{
+                        color: slotColor,
+                        backgroundColor: `color-mix(in srgb, ${slotColor} 12%, transparent)`,
+                      }}
+                    >
+                      {t.slot(ability.slot)}
+                    </span>
+                    {ability.key && (
+                      <span className="text-[11px] text-(--color-text-faint) font-mono">{ability.key}</span>
+                    )}
+                  </div>
+                  <div className="font-bold text-base mt-1 text-(--color-text-strong)">{ability.name}</div>
+                </div>
               </div>
-              <div className="font-bold text-base mt-1.5 text-(--color-text-strong)">{ability.name}</div>
-              <p className="text-sm text-(--color-text-muted) mt-1.5 whitespace-pre-line leading-relaxed">
+              <p className="text-sm text-(--color-text-muted) mt-2 whitespace-pre-line leading-relaxed">
                 {ability.description}
               </p>
               {ability.stats && Object.keys(ability.stats).length > 0 && (
@@ -189,7 +203,17 @@ function PerksPanel({ hero, t }: { hero: HeroDetailDto; t: Labels }) {
                     aria-hidden
                   />
                   <div className="pl-2 space-y-1.5">
-                    <div className="font-bold text-base text-(--color-text-strong)">{perk.name}</div>
+                    <div className="flex items-center gap-2">
+                      {perk.iconUrl && (
+                        // biome-ignore lint/performance/noImgElement: local self-hosted icon
+                        <img
+                          src={perk.iconUrl}
+                          alt=""
+                          className="h-8 w-8 shrink-0 rounded border border-(--color-border) bg-(--color-bg) p-0.5"
+                        />
+                      )}
+                      <div className="font-bold text-base text-(--color-text-strong)">{perk.name}</div>
+                    </div>
                     <p className="text-sm text-(--color-text-muted) whitespace-pre-line leading-relaxed">
                       {perk.description}
                     </p>

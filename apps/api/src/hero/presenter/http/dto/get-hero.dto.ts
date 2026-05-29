@@ -50,6 +50,9 @@ export class HeroAbilityItemDto implements HeroAbilityDto {
   @ApiProperty({ nullable: true, description: '데미지/쿨다운/사거리 등 정형 수치' })
   stats!: Record<string, unknown> | null;
 
+  @ApiProperty({ nullable: true, description: '자체 호스팅된 아이콘 이미지 경로 (/icons/...)' })
+  iconUrl!: string | null;
+
   @ApiProperty()
   order!: number;
 }
