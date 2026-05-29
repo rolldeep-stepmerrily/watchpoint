@@ -1,12 +1,25 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-05-28 기준. 특전(Perks) 시스템 인프라 도입(PR #52 develop 머지) 직후 시점의 스냅샷.
+> 2026-05-29 기준. develop = `0d89491` (PR #61 영웅 상세 리디자인 머지 직후).
 
-## 0. 다음 작업 순서 (사용자 합의 2026-05-28)
+## 0. 진행 중 / 다음 (2026-05-29 중단 시점)
 
-1. **main 릴리스** — PR #52 (HeroPerk 시스템 + PR #50 search 컬럼명 핫픽스). search 핫픽스가 prod에 가야 search 정상화. develop = `e28efee`, main = `275043f`
-2. **perks UI 추가** — `apps/web` 영웅 상세 페이지에 perks 섹션. 현재 API에는 나오지만 화면에 렌더링 안 됨
-3. **perks 데이터 삽입** — 영웅별로 사용자가 namu.wiki 본문 붙여넣기 → 정리 후 `pnpm hero:perks:edit` 또는 seed 추가. subrole 그룹 단위로 진행 권장
+- **WIP**: 능력/특전 아이콘 namuwiki 다운로드 — `feat-hero-icons` 브랜치 push, PR 없음. 매칭 로직 보완 + 51명 일괄 실행 필요. 자세한 건 [memory/watchpoint_icons_wip.md](../../../.claude/projects/C--Users-82105-Desktop-workspace/memory/watchpoint_icons_wip.md)
+- **다음 후보**:
+  - 아이콘 작업 마무리 (위 WIP)
+  - 패치노트 페이지(목록/상세) 리디자인 (지금까지 영웅 목록 + 상세까지만 op.gg 스타일 적용됨)
+  - 홈 페이지 리디자인
+  - perks 데이터 입력 50명 (D.Va만 들어가 있음)
+
+## 0.5 오늘(2026-05-29) 머지 요약
+
+| PR | 내용 | develop |
+|----|------|---------|
+| #56 | 라이트 테마 + Overwatch 컬러 + hover-lift/hover-link 유틸 | `08e3bf5` |
+| #58 | Biome `useBlockStatements` + VSCode 저장 시 자동 포맷 + cspell | `0258b2c` |
+| #57 | `Hero.subrole` String? → Subrole enum NOT NULL 마이그레이션 | `4464cb2` |
+| #60 | 영웅 목록 op.gg 스타일 dense 테이블 (탭 필터) | `43be5e3` |
+| #61 | 영웅 상세 banner + 능력/특전/패치이력 탭 구조 | `0d89491` |
 
 ## 1. 한눈에
 
