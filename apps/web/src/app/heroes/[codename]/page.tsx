@@ -256,7 +256,9 @@ export default async function HeroDetailPage({ params }: Props) {
             <div className="space-y-6">
               {PERK_TIER_ORDER.map((tier) => {
                 const tierPerks = hero.perks.filter((perk) => perk.tier === tier);
-                if (tierPerks.length === 0) return null;
+                if (tierPerks.length === 0) {
+                  return null;
+                }
                 const tierColor = `var(${perkTierColorVar(tier)})`;
                 return (
                   <div
