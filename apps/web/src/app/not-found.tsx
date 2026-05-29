@@ -17,7 +17,9 @@ export default async function NotFound() {
   return (
     <div className="space-y-6">
       <header className="space-y-2">
-        <p className="text-sm font-mono uppercase tracking-widest text-(--color-text-muted)">{t.common.notFound.kicker}</p>
+        <p className="text-sm font-mono uppercase tracking-widest text-(--color-text-muted)">
+          {t.common.notFound.kicker}
+        </p>
         <h1 className="text-2xl font-semibold tracking-tight">{t.common.notFound.heading}</h1>
         <p className="text-(--color-text-muted) max-w-lg leading-relaxed">{t.common.notFound.body}</p>
       </header>

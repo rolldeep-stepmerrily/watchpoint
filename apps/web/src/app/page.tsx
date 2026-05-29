@@ -17,12 +17,15 @@ export default async function HomePage() {
   return (
     <div className="space-y-16">
       {/* Hero section */}
-      <section className="relative overflow-hidden rounded-2xl border border-(--color-border) bg-gradient-to-br from-(--color-surface-elevated) via-(--color-surface) to-(--color-bg) px-8 py-14 sm:px-12 sm:py-20">
+      <section
+        className="relative overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface-elevated) px-8 py-14 sm:px-12 sm:py-20"
+        style={{ boxShadow: 'var(--shadow-card)' }}
+      >
         <div
-          className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          className="absolute inset-0 opacity-100 pointer-events-none"
           style={{
             backgroundImage:
-              'radial-gradient(circle at 20% 20%, var(--color-accent) 0%, transparent 40%), radial-gradient(circle at 80% 70%, var(--color-role-tank) 0%, transparent 45%)',
+              'radial-gradient(circle at 0% 0%, var(--color-accent-faint) 0%, transparent 45%), radial-gradient(circle at 100% 100%, rgba(74, 76, 78, 0.06) 0%, transparent 45%)',
           }}
           aria-hidden
         />
@@ -39,13 +42,14 @@ export default async function HomePage() {
           <div className="flex flex-wrap gap-3 pt-2">
             <Link
               href="/heroes"
-              className="px-5 py-2.5 rounded-md bg-(--color-accent) text-(--color-bg) font-semibold text-sm hover:bg-(--color-accent-hover) transition-colors"
+              className="px-5 py-2.5 rounded-md bg-(--color-accent) text-white font-semibold text-sm hover:bg-(--color-accent-hover) hover:shadow-lg hover:-translate-y-0.5 transition-all"
+              style={{ boxShadow: '0 2px 8px rgba(250, 156, 29, 0.25)' }}
             >
               {t.home.heroesHeading} →
             </Link>
             <Link
               href="/patch-notes"
-              className="px-5 py-2.5 rounded-md border border-(--color-border-strong) text-(--color-text) font-semibold text-sm hover:bg-(--color-surface-hover) transition-colors"
+              className="px-5 py-2.5 rounded-md border border-(--color-border-strong) text-(--color-text) font-semibold text-sm hover:border-(--color-accent) hover:text-(--color-accent) hover:-translate-y-0.5 transition-all"
             >
               {t.home.patchNotesHeading}
             </Link>

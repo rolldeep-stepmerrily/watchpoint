@@ -33,7 +33,10 @@ export function SiteHeader() {
   const menuLabel = isOpen ? t.nav.menuClose : t.nav.menuOpen;
 
   return (
-    <header className="border-b border-(--color-border) bg-(--color-bg)/85 backdrop-blur sticky top-0 z-20">
+    <header
+      className="border-b border-(--color-border) bg-(--color-bg)/90 backdrop-blur sticky top-0 z-20"
+      style={{ boxShadow: '0 1px 2px rgba(74, 76, 78, 0.04)' }}
+    >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center gap-8">
         <Link
           href="/"
