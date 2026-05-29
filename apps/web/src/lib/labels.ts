@@ -246,6 +246,9 @@ interface Copy {
     abilities: string;
     perks: string;
     patchHistory: string;
+    history: {
+      columns: { version: string; date: string; changes: string };
+    };
     descriptionFallback: (name: string) => string;
   };
   patchNotes: {
@@ -352,6 +355,9 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       abilities: '능력',
       perks: '특전',
       patchHistory: '패치 이력',
+      history: {
+        columns: { version: '버전', date: '날짜', changes: '변경 내용' },
+      },
       descriptionFallback: (name) => `오버워치 영웅 ${name}의 능력 수치와 패치 이력.`,
     },
     patchNotes: {
@@ -456,6 +462,9 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       abilities: 'Abilities',
       perks: 'Perks',
       patchHistory: 'Patch history',
+      history: {
+        columns: { version: 'Version', date: 'Date', changes: 'Changes' },
+      },
       descriptionFallback: (name) => `Ability stats and patch history for Overwatch hero ${name}.`,
     },
     patchNotes: {
