@@ -1,9 +1,12 @@
 import { ResponseCache } from '@@cache';
 import { PrismaService } from '@@db';
 import { PatchNoteStatus, ScrapeSource } from '@@prisma';
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 
+import { HERO_CATALOG_BY_CODENAME } from '../../domain/hero-catalog';
+import { HeroIconMatcher } from '../../seeder';
 import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
+import { NamuwikiHeroScraper } from '../namuwiki/namuwiki-hero.scraper';
 import { BlizzardPatchParser } from './blizzard-patch.parser';
 import type { ParsedPatchEntry, ParsedPatchNote } from './dto/parsed-patch-note.dto';
 
@@ -15,6 +18,8 @@ interface SyncSummary {
   updated: number;
   pendingReview: number;
   skipped: number;
+  /** 새로 created되거나 (PUBLISHED 아닌) updated된 patch의 entries에 등장한 unique hero ids */
+  affectedHeroIds: number[];
 }
 
 interface BackfillOptions {
@@ -42,6 +47,9 @@ export class BlizzardPatchScraper {
     private readonly recorder: ScrapeJobRecorder,
     private readonly prismaService: PrismaService,
     private readonly responseCache: ResponseCache,
+    private readonly namuwikiScraper: NamuwikiHeroScraper,
+    @Inject(forwardRef(() => HeroIconMatcher))
+    private readonly iconMatcher: HeroIconMatcher,
   ) {}
 
   async sync(): Promise<SyncSummary> {
@@ -58,7 +66,53 @@ export class BlizzardPatchScraper {
     if (summary.created > 0 || summary.updated > 0) {
       await this.responseCache.invalidateAll();
     }
+    if (summary.affectedHeroIds.length > 0) {
+      void this.syncAffectedHeroes(summary.affectedHeroIds);
+    }
     return summary;
+  }
+
+  /**
+   * 새 패치 발견 → entries에 등장한 영웅들을 백그라운드로 재동기화.
+   * - namuwiki 영웅 페이지(능력 stats) 재크롤 — 며칠 안에 사용자들이 반영하는 점 활용
+   * - Blizzard ko-kr 페이지(능력/특전 아이콘 + perks 시드) 재크롤 — 패치로 perks가 reroll되면 자동 반영
+   * 두 단계 모두 diff logger가 hero_change_logs에 변경 사항 기록.
+   * 한 영웅 실패가 다음 영웅을 막지 않게 catch.
+   */
+  private async syncAffectedHeroes(heroIds: number[]): Promise<void> {
+    const heroes = await this.prismaService.hero.findMany({
+      where: { id: { in: heroIds } },
+      select: { codename: true },
+    });
+    this.logger.log(`patch sync triggered hero auto-sync: ${heroes.length} heroes`);
+
+    for (const { codename } of heroes) {
+      const catalog = HERO_CATALOG_BY_CODENAME[codename];
+      if (!catalog) {
+        this.logger.warn(`auto-sync skip ${codename}: not in HERO_CATALOG`);
+        continue;
+      }
+      try {
+        const result = await this.namuwikiScraper.sync(codename, catalog.pageTitle, {
+          role: catalog.role,
+          subrole: catalog.subrole,
+          releasedAt: new Date(catalog.releasedAt),
+        });
+        this.logger.log(`auto-sync namu ${codename}: abilities=${result.abilitiesCount} hasStat=${result.hasStat}`);
+      } catch (error) {
+        this.logger.warn(`auto-sync namu ${codename} failed: ${(error as Error).message}`);
+      }
+      try {
+        const result = await this.iconMatcher.downloadFor(codename);
+        this.logger.log(
+          `auto-sync icons ${codename}: abil=${result.abilityMatched}/${result.abilityTotal} perks=${result.perkMatched}/${result.perkTotal}`,
+        );
+      } catch (error) {
+        this.logger.warn(`auto-sync icons ${codename} failed: ${(error as Error).message}`);
+      }
+    }
+
+    this.logger.log('patch-triggered hero auto-sync complete');
   }
 
   /**
@@ -141,7 +195,9 @@ export class BlizzardPatchScraper {
       updated: 0,
       pendingReview: 0,
       skipped: 0,
+      affectedHeroIds: [],
     };
+    const affected = new Set<number>();
 
     for (const patch of patches) {
       try {
@@ -167,6 +223,13 @@ export class BlizzardPatchScraper {
             },
           });
           summary.updated += 1;
+          if (!isPublished) {
+            for (const entry of entries) {
+              if (entry.heroId !== null) {
+                affected.add(entry.heroId);
+              }
+            }
+          }
         } else {
           await this.prismaService.patchNote.create({
             data: {
@@ -180,6 +243,11 @@ export class BlizzardPatchScraper {
             },
           });
           summary.created += 1;
+          for (const entry of entries) {
+            if (entry.heroId !== null) {
+              affected.add(entry.heroId);
+            }
+          }
         }
 
         if (status === PatchNoteStatus.PENDING_REVIEW) {
@@ -190,6 +258,8 @@ export class BlizzardPatchScraper {
         summary.skipped += 1;
       }
     }
+
+    summary.affectedHeroIds = Array.from(affected);
 
     return summary;
   }
