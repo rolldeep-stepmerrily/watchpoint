@@ -1,7 +1,7 @@
 import { ResponseCache } from '@@cache';
 import { Command, CommandRunner } from 'nest-commander';
 
-import { HeroIconMatcher } from '../hero-icon-matcher';
+import { HeroIconMatcher } from '../../seeder';
 import { HERO_REGISTRY } from '../hero-registry';
 
 interface CodenameSummary {

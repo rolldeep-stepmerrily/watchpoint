@@ -27,6 +27,7 @@ model Hero {
   perks         HeroPerk[]
   statRevisions HeroStatRevision[]
   patchEntries  PatchNoteEntry[]
+  changeLogs    HeroChangeLog[]
 
   @@index([role])
   @@map("heroes")
@@ -161,9 +162,35 @@ model ScrapeJob {
   error       String?
   diffSummary Json?
 
+  changeLogs HeroChangeLog[]
+
   @@index([source, startedAt])
   @@index([status])
   @@map("scrape_jobs")
+}
+
+/// 영웅 데이터(stats/abilities/perks) 자동 sync 시 발견된 변경 사항 audit log.
+/// 디버그/추적용 — 비즈니스 로직은 이 테이블을 읽지 않음.
+model HeroChangeLog {
+  id          Int            @id @default(autoincrement())
+  heroId      Int
+  scrapeJobId Int?
+  changeType  HeroChangeType
+  /// 'hero' | 'ability' | 'perk' | 'stat' 등의 대상 분류
+  target      String
+  /// 식별자 — ability slot, perk "tier-slot", stat key 등 (없으면 null)
+  targetKey   String?
+  before      Json?
+  after       Json?
+  createdAt   DateTime       @default(now())
+
+  hero      Hero       @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  scrapeJob ScrapeJob? @relation(fields: [scrapeJobId], references: [id], onDelete: SetNull)
+
+  @@index([heroId, createdAt])
+  @@index([changeType])
+  @@index([scrapeJobId])
+  @@map("hero_change_logs")
 }
 
 enum HeroRole {
@@ -218,6 +245,19 @@ enum ScrapeSource {
   BLIZZARD_PATCH_NOTES_EN
   BLIZZARD_HERO_EN
   NAMUWIKI_HERO
+}
+
+enum HeroChangeType {
+  HERO_STAT_CHANGED
+  ABILITY_ADDED
+  ABILITY_REMOVED
+  ABILITY_NAME_CHANGED
+  ABILITY_DESCRIPTION_CHANGED
+  ABILITY_STATS_CHANGED
+  PERK_ADDED
+  PERK_REMOVED
+  PERK_NAME_CHANGED
+  PERK_DESCRIPTION_CHANGED
 }
 
 enum ScrapeStatus {
