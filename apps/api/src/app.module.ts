@@ -15,6 +15,7 @@ import { InternalModule } from './internal/internal.module';
 import { PatchNoteModule } from './patch-note/patch-note.module';
 import { ScraperModule } from './scraper/scraper.module';
 import { SearchModule } from './search/search.module';
+import { SeederModule } from './seeder';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { SearchModule } from './search/search.module';
         SCRAPER_REQUEST_DELAY_MS: Joi.number().default(2000),
         SCRAPER_CRON_ENABLED: Joi.boolean().default(false),
         INTERNAL_API_KEY: Joi.string().min(16).optional(),
+        AUTO_SEED_ON_BOOT: Joi.string().valid('true', 'false').default('false'),
       }),
       isGlobal: true,
       envFilePath: ['.env', '../../.env'],
@@ -54,6 +56,7 @@ import { SearchModule } from './search/search.module';
     PatchNoteModule,
     ScraperModule,
     SearchModule,
+    SeederModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
