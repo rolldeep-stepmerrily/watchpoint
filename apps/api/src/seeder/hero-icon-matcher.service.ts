@@ -7,6 +7,7 @@ import { dirname, resolve as pathResolve } from 'node:path';
 import { BlizzardIconParser, type ParsedAbilityIcon, type ParsedPerkIcon } from '../scraper/blizzard';
 import { ScraperHttpClient } from '../scraper/common';
 
+import { HeroDiffLogger } from './hero-diff-logger.service';
 import { ABILITY_ID_TO_SLOT } from './icon-overrides';
 
 const BLIZZARD_HERO_BASE = 'https://overwatch.blizzard.com/ko-kr/heroes/';
@@ -45,6 +46,7 @@ export class HeroIconMatcher {
     private readonly http: ScraperHttpClient,
     private readonly parser: BlizzardIconParser,
     private readonly prisma: PrismaService,
+    private readonly diffLogger: HeroDiffLogger,
   ) {}
 
   async downloadFor(codename: string): Promise<DownloadResult> {
@@ -81,7 +83,7 @@ export class HeroIconMatcher {
 
     const parsed = this.parser.parse(html);
     const abilityMatches = this.matchAbilities(hero.abilities, parsed.abilities, codename);
-    const perks = await this.ensurePerks(hero.id, hero.perks, parsed.perks);
+    const perks = await this.ensurePerks(codename, hero.id, hero.perks, parsed.perks);
 
     const result: DownloadResult = {
       codename,
@@ -132,6 +134,7 @@ export class HeroIconMatcher {
    * - 자동 시드 후 모든 perks를 다시 반환 (downloadFor가 iconUrl 매핑에 사용).
    */
   private async ensurePerks(
+    codename: string,
     heroId: number,
     existingPerks: readonly HeroPerk[],
     parsedPerks: readonly ParsedPerkIcon[],
@@ -149,11 +152,17 @@ export class HeroIconMatcher {
             where: { id: existing.id },
             data: { name: parsed.label, description: parsed.description },
           });
+          await this.diffLogger.perkUpdated(codename, heroId, existing, {
+            tier: parsed.tier,
+            slot: parsed.slot,
+            name: parsed.label,
+            description: parsed.description,
+          });
         }
         continue;
       }
 
-      await this.prisma.heroPerk.create({
+      const created = await this.prisma.heroPerk.create({
         data: {
           heroId,
           tier: parsed.tier,
@@ -162,7 +171,15 @@ export class HeroIconMatcher {
           description: parsed.description,
         },
       });
-      this.logger.log(`perk created: heroId=${heroId} ${parsed.tier}-${parsed.slot} "${parsed.label}"`);
+      await this.diffLogger.perkAdded(codename, heroId, created);
+    }
+
+    for (const existing of existingPerks) {
+      const stillPresent = parsedPerks.find((p) => p.tier === existing.tier && p.slot === existing.slot);
+      if (!stillPresent) {
+        await this.prisma.heroPerk.delete({ where: { id: existing.id } });
+        await this.diffLogger.perkRemoved(codename, heroId, existing);
+      }
     }
 
     return this.prisma.heroPerk.findMany({

@@ -2,8 +2,9 @@ import { ResponseCache } from '@@cache';
 import { PrismaService } from '@@db';
 import { AppException } from '@@exceptions';
 import { type HeroRole, Prisma, ScrapeSource, type Subrole } from '@@prisma';
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 
+import { HeroDiffLogger } from '../../seeder';
 import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
 import { SCRAPER_ERRORS } from '../scraper.error';
 import type { ParsedHero } from './dto/parsed-hero.dto';
@@ -35,6 +36,8 @@ export class NamuwikiHeroScraper {
     private readonly recorder: ScrapeJobRecorder,
     private readonly prismaService: PrismaService,
     private readonly responseCache: ResponseCache,
+    @Inject(forwardRef(() => HeroDiffLogger))
+    private readonly diffLogger: HeroDiffLogger,
   ) {}
 
   async sync(codename: string, pageTitle: string, override: HeroSyncOverride): Promise<SyncResult> {
@@ -102,6 +105,7 @@ export class NamuwikiHeroScraper {
         });
 
     if (parsed.stat) {
+      const beforeStat = await this.prismaService.heroStat.findUnique({ where: { heroId: hero.id } });
       const statData = {
         health: parsed.stat.health,
         armor: parsed.stat.armor,
@@ -114,9 +118,20 @@ export class NamuwikiHeroScraper {
         update: statData,
         create: { heroId: hero.id, ...statData },
       });
+      await this.diffLogger.diffStat(parsed.codename, hero.id, beforeStat, {
+        health: parsed.stat.health,
+        armor: parsed.stat.armor,
+        shield: parsed.stat.shield,
+        moveSpeed: parsed.stat.moveSpeed,
+        extras: parsed.stat.extras ?? null,
+      });
     }
 
     if (parsed.abilities.length > 0) {
+      const beforeAbilities = await this.prismaService.heroAbility.findMany({
+        where: { heroId: hero.id },
+        orderBy: [{ slot: 'asc' }, { order: 'asc' }],
+      });
       await this.prismaService.heroAbility.deleteMany({ where: { heroId: hero.id } });
       await this.prismaService.heroAbility.createMany({
         data: parsed.abilities.map((ability) => ({
@@ -129,6 +144,18 @@ export class NamuwikiHeroScraper {
           order: ability.order,
         })),
       });
+      await this.diffLogger.diffAbilities(
+        parsed.codename,
+        hero.id,
+        beforeAbilities,
+        parsed.abilities.map((a) => ({
+          slot: a.slot,
+          order: a.order,
+          name: a.name,
+          description: a.description,
+          stats: a.stats ?? null,
+        })),
+      );
     }
 
     return {

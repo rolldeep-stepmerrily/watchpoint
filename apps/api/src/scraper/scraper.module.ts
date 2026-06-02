@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 
+import { SeederModule } from '../seeder';
 import {
   BlizzardHeroEnScraper,
   BlizzardHeroParser,
@@ -13,6 +14,7 @@ import { ScrapeJobRecorder, ScraperHttpClient } from './common';
 import { NamuwikiHeroParser, NamuwikiHeroScraper } from './namuwiki';
 
 @Module({
+  imports: [forwardRef(() => SeederModule)],
   providers: [
     /** common */
     ScraperHttpClient,
