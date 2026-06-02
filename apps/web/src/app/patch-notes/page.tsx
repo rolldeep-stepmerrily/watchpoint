@@ -23,47 +23,65 @@ export default async function PatchNotesPage() {
   const { items, total } = await getPatchNoteList({ pageSize: 50, lang });
 
   return (
-    <div className="space-y-8">
-      <header className="border-b border-(--color-border) pb-6">
+    <div className="space-y-6">
+      <header className="border-b border-(--color-border) pb-5">
         <p className="text-[11px] font-semibold uppercase tracking-widest text-(--color-text-muted)">Patch Notes</p>
-        <h1 className="text-3xl font-extrabold tracking-tight text-(--color-text-strong) mt-1">
-          {t.patchNotes.titleWithCount(total)}
-        </h1>
+        <div className="flex items-baseline gap-3 mt-1">
+          <h1 className="text-3xl font-extrabold tracking-tight text-(--color-text-strong)">{t.patchNotes.title}</h1>
+          <span className="text-sm text-(--color-text-faint) font-mono">{total}</span>
+        </div>
         <p className="text-sm text-(--color-text-muted) mt-2">{t.patchNotes.subtitle}</p>
       </header>
 
       {items.length === 0 ? (
-        <p className="text-(--color-text-muted)">{t.patchNotes.empty}</p>
+        <p className="text-(--color-text-muted) text-sm py-6">{t.patchNotes.empty}</p>
       ) : (
-        <ul className="space-y-2">
-          {items.map((patch) => (
-            <li key={patch.id}>
-              <Link
-                href={`/patch-notes/${patch.version}`}
-                className="hover-lift group block p-4 rounded-lg border border-(--color-border) bg-(--color-surface) hover:border-(--color-border-strong) hover:bg-(--color-surface-hover)"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="shrink-0 min-w-[5rem]">
-                    <div className="text-base font-mono font-bold text-(--color-accent)">{patch.version}</div>
-                    <div className="text-[11px] text-(--color-text-faint) mt-1 font-mono">
-                      {t.date(patch.releasedAt)}
-                    </div>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="font-bold text-(--color-text-strong) group-hover:text-(--color-accent-hover) transition-colors">
-                      {patch.title}
-                    </h2>
-                    {patch.summary && (
-                      <p className="text-sm text-(--color-text-muted) mt-1.5 line-clamp-2 leading-relaxed">
-                        {patch.summary}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className="border border-(--color-border) rounded-lg overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-(--color-surface) border-b border-(--color-border)">
+              <tr className="text-left text-[10px] uppercase tracking-widest text-(--color-text-muted)">
+                <th className="px-3 py-2 w-24">{t.patchNotes.columns.version}</th>
+                <th className="px-3 py-2 w-32 hidden sm:table-cell">{t.patchNotes.columns.date}</th>
+                <th className="px-3 py-2">{t.patchNotes.columns.title}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((patch) => (
+                <tr
+                  key={patch.id}
+                  className="group border-b border-(--color-border) last:border-0 hover:bg-(--color-accent-faint) transition-colors align-top"
+                >
+                  <td className="px-3 py-3 whitespace-nowrap">
+                    <Link
+                      href={`/patch-notes/${patch.version}`}
+                      className="text-(--color-accent) font-mono text-sm font-bold hover:text-(--color-accent-hover)"
+                    >
+                      {patch.version}
+                    </Link>
+                  </td>
+                  <td className="px-3 py-3 hidden sm:table-cell text-(--color-text-faint) font-mono text-xs whitespace-nowrap">
+                    {t.date(patch.releasedAt)}
+                  </td>
+                  <td className="px-3 py-3">
+                    <Link
+                      href={`/patch-notes/${patch.version}`}
+                      className="block -mx-3 -my-3 px-3 py-3"
+                    >
+                      <div className="font-bold text-(--color-text-strong) group-hover:text-(--color-accent) transition-colors">
+                        {patch.title}
+                      </div>
+                      {patch.summary && (
+                        <p className="text-xs text-(--color-text-muted) mt-1 line-clamp-2 leading-relaxed">
+                          {patch.summary}
+                        </p>
+                      )}
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

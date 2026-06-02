@@ -260,6 +260,13 @@ interface Copy {
     loading: string;
     released: string;
     noChanges: string;
+    columns: {
+      version: string;
+      date: string;
+      title: string;
+      category: string;
+      changes: string;
+    };
     descriptionFallback: (version: string, title: string) => string;
     notFound: {
       title: string;
@@ -369,6 +376,13 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       loading: '패치노트 목록 불러오는 중',
       released: '발표',
       noChanges: '변경사항이 없습니다.',
+      columns: {
+        version: '버전',
+        date: '날짜',
+        title: '제목',
+        category: '분류',
+        changes: '변경 내용',
+      },
       descriptionFallback: (version, title) => `오버워치 ${version} 패치노트 — ${title}`,
       notFound: {
         title: '패치노트를 찾을 수 없음',
@@ -476,6 +490,13 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       loading: 'Loading patch notes',
       released: 'Released',
       noChanges: 'No changes.',
+      columns: {
+        version: 'Version',
+        date: 'Date',
+        title: 'Title',
+        category: 'Category',
+        changes: 'Changes',
+      },
       descriptionFallback: (version, title) => `Overwatch ${version} patch notes — ${title}`,
       notFound: {
         title: 'Patch note not found',
