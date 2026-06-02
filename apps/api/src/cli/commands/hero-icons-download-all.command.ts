@@ -11,12 +11,12 @@ interface CodenameSummary {
   perks: string;
   unmatchedDb: number;
   extra: number;
-  error?: string;
+  note?: string;
 }
 
 @Command({
   name: 'hero:icons:download:all',
-  description: 'hero-registry 전체 영웅에 대해 능력/특전 아이콘을 일괄 다운로드합니다.',
+  description: 'hero-registry 전체 영웅에 대해 Blizzard 영문 페이지에서 능력/특전 아이콘을 일괄 다운로드.',
 })
 export class HeroIconsDownloadAllCommand extends CommandRunner {
   constructor(
@@ -32,20 +32,21 @@ export class HeroIconsDownloadAllCommand extends CommandRunner {
     const summaries: CodenameSummary[] = [];
     const unmatchedDetail: Array<{ codename: string; names: string[] }> = [];
 
-    for (const [codename, entry] of entries) {
+    for (const [codename] of entries) {
       try {
-        const result = await this.matcher.downloadFor(codename, entry.pageTitle);
+        const result = await this.matcher.downloadFor(codename);
         const unmatched = [...result.unmatchedAbilities, ...result.unmatchedPerks];
         summaries.push({
           codename,
-          ok: true,
+          ok: result.matched,
           abilities: `${result.abilityMatched}/${result.abilityTotal}`,
           perks: `${result.perkMatched}/${result.perkTotal}`,
           unmatchedDb: unmatched.length,
-          extra: result.extraImages.length,
+          extra: result.extraAbilityIds.length,
+          note: result.skipped ?? '',
         });
 
-        if (unmatched.length > 0) {
+        if (unmatched.length > 0 && result.matched) {
           unmatchedDetail.push({ codename, names: unmatched });
         }
       } catch (error) {
@@ -56,7 +57,7 @@ export class HeroIconsDownloadAllCommand extends CommandRunner {
           perks: '-',
           unmatchedDb: 0,
           extra: 0,
-          error: (error as Error).message,
+          note: (error as Error).message,
         });
       }
     }

@@ -7,7 +7,8 @@ import { HERO_REGISTRY } from '../hero-registry';
 @Command({
   name: 'hero:icons:download',
   arguments: '<codename>',
-  description: '나무위키 영웅 페이지에서 능력/특전 아이콘을 다운로드해 apps/web/public/icons에 저장 + DB iconUrl 갱신.',
+  description:
+    'Blizzard 영문 영웅 페이지에서 능력/특전 아이콘을 다운로드해 apps/web/public/icons에 저장 + DB iconUrl 갱신.',
 })
 export class HeroIconsDownloadCommand extends CommandRunner {
   constructor(
@@ -25,14 +26,12 @@ export class HeroIconsDownloadCommand extends CommandRunner {
       process.exit(1);
     }
 
-    const entry = HERO_REGISTRY[codename];
-
-    if (!entry) {
+    if (!HERO_REGISTRY[codename]) {
       console.error(`'${codename}' 영웅이 hero-registry에 등록되지 않았습니다.`);
       process.exit(1);
     }
 
-    const result = await this.matcher.downloadFor(codename, entry.pageTitle);
+    const result = await this.matcher.downloadFor(codename);
 
     console.log('완료:');
     console.table([
@@ -41,7 +40,8 @@ export class HeroIconsDownloadCommand extends CommandRunner {
         abilities: `${result.abilityMatched}/${result.abilityTotal}`,
         perks: `${result.perkMatched}/${result.perkTotal}`,
         unmatchedDb: result.unmatchedAbilities.length + result.unmatchedPerks.length,
-        extraImages: result.extraImages.length,
+        extraIds: result.extraAbilityIds.length,
+        skipped: result.skipped ?? '',
       },
     ]);
 
@@ -61,11 +61,11 @@ export class HeroIconsDownloadCommand extends CommandRunner {
       }
     }
 
-    if (result.extraImages.length > 0) {
-      console.log('\nHTML에 있지만 DB와 매칭 안 된 이미지 (참고용):');
+    if (result.extraAbilityIds.length > 0) {
+      console.log('\nBlizzard 페이지에 있지만 DB와 매칭 안 된 ability id (참고용):');
 
-      for (const name of result.extraImages) {
-        console.log(`  - ${name}`);
+      for (const id of result.extraAbilityIds) {
+        console.log(`  - ${id}`);
       }
     }
 
