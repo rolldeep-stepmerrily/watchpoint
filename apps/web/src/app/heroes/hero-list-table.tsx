@@ -9,6 +9,8 @@ import { ROLE_ORDER, roleColorVar } from '@/lib/format';
 import { getLabels } from '@/lib/labels';
 
 type RoleFilter = 'ALL' | HeroRole;
+type SortKey = 'name' | 'role' | 'subrole' | 'released';
+type SortDir = 'asc' | 'desc';
 
 interface Props {
   items: HeroSummaryDto[];
@@ -18,31 +20,71 @@ interface Props {
 export function HeroListTable({ items, locale }: Props) {
   const t = getLabels(locale);
   const [role, setRole] = useState<RoleFilter>('ALL');
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
 
   const collator = useMemo(
     () => new Intl.Collator(locale === 'en' ? 'en-US' : locale === 'ja' ? 'ja-JP' : 'ko-KR'),
     [locale],
   );
 
-  const sorted = useMemo(() => {
-    return [...items].sort((a, b) => {
-      const roleA = ROLE_ORDER.indexOf(a.role);
-      const roleB = ROLE_ORDER.indexOf(b.role);
-      if (roleA !== roleB) {
-        return roleA - roleB;
-      }
-      return collator.compare(a.name, b.name);
-    });
-  }, [items, collator]);
+  const handleSort = (key: SortKey): void => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
 
-  const filtered = role === 'ALL' ? sorted : sorted.filter((h) => h.role === role);
+      return;
+    }
+
+    setSortKey(key);
+    setSortDir('asc');
+  };
+
+  const sorted = useMemo(() => {
+    const filtered = role === 'ALL' ? items : items.filter((h) => h.role === role);
+
+    if (sortKey === null) {
+      return [...filtered].sort((a, b) => {
+        const r = ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role);
+
+        if (r !== 0) {
+          return r;
+        }
+
+        return collator.compare(a.name, b.name);
+      });
+    }
+
+    const compare = (a: HeroSummaryDto, b: HeroSummaryDto): number => {
+      switch (sortKey) {
+        case 'name':
+          return collator.compare(a.name, b.name);
+        case 'role':
+          return ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || collator.compare(a.name, b.name);
+        case 'subrole':
+          return (
+            collator.compare(t.subrole(a.subrole as Subrole), t.subrole(b.subrole as Subrole)) ||
+            collator.compare(a.name, b.name)
+          );
+        case 'released':
+          return (
+            new Date(a.releasedAt).getTime() - new Date(b.releasedAt).getTime() || collator.compare(a.name, b.name)
+          );
+      }
+    };
+
+    const out = [...filtered].sort(compare);
+
+    return sortDir === 'desc' ? out.reverse() : out;
+  }, [items, role, sortKey, sortDir, collator, t]);
+
+  const allHeroes = role === 'ALL' ? items : items.filter((h) => h.role === role);
 
   const roleTabs: { key: RoleFilter; label: string; count: number }[] = [
-    { key: 'ALL', label: t.heroes.allLabel, count: sorted.length },
+    { key: 'ALL', label: t.heroes.allLabel, count: items.length },
     ...ROLE_ORDER.map((r) => ({
       key: r,
       label: t.role(r),
-      count: sorted.filter((h) => h.role === r).length,
+      count: items.filter((h) => h.role === r).length,
     })),
   ];
 
@@ -86,7 +128,7 @@ export function HeroListTable({ items, locale }: Props) {
         })}
       </div>
 
-      {filtered.length === 0 ? (
+      {allHeroes.length === 0 ? (
         <p className="text-(--color-text-muted) text-sm py-6">{t.heroes.empty}</p>
       ) : (
         <div className="border border-(--color-border) rounded-lg overflow-hidden">
@@ -94,14 +136,42 @@ export function HeroListTable({ items, locale }: Props) {
             <thead className="bg-(--color-surface) border-b border-(--color-border)">
               <tr className="text-left text-[10px] uppercase tracking-widest text-(--color-text-muted)">
                 <th className="px-3 py-2 w-12">#</th>
-                <th className="px-3 py-2">{t.heroes.columns.hero}</th>
-                <th className="px-3 py-2 hidden sm:table-cell">{t.heroes.columns.role}</th>
-                <th className="px-3 py-2 hidden md:table-cell">{t.heroes.columns.subrole}</th>
-                <th className="px-3 py-2 hidden lg:table-cell text-right">{t.heroes.columns.released}</th>
+                <SortableTh
+                  label={t.heroes.columns.hero}
+                  sortKey="name"
+                  active={sortKey}
+                  dir={sortDir}
+                  onClick={handleSort}
+                />
+                <SortableTh
+                  label={t.heroes.columns.role}
+                  sortKey="role"
+                  active={sortKey}
+                  dir={sortDir}
+                  onClick={handleSort}
+                  className="hidden sm:table-cell"
+                />
+                <SortableTh
+                  label={t.heroes.columns.subrole}
+                  sortKey="subrole"
+                  active={sortKey}
+                  dir={sortDir}
+                  onClick={handleSort}
+                  className="hidden md:table-cell"
+                />
+                <SortableTh
+                  label={t.heroes.columns.released}
+                  sortKey="released"
+                  active={sortKey}
+                  dir={sortDir}
+                  onClick={handleSort}
+                  className="hidden lg:table-cell"
+                  align="right"
+                />
               </tr>
             </thead>
             <tbody>
-              {filtered.map((hero, idx) => (
+              {sorted.map((hero, idx) => (
                 <HeroRow
                   key={hero.id}
                   hero={hero}
@@ -114,6 +184,48 @@ export function HeroListTable({ items, locale }: Props) {
         </div>
       )}
     </div>
+  );
+}
+
+function SortableTh({
+  label,
+  sortKey,
+  active,
+  dir,
+  onClick,
+  className,
+  align = 'left',
+}: {
+  label: string;
+  sortKey: SortKey;
+  active: SortKey | null;
+  dir: SortDir;
+  onClick: (key: SortKey) => void;
+  className?: string;
+  align?: 'left' | 'right';
+}) {
+  const isActive = active === sortKey;
+  const arrow = !isActive ? '↕' : dir === 'asc' ? '↑' : '↓';
+  const alignClass = align === 'right' ? 'text-right' : 'text-left';
+
+  return (
+    <th className={`px-3 py-2 ${alignClass} ${className ?? ''}`}>
+      <button
+        type="button"
+        onClick={() => onClick(sortKey)}
+        className={`inline-flex items-center gap-1 uppercase tracking-widest text-[10px] font-semibold transition-colors ${
+          isActive ? 'text-(--color-accent)' : 'text-(--color-text-muted) hover:text-(--color-text)'
+        }`}
+      >
+        {label}
+        <span
+          className={`text-[9px] ${isActive ? 'text-(--color-accent)' : 'text-(--color-text-faint)'}`}
+          aria-hidden
+        >
+          {arrow}
+        </span>
+      </button>
+    </th>
   );
 }
 
