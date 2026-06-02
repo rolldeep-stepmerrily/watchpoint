@@ -63,6 +63,7 @@ export class GetHeroUseCase {
           name: resolveName(ability.name, ability.nameTranslations, lang),
           description: resolveDescription(ability.description, ability.descriptionTranslations, lang),
           stats: ability.stats as Record<string, unknown> | null,
+          iconUrl: ability.iconUrl,
           order: ability.order,
         })),
         perks: hero.perks.map((perk) => ({

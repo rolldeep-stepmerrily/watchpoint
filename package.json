@@ -31,7 +31,9 @@
     "hero:sync:all": "pnpm --filter @watchpoint/api hero:sync:all",
     "hero:sync:en": "pnpm --filter @watchpoint/api hero:sync:en",
     "hero:sync:en:all": "pnpm --filter @watchpoint/api hero:sync:en:all",
-    "hero:edit": "pnpm --filter @watchpoint/api hero:edit"
+    "hero:edit": "pnpm --filter @watchpoint/api hero:edit",
+    "hero:icons:download": "pnpm --filter @watchpoint/api hero:icons:download",
+    "hero:icons:download:all": "pnpm --filter @watchpoint/api hero:icons:download:all"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.6",

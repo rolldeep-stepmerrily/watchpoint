@@ -59,6 +59,47 @@ export class ScraperHttpClient {
     return await this.fetchHtmlInternal(url);
   }
 
+  /**
+   * 이미지/바이너리 다운로드. HTML과 동일한 throttle/lock 통과.
+   * 응답 headers의 content-type을 함께 반환해 확장자 결정에 사용.
+   */
+  async fetchBytes(url: string): Promise<{ bytes: Buffer; contentType: string | null }> {
+    const host = this.hostOf(url);
+    const release = await this.acquireSlot(host);
+
+    try {
+      const { statusCode, body, headers } = await request(url, {
+        method: 'GET',
+        headers: {
+          'user-agent': this.userAgent,
+          accept: 'image/*,*/*;q=0.8',
+          'accept-language': 'ko-KR,ko;q=0.9',
+        },
+        dispatcher: this.dispatcher,
+      });
+
+      if (statusCode >= 400) {
+        this.logger.warn(`fetch bytes ${url} returned ${statusCode}`);
+        await body.dump();
+        throw new AppException(SCRAPER_ERRORS.FETCH_FAILED);
+      }
+
+      const arrayBuf = await body.arrayBuffer();
+      const contentType =
+        typeof headers['content-type'] === 'string' ? (headers['content-type'].split(';')[0]?.trim() ?? null) : null;
+
+      return { bytes: Buffer.from(arrayBuf), contentType };
+    } catch (error) {
+      if (error instanceof AppException) {
+        throw error;
+      }
+      this.logger.error(`fetch bytes ${url} failed`, error as Error);
+      throw new AppException(SCRAPER_ERRORS.FETCH_FAILED);
+    } finally {
+      await release();
+    }
+  }
+
   private async fetchHtmlInternal(url: string): Promise<string | null> {
     const host = this.hostOf(url);
     const release = await this.acquireSlot(host);
