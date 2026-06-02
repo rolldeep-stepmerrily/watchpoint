@@ -19,6 +19,7 @@ import { PatchListCommand } from './commands/patch-list.command';
 import { PatchReviewCommand } from './commands/patch-review.command';
 import { PatchSyncCommand } from './commands/patch-sync.command';
 import { PatchSyncEnCommand } from './commands/patch-sync-en.command';
+import { HeroIconMatcher } from './hero-icon-matcher';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { PatchSyncEnCommand } from './commands/patch-sync-en.command';
     HeroSyncEnAllCommand,
     HeroEditCommand,
     HeroPerksEditCommand,
+    HeroIconMatcher,
     HeroIconsDownloadCommand,
     HeroIconsDownloadAllCommand,
   ],

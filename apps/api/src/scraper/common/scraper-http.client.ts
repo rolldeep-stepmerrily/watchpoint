@@ -86,7 +86,7 @@ export class ScraperHttpClient {
 
       const arrayBuf = await body.arrayBuffer();
       const contentType =
-        typeof headers['content-type'] === 'string' ? headers['content-type'].split(';')[0]?.trim() ?? null : null;
+        typeof headers['content-type'] === 'string' ? (headers['content-type'].split(';')[0]?.trim() ?? null) : null;
 
       return { bytes: Buffer.from(arrayBuf), contentType };
     } catch (error) {
