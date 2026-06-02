@@ -6,6 +6,7 @@ import { ResponseCacheModule } from '../common/cache';
 import { PrismaModule } from '../common/prisma';
 import { RedisModule } from '../common/redis';
 import { ScraperModule } from '../scraper/scraper.module';
+import { SeederModule } from '../seeder';
 import { HeroEditCommand } from './commands/hero-edit.command';
 import { HeroIconsDownloadCommand } from './commands/hero-icons-download.command';
 import { HeroIconsDownloadAllCommand } from './commands/hero-icons-download-all.command';
@@ -19,7 +20,6 @@ import { PatchListCommand } from './commands/patch-list.command';
 import { PatchReviewCommand } from './commands/patch-review.command';
 import { PatchSyncCommand } from './commands/patch-sync.command';
 import { PatchSyncEnCommand } from './commands/patch-sync-en.command';
-import { HeroIconMatcher } from './hero-icon-matcher';
 
 @Module({
   imports: [
@@ -40,6 +40,7 @@ import { HeroIconMatcher } from './hero-icon-matcher';
     RedisModule,
     ResponseCacheModule,
     ScraperModule,
+    SeederModule,
   ],
   providers: [
     PatchSyncCommand,
@@ -53,7 +54,6 @@ import { HeroIconMatcher } from './hero-icon-matcher';
     HeroSyncEnAllCommand,
     HeroEditCommand,
     HeroPerksEditCommand,
-    HeroIconMatcher,
     HeroIconsDownloadCommand,
     HeroIconsDownloadAllCommand,
   ],
