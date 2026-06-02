@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/.next/**", "!**/dist/**", "!**/node_modules/**", "!**/generated/**"]
+    "includes": ["**", "!**/.next", "!**/dist", "!**/node_modules", "!**/generated"]
   },
   "formatter": {
     "enabled": true,
@@ -101,7 +101,8 @@
         "useSingleVarDeclarator": "error",
         "noUnusedTemplateLiteral": "error",
         "useNumberNamespace": "error",
-        "noUselessElse": "error"
+        "noUselessElse": "error",
+        "useBlockStatements": "error"
       },
       "suspicious": {
         "noExplicitAny": "warn",

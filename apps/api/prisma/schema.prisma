@@ -13,7 +13,7 @@ model Hero {
   name                     String
   nameTranslations         Json?
   role                     HeroRole
-  subrole                  String?
+  subrole                  Subrole
   releasedAt               DateTime
   portraitUrl              String?
   description              String?
@@ -58,6 +58,7 @@ model HeroAbility {
   description              String
   descriptionTranslations  Json?
   stats                    Json?
+  iconUrl                  String?
   order                    Int          @default(0)
   createdAt                DateTime     @default(now())
   updatedAt                DateTime?    @updatedAt
@@ -174,6 +175,19 @@ enum HeroRole {
 enum PerkTier {
   MINOR
   MAJOR
+}
+
+enum Subrole {
+  Bruiser
+  Initiator
+  Stalwart
+  Sharpshooter
+  Flanker
+  Specialist
+  Recon
+  Tactician
+  Medic
+  Survivor
 }
 
 enum AbilitySlot {

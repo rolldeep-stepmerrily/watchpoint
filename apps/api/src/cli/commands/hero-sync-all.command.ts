@@ -22,6 +22,7 @@ export class HeroSyncAllCommand extends CommandRunner {
       try {
         const result = await this.scraper.sync(codename, entry.pageTitle, {
           role: entry.role,
+          subrole: entry.subrole,
           releasedAt: entry.releasedAt,
         });
         results.push({ codename, ok: true, abilities: result.abilitiesCount });

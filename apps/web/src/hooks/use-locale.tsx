@@ -33,7 +33,9 @@ export function LocaleProvider({ initialLocale, children }: { initialLocale: Loc
 
   const setLocale = useCallback(
     (next: Locale) => {
-      if (next === locale) return;
+      if (next === locale) {
+        return;
+      }
       writeCookie(LANG_COOKIE, next);
       setLocaleState(next);
       router.refresh();

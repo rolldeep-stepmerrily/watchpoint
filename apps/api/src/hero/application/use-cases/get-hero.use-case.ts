@@ -2,7 +2,7 @@ import { CACHE_KEYS, CACHE_TTL, ResponseCache } from '@@cache';
 import { TypedQueryBus } from '@@cqrs';
 import { AppException } from '@@exceptions';
 import { Injectable } from '@nestjs/common';
-import { DEFAULT_LOCALE, isSubrole, type Locale } from '@watchpoint/shared';
+import { DEFAULT_LOCALE, type Locale } from '@watchpoint/shared';
 import { isDefined } from 'class-validator';
 import { HERO_ERRORS } from '../../hero.error';
 import { GetHeroResponseDto } from '../../presenter/http/dto/get-hero.dto';
@@ -42,7 +42,7 @@ export class GetHeroUseCase {
         codename: hero.codename,
         name: resolveName(hero.name, hero.nameTranslations, lang),
         role: hero.role,
-        subrole: isSubrole(hero.subrole) ? hero.subrole : null,
+        subrole: hero.subrole,
         releasedAt: hero.releasedAt.toISOString(),
         portraitUrl: hero.portraitUrl,
         description: resolveDescription(hero.description, hero.descriptionTranslations, lang),
@@ -63,6 +63,7 @@ export class GetHeroUseCase {
           name: resolveName(ability.name, ability.nameTranslations, lang),
           description: resolveDescription(ability.description, ability.descriptionTranslations, lang),
           stats: ability.stats as Record<string, unknown> | null,
+          iconUrl: ability.iconUrl,
           order: ability.order,
         })),
         perks: hero.perks.map((perk) => ({

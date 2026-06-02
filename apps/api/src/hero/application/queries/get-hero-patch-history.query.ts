@@ -56,7 +56,9 @@ export class GetHeroPatchHistoryQueryHandler implements IQueryHandler<GetHeroPat
 
     return entries.sort((a, b) => {
       const releasedDiff = b.patchNote.releasedAt.getTime() - a.patchNote.releasedAt.getTime();
-      if (releasedDiff !== 0) return releasedDiff;
+      if (releasedDiff !== 0) {
+        return releasedDiff;
+      }
       return a.order - b.order;
     });
   }

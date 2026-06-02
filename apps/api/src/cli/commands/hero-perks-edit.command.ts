@@ -113,19 +113,29 @@ export class HeroPerksEditCommand extends CommandRunner {
         });
 
     await this.responseCache.invalidateAll();
-    console.log(
-      `${codename} [${upserted.tier}/${upserted.slot}] ${existing ? '수정' : '생성'} 완료: ${upserted.name}`,
-    );
+    console.log(`${codename} [${upserted.tier}/${upserted.slot}] ${existing ? '수정' : '생성'} 완료: ${upserted.name}`);
   }
 
   private buildUpdateData(options: HeroPerksEditOptions): Prisma.HeroPerkUpdateInput {
     const data: Prisma.HeroPerkUpdateInput = {};
-    if (options.name !== undefined) data.name = options.name;
-    if (options.description !== undefined) data.description = options.description;
-    if (options.stats !== undefined) data.stats = options.stats;
-    if (options.clearStats) data.stats = Prisma.JsonNull;
-    if (options.iconUrl !== undefined) data.iconUrl = options.iconUrl;
-    if (options.clearIcon) data.iconUrl = null;
+    if (options.name !== undefined) {
+      data.name = options.name;
+    }
+    if (options.description !== undefined) {
+      data.description = options.description;
+    }
+    if (options.stats !== undefined) {
+      data.stats = options.stats;
+    }
+    if (options.clearStats) {
+      data.stats = Prisma.JsonNull;
+    }
+    if (options.iconUrl !== undefined) {
+      data.iconUrl = options.iconUrl;
+    }
+    if (options.clearIcon) {
+      data.iconUrl = null;
+    }
     return data;
   }
 

@@ -157,11 +157,17 @@ export class BlizzardHeroEnScraper {
   ): void {
     const suspicious = matches.filter(({ dbAbility, parsed }) => {
       const enName = parsed.name?.trim() ?? '';
-      if (enName.length < 2) return true;
-      if (dbAbility.name.length > 0 && enName.length < dbAbility.name.length / 2) return true;
+      if (enName.length < 2) {
+        return true;
+      }
+      if (dbAbility.name.length > 0 && enName.length < dbAbility.name.length / 2) {
+        return true;
+      }
       return false;
     });
-    if (suspicious.length === 0) return;
+    if (suspicious.length === 0) {
+      return;
+    }
 
     this.logger.warn(
       `${codename}: ${suspicious.length}개 능력 매칭 의심 — Blizzard 카드 순서가 MATCH_SLOT_ORDER와 어긋났을 수 있음`,
@@ -181,7 +187,9 @@ export class BlizzardHeroEnScraper {
     }>,
     parsedAbilities: readonly ParsedAbilityEn[],
   ): Array<{ dbAbility: (typeof dbAbilities)[number]; parsed: ParsedAbilityEn }> {
-    if (parsedAbilities.length === 0) return [];
+    if (parsedAbilities.length === 0) {
+      return [];
+    }
 
     // 1:1 매칭 가능한 경우
     if (parsedAbilities.length === dbAbilities.length) {

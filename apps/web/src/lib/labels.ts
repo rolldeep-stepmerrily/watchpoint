@@ -1,4 +1,4 @@
-import type { AbilitySlot, EntryCategory, HeroRole, Locale, Subrole } from '@@shared';
+import type { AbilitySlot, EntryCategory, HeroRole, Locale, PerkTier, Subrole } from '@@shared';
 
 /**
  * 실제 번역이 준비된 로케일. Locale 타입의 ja는 잠정적으로 en으로 fallback한다.
@@ -53,6 +53,11 @@ const CATEGORY_LABELS: Record<SupportedLocale, Record<EntryCategory, string>> = 
     SYSTEM: 'System',
     GENERAL: 'General',
   },
+};
+
+const PERK_TIER_LABELS: Record<SupportedLocale, Record<PerkTier, string>> = {
+  ko: { MINOR: '보조 특전', MAJOR: '주요 특전' },
+  en: { MINOR: 'Minor Perk', MAJOR: 'Major Perk' },
 };
 
 const SUBROLE_LABELS: Record<SupportedLocale, Record<Subrole, string>> = {
@@ -216,6 +221,13 @@ interface Copy {
     description: string;
     empty: string;
     loading: string;
+    allLabel: string;
+    columns: {
+      hero: string;
+      role: string;
+      subrole: string;
+      released: string;
+    };
     notFound: {
       title: string;
       kicker: string;
@@ -232,7 +244,11 @@ interface Copy {
     stats: string;
     statLabels: { health: string; armor: string; shield: string; moveSpeed: string };
     abilities: string;
+    perks: string;
     patchHistory: string;
+    history: {
+      columns: { version: string; date: string; changes: string };
+    };
     descriptionFallback: (name: string) => string;
   };
   patchNotes: {
@@ -244,6 +260,13 @@ interface Copy {
     loading: string;
     released: string;
     noChanges: string;
+    columns: {
+      version: string;
+      date: string;
+      title: string;
+      category: string;
+      changes: string;
+    };
     descriptionFallback: (version: string, title: string) => string;
     notFound: {
       title: string;
@@ -314,6 +337,13 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       description: '오버워치 전체 영웅 목록 — 역할별 분류, 능력 수치, 패치 이력으로 연결.',
       empty: '아직 등록된 영웅이 없습니다.',
       loading: '영웅 목록 불러오는 중',
+      allLabel: '전체',
+      columns: {
+        hero: '영웅',
+        role: '역할',
+        subrole: '서브 역할',
+        released: '출시일',
+      },
       notFound: {
         title: '영웅을 찾을 수 없음',
         kicker: '404 · Hero',
@@ -330,7 +360,11 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       stats: '기본 스탯',
       statLabels: { health: '생명력', armor: '방어력', shield: '보호막', moveSpeed: '이동 속도' },
       abilities: '능력',
+      perks: '특전',
       patchHistory: '패치 이력',
+      history: {
+        columns: { version: '버전', date: '날짜', changes: '변경 내용' },
+      },
       descriptionFallback: (name) => `오버워치 영웅 ${name}의 능력 수치와 패치 이력.`,
     },
     patchNotes: {
@@ -342,6 +376,13 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       loading: '패치노트 목록 불러오는 중',
       released: '발표',
       noChanges: '변경사항이 없습니다.',
+      columns: {
+        version: '버전',
+        date: '날짜',
+        title: '제목',
+        category: '분류',
+        changes: '변경 내용',
+      },
       descriptionFallback: (version, title) => `오버워치 ${version} 패치노트 — ${title}`,
       notFound: {
         title: '패치노트를 찾을 수 없음',
@@ -410,6 +451,13 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       description: 'Full Overwatch hero roster — grouped by role, with ability stats and linked patch history.',
       empty: 'No heroes yet.',
       loading: 'Loading heroes',
+      allLabel: 'All',
+      columns: {
+        hero: 'Hero',
+        role: 'Role',
+        subrole: 'Subrole',
+        released: 'Released',
+      },
       notFound: {
         title: 'Hero not found',
         kicker: '404 · Hero',
@@ -426,7 +474,11 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       stats: 'Base stats',
       statLabels: { health: 'Health', armor: 'Armor', shield: 'Shield', moveSpeed: 'Move speed' },
       abilities: 'Abilities',
+      perks: 'Perks',
       patchHistory: 'Patch history',
+      history: {
+        columns: { version: 'Version', date: 'Date', changes: 'Changes' },
+      },
       descriptionFallback: (name) => `Ability stats and patch history for Overwatch hero ${name}.`,
     },
     patchNotes: {
@@ -438,6 +490,13 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       loading: 'Loading patch notes',
       released: 'Released',
       noChanges: 'No changes.',
+      columns: {
+        version: 'Version',
+        date: 'Date',
+        title: 'Title',
+        category: 'Category',
+        changes: 'Changes',
+      },
       descriptionFallback: (version, title) => `Overwatch ${version} patch notes — ${title}`,
       notFound: {
         title: 'Patch note not found',
@@ -479,6 +538,7 @@ export function getLabels(locale: Locale) {
     role: (key: HeroRole): string => ROLE_LABELS[l][key],
     slot: (key: AbilitySlot): string => SLOT_LABELS[l][key],
     category: (key: EntryCategory): string => CATEGORY_LABELS[l][key],
+    perkTier: (key: PerkTier): string => PERK_TIER_LABELS[l][key],
     subrole: (key: Subrole): string => SUBROLE_LABELS[l][key],
     subrolePassive: (key: Subrole): string => SUBROLE_PASSIVES[l][key],
     subroleStats: (key: Subrole): readonly SubroleStat[] => SUBROLE_STATS[l][key],

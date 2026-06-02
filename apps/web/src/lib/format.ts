@@ -1,4 +1,4 @@
-import type { AbilitySlot, EntryCategory, HeroRole } from '@@shared';
+import type { AbilitySlot, EntryCategory, HeroRole, PerkTier } from '@@shared';
 
 const ROLE_COLOR_VAR: Record<HeroRole, string> = {
   TANK: '--color-role-tank',
@@ -259,3 +259,14 @@ export function categoryColorVar(category: EntryCategory): string {
 }
 
 export const CATEGORY_ORDER: readonly EntryCategory[] = ['HERO_BALANCE', 'BUG_FIX', 'MAP', 'SYSTEM', 'GENERAL'];
+
+const PERK_TIER_COLOR_VAR: Record<PerkTier, string> = {
+  MINOR: '--color-perk-minor',
+  MAJOR: '--color-perk-major',
+};
+
+export function perkTierColorVar(tier: PerkTier): string {
+  return PERK_TIER_COLOR_VAR[tier];
+}
+
+export const PERK_TIER_ORDER: readonly PerkTier[] = ['MINOR', 'MAJOR'];

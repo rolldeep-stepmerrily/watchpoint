@@ -2,48 +2,56 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css");
 
 @theme {
-  /* Surfaces — 깊은 배경 + 단계별 명도 */
-  --color-bg: #08090d;
-  --color-surface: #11141b;
-  --color-surface-elevated: #181c25;
-  --color-surface-hover: #1f242e;
-  --color-border: #232934;
-  --color-border-strong: #353c4a;
-  --color-overlay: rgba(0, 0, 0, 0.6);
+  /* Surfaces — 순수 흰색 베이스 + 미세한 회색 단계 */
+  --color-bg: #ffffff;
+  --color-surface: #f8f8f8;
+  --color-surface-elevated: #ffffff;
+  --color-surface-hover: #fafafa;
+  --color-border: #e5e5e5;
+  --color-border-strong: #4a4c4e;
+  --color-overlay: rgba(74, 76, 78, 0.4);
 
-  /* Text */
-  --color-text: #e8eaed;
-  --color-text-strong: #ffffff;
-  --color-text-muted: #8a93a3;
-  --color-text-faint: #5a6271;
+  /* Text — Overwatch dark gray 계열 */
+  --color-text: #4a4c4e;
+  --color-text-strong: #1a1a1a;
+  --color-text-muted: #6b7280;
+  --color-text-faint: #9ca3af;
 
-  /* Brand */
-  --color-accent: #f99e1a;
-  --color-accent-hover: #ffb547;
-  --color-accent-faint: rgba(249, 158, 26, 0.12);
+  /* Brand — Overwatch 공식 주황 */
+  --color-accent: #fa9c1d;
+  --color-accent-hover: #e88a05;
+  --color-accent-faint: rgba(250, 156, 29, 0.12);
 
-  /* Roles */
-  --color-role-tank: #6db4ff;
-  --color-role-tank-faint: rgba(109, 180, 255, 0.14);
-  --color-role-damage: #f06464;
-  --color-role-damage-faint: rgba(240, 100, 100, 0.14);
-  --color-role-support: #7ed957;
-  --color-role-support-faint: rgba(126, 217, 87, 0.14);
+  /* Roles — 라이트 배경에 어울리는 진한 톤 */
+  --color-role-tank: #2563eb;
+  --color-role-tank-faint: rgba(37, 99, 235, 0.1);
+  --color-role-damage: #dc2626;
+  --color-role-damage-faint: rgba(220, 38, 38, 0.1);
+  --color-role-support: #059669;
+  --color-role-support-faint: rgba(5, 150, 105, 0.1);
 
   /* Categories */
-  --color-cat-balance: #f5a524;
-  --color-cat-bug: #ef4444;
-  --color-cat-map: #22d3ee;
-  --color-cat-system: #a78bfa;
-  --color-cat-general: #94a3b8;
+  --color-cat-balance: #d97706;
+  --color-cat-bug: #dc2626;
+  --color-cat-map: #0891b2;
+  --color-cat-system: #7c3aed;
+  --color-cat-general: #6b7280;
 
   /* Ability slots — 키별 컬러 코딩 */
-  --color-slot-passive: #94a3b8;
-  --color-slot-primary: #f59e0b;
-  --color-slot-secondary: #a855f7;
-  --color-slot-ability1: #60a5fa;
-  --color-slot-ability2: #2dd4bf;
-  --color-slot-ultimate: #ef4444;
+  --color-slot-passive: #6b7280;
+  --color-slot-primary: #d97706;
+  --color-slot-secondary: #9333ea;
+  --color-slot-ability1: #2563eb;
+  --color-slot-ability2: #0d9488;
+  --color-slot-ultimate: #dc2626;
+
+  /* Perk tiers — minor는 차분, major는 강조 */
+  --color-perk-minor: #6b7280;
+  --color-perk-major: #d97706;
+
+  /* Elevation — 라이트에서는 미세 그림자로 분리감 */
+  --shadow-card: 0 1px 2px rgba(74, 76, 78, 0.06), 0 1px 3px rgba(74, 76, 78, 0.08);
+  --shadow-card-hover: 0 4px 12px rgba(250, 156, 29, 0.15), 0 2px 4px rgba(74, 76, 78, 0.06);
 }
 
 html,
@@ -51,8 +59,8 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family:
-    "Pretendard Variable", Pretendard, ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    "Pretendard Variable", Pretendard, ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", sans-serif;
   font-feature-settings: "ss01", "tnum";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -63,26 +71,64 @@ a {
   color: inherit;
 }
 
-/* 미세 스크롤바 — 다크 톤 */
+/* 미세 스크롤바 — 라이트 톤 */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-bg);
+  background: var(--color-surface);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border-strong);
+  background: var(--color-border);
   border-radius: 5px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-faint);
 }
 
-/* 시각 강조용 유틸 */
+/* 시각 강조용 유틸 — 카드/링크 hover에 사용 */
 .hover-lift {
-  transition: transform 150ms ease, background-color 150ms ease, border-color 150ms ease;
+  transition:
+    transform 180ms cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 .hover-lift:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* 메뉴/네비 링크용 hover — underline grow */
+.hover-link {
+  position: relative;
+  transition: color 150ms ease;
+}
+.hover-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-link:hover {
+  color: var(--color-accent);
+}
+.hover-link:hover::after {
+  transform: scaleX(1);
+}
+.hover-link[aria-current="page"]::after,
+.hover-link.is-active::after {
+  transform: scaleX(1);
+}
+.hover-link[aria-current="page"],
+.hover-link.is-active {
+  color: var(--color-accent);
 }

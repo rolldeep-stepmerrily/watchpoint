@@ -14,7 +14,7 @@ export interface HeroCatalogEntry {
   codename: string;
   name: string;
   role: HeroRole;
-  subrole: Subrole | null;
+  subrole: Subrole;
   releasedAt: string; // ISO date
   pageTitle: string; // 나무위키 페이지 제목
 }

@@ -1,4 +1,4 @@
-import type { HeroRole } from '@@prisma';
+import type { HeroRole, Subrole } from '@@prisma';
 
 import { HERO_CATALOG, type HeroCatalogEntry } from '../domain/hero-catalog';
 
@@ -6,6 +6,7 @@ export interface HeroRegistryEntry {
   pageTitle: string;
   koreanName: string;
   role: HeroRole;
+  subrole: Subrole;
   releasedAt: Date;
 }
 
@@ -16,6 +17,7 @@ export const HERO_REGISTRY: Record<string, HeroRegistryEntry> = Object.fromEntri
       pageTitle: entry.pageTitle,
       koreanName: entry.name,
       role: entry.role,
+      subrole: entry.subrole,
       releasedAt: new Date(entry.releasedAt),
     },
   ]),

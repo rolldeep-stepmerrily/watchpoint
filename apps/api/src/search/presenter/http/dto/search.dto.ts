@@ -35,8 +35,8 @@ class HeroSummaryItemDto implements HeroSummaryDto {
   @ApiProperty({ enum: HERO_ROLES })
   role!: HeroRole;
 
-  @ApiProperty({ enum: SUBROLES, nullable: true })
-  subrole!: Subrole | null;
+  @ApiProperty({ enum: SUBROLES })
+  subrole!: Subrole;
 
   @ApiProperty({ description: 'ISO 8601 datetime' })
   releasedAt!: string;

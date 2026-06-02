@@ -5,7 +5,7 @@ export interface HeroSummaryDto {
   codename: string;
   name: string;
   role: HeroRole;
-  subrole: Subrole | null;
+  subrole: Subrole;
   releasedAt: string;
   portraitUrl: string | null;
 }
@@ -33,6 +33,7 @@ export interface HeroAbilityDto {
   name: string;
   description: string;
   stats: Record<string, unknown> | null;
+  iconUrl: string | null;
   order: number;
 }
 
