@@ -3,6 +3,7 @@ import { PrismaService } from '@@db';
 import { type AbilitySlot, Prisma, ScrapeSource } from '@@prisma';
 import { Injectable, Logger } from '@nestjs/common';
 
+import { ABILITY_ID_TO_SLOT } from '../../seeder/icon-overrides';
 import { mergeTranslation, ScrapeJobRecorder, ScraperHttpClient } from '../common';
 import { BlizzardHeroParser } from './blizzard-hero.parser';
 import type { ParsedAbilityEn, ParsedHeroEn } from './dto/parsed-hero-en.dto';
@@ -88,6 +89,7 @@ export class BlizzardHeroEnScraper {
             slot: true,
             order: true,
             name: true,
+            blizzardId: true,
             nameTranslations: true,
             descriptionTranslations: true,
           },
@@ -111,11 +113,7 @@ export class BlizzardHeroEnScraper {
       },
     });
 
-    const matchable = hero.abilities
-      .filter((a) => MATCH_SLOT_ORDER.includes(a.slot))
-      .sort((a, b) => MATCH_SLOT_ORDER.indexOf(a.slot) - MATCH_SLOT_ORDER.indexOf(b.slot) || a.order - b.order);
-
-    const matches = this.matchAbilities(matchable, parsed.abilities);
+    const matches = this.matchAbilities(hero.abilities, parsed.abilities, parsed.codename);
     this.warnSuspiciousMatches(parsed.codename, matches);
 
     let abilitiesMatched = 0;
@@ -143,7 +141,7 @@ export class BlizzardHeroEnScraper {
       codename: parsed.codename,
       matched: true,
       abilitiesMatched,
-      abilitiesTotal: matchable.length,
+      abilitiesTotal: hero.abilities.length,
     };
   }
 
@@ -181,32 +179,84 @@ export class BlizzardHeroEnScraper {
     dbAbilities: ReadonlyArray<{
       id: number;
       slot: AbilitySlot;
+      order: number;
       name: string;
+      blizzardId: string | null;
       nameTranslations: unknown;
       descriptionTranslations: unknown;
     }>,
     parsedAbilities: readonly ParsedAbilityEn[],
+    codename: string,
   ): Array<{ dbAbility: (typeof dbAbilities)[number]; parsed: ParsedAbilityEn }> {
     if (parsedAbilities.length === 0) {
       return [];
     }
 
-    // 1:1 매칭 가능한 경우
-    if (parsedAbilities.length === dbAbilities.length) {
-      return dbAbilities.map((dbAbility, idx) => ({ dbAbility, parsed: parsedAbilities[idx] }));
+    // 1차: blizzardId 매칭 — 한국어 sync 시 ability.blizzardId가 채워지므로
+    // 영웅별 override 없이도 안전하게 다국어 데이터를 연결할 수 있다.
+    // 동일 blizzardId가 여러 ability에 매핑되는 케이스(Moira biotic-grasp = PRIMARY+SECONDARY)도 처리.
+    const idMatches: Array<{ dbAbility: (typeof dbAbilities)[number]; parsed: ParsedAbilityEn }> = [];
+    for (const parsed of parsedAbilities) {
+      for (const dbAbility of dbAbilities) {
+        if (dbAbility.blizzardId && dbAbility.blizzardId === parsed.id) {
+          idMatches.push({ dbAbility, parsed });
+        }
+      }
+    }
+    if (idMatches.length > 0) {
+      return idMatches;
     }
 
-    // Blizzard가 PRIMARY+SECONDARY를 1개 카드로 묶은 케이스 (대부분의 무기 영웅)
+    // 2차: ABILITY_ID_TO_SLOT override — blizzardId가 아직 채워지지 않은 환경(prod 첫 부팅 등) 대비.
+    const overrides = ABILITY_ID_TO_SLOT[codename];
+
+    if (overrides) {
+      const matches: Array<{ dbAbility: (typeof dbAbilities)[number]; parsed: ParsedAbilityEn }> = [];
+      const dbBySlot = new Map<AbilitySlot, Array<(typeof dbAbilities)[number]>>();
+      for (const a of dbAbilities) {
+        const arr = dbBySlot.get(a.slot) ?? [];
+        arr.push(a);
+        dbBySlot.set(a.slot, arr);
+      }
+      for (const parsed of parsedAbilities) {
+        const mapping = overrides[parsed.id];
+        if (!mapping) {
+          continue;
+        }
+        const targetSlots = Array.isArray(mapping) ? mapping : [mapping];
+        for (const targetSlot of targetSlots) {
+          const slotAbilities = dbBySlot.get(targetSlot);
+          const dbAbility = slotAbilities?.shift();
+          if (dbAbility) {
+            matches.push({ dbAbility, parsed });
+          }
+        }
+      }
+      return matches;
+    }
+
+    const matchable = dbAbilities
+      .filter((a) => MATCH_SLOT_ORDER.includes(a.slot))
+      .sort((a, b) => MATCH_SLOT_ORDER.indexOf(a.slot) - MATCH_SLOT_ORDER.indexOf(b.slot) || a.order - b.order);
+
+    if (matchable.length === 0) {
+      return [];
+    }
+
+    if (parsedAbilities.length === matchable.length) {
+      return matchable.map((dbAbility, idx) => ({ dbAbility, parsed: parsedAbilities[idx] }));
+    }
+
     if (
-      parsedAbilities.length + 1 === dbAbilities.length &&
-      dbAbilities[0]?.slot === 'PRIMARY' &&
-      dbAbilities[1]?.slot === 'SECONDARY'
+      parsedAbilities.length + 1 === matchable.length &&
+      matchable[0]?.slot === 'PRIMARY' &&
+      matchable[1]?.slot === 'SECONDARY'
     ) {
       const [weapon, ...rest] = parsedAbilities;
       return [
-        { dbAbility: dbAbilities[0], parsed: weapon },
-        { dbAbility: dbAbilities[1], parsed: weapon },
-        ...rest.map((parsed, idx) => ({ dbAbility: dbAbilities[idx + 2], parsed })),
+        { dbAbility: matchable[0], parsed: weapon },
+        { dbAbility: matchable[1], parsed: weapon },
+        ...rest.map((parsed, idx) => ({ dbAbility: matchable[idx + 2], parsed })),
       ];
     }
 

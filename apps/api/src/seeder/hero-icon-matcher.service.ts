@@ -108,7 +108,11 @@ export class HeroIconMatcher {
       }
 
       const relPath = this.abilityRelPath(codename, ability, match.parsed.url);
-      await this.saveAndUpdate(match.parsed.url, relPath, { kind: 'ability', record: ability });
+      await this.saveAndUpdate(match.parsed.url, relPath, {
+        kind: 'ability',
+        record: ability,
+        blizzardId: match.parsed.id,
+      });
       result.abilityMatched += 1;
     }
 
@@ -295,7 +299,9 @@ export class HeroIconMatcher {
   private async saveAndUpdate(
     url: string,
     relPath: string,
-    target: { kind: 'ability'; record: HeroAbility } | { kind: 'perk'; record: HeroPerk },
+    target:
+      | { kind: 'ability'; record: HeroAbility; blizzardId: string }
+      | { kind: 'perk'; record: HeroPerk },
   ): Promise<void> {
     const { bytes } = await this.http.fetchBytes(url);
     const absPath = pathResolve(process.cwd(), PUBLIC_ICONS_REL, relPath);
@@ -306,7 +312,10 @@ export class HeroIconMatcher {
     const iconUrl = `/icons/heroes/${relPath}`;
 
     if (target.kind === 'ability') {
-      await this.prisma.heroAbility.update({ where: { id: target.record.id }, data: { iconUrl } });
+      await this.prisma.heroAbility.update({
+        where: { id: target.record.id },
+        data: { iconUrl, blizzardId: target.blizzardId },
+      });
 
       return;
     }
