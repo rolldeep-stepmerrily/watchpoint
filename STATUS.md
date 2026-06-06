@@ -1,13 +1,19 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-06-04 작업 종료 시점. develop = `d2feb65`, main = `39bcd8c`.
-> 작업 브랜치 = `fix-blizzard-hero-en-scraper` HEAD `099110e` (영문 sync 버그 수정, 미머지).
-> **다음 작업 1순위 = 영문 sync 마무리** (Bastion/Freja/Sierra 매핑 검수 → PR → 머지) → **2순위 Railway/Next.js 배포**.
+> 2026-06-06 작업 종료 시점. develop = `8a29686` (PR #72/#73 머지), main = `39bcd8c` (미릴리스).
+> 영웅 데이터 정리 완료 — 한국어/영문 모두 Blizzard 페이지 단일 소스. Sierra/Freja/Bastion 정정.
+> **다음 작업 = Railway(API) + Next.js(Web) prod 배포** (`watchpoint_next_deploy.md`).
 
 ## 0. 다음 작업
 
-### 1순위: 영문 sync 마무리 (브랜치 `fix-blizzard-hero-en-scraper`)
-- 컨텍스트: `~/.claude/projects/.../memory/watchpoint_en_sync_fix.md`
+### 1순위: Railway (API) prod 배포 + Next.js (Web) 호스팅·배포
+- 컨텍스트: `~/.claude/projects/.../memory/watchpoint_next_deploy.md`
+- main 릴리스 PR → Railway 자동 배포 → env 2개 추가 → Next.js 호스팅 결정 → 배포 검증
+
+### (참고) 이전 작업 — 완료
+- **PR #72 fix(api)**: 영문 ability 매핑을 blizzardId 기반으로 안전화
+- **PR #73 feat(api)**: 한국어 ability 데이터를 Blizzard 한국어 페이지에서 자동 동기화. namuwiki/시드 한국어 이름 → Blizzard 페이지 단일 소스. Sierra(5개 능력 이름 정정), Freja(ABILITY_2/ULTIMATE 자리 정정), Bastion(ABILITY_2 "구르기"→"재설정")
+- **이전 1순위 작업 = 영문 sync 마무리** (Bastion/Freja/Sierra 매핑 검수 → PR → 머지)
 - 검수 미완 3명:
   - **Bastion** ABILITY_2 구르기 ↔ `reconfigure` 의심
   - **Freja** ULTIMATE 클러스터 애로우 ↔ `quick-dash` 명백한 오류
