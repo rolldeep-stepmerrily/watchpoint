@@ -3,6 +3,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { SeederModule } from '../seeder';
 import {
   BlizzardHeroEnScraper,
+  BlizzardHeroKoScraper,
   BlizzardHeroParser,
   BlizzardIconParser,
   BlizzardPatchCron,
@@ -27,6 +28,7 @@ import { NamuwikiHeroParser, NamuwikiHeroScraper } from './namuwiki';
     BlizzardPatchCron,
     BlizzardHeroParser,
     BlizzardHeroEnScraper,
+    BlizzardHeroKoScraper,
     BlizzardIconParser,
 
     /** namuwiki */
@@ -38,6 +40,7 @@ import { NamuwikiHeroParser, NamuwikiHeroScraper } from './namuwiki';
     BlizzardPatchEnScraper,
     NamuwikiHeroScraper,
     BlizzardHeroEnScraper,
+    BlizzardHeroKoScraper,
     BlizzardIconParser,
     ScraperHttpClient,
   ],

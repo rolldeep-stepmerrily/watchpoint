@@ -23,6 +23,8 @@
     "hero:sync:all": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:sync:all",
     "hero:sync:en": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:sync:en",
     "hero:sync:en:all": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:sync:en:all",
+    "hero:sync:ko": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:sync:ko",
+    "hero:sync:ko:all": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:sync:ko:all",
     "hero:edit": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:edit",
     "hero:perks:edit": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:perks:edit",
     "hero:icons:download": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:icons:download",

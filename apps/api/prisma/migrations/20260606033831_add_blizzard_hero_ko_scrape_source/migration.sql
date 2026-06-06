@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "ScrapeSource" ADD VALUE 'BLIZZARD_HERO_KO';

@@ -134,10 +134,10 @@ export const ABILITY_ID_TO_SLOT: Record<string, Partial<Record<string, AbilitySl
     'amplification-matrix': 'ULTIMATE',
     'exo-boots': 'PASSIVE',
   },
-  // NOTE: Bastion의 SECONDARY(전술 수류탄) / ABILITY_2(구르기) / PASSIVE는 Blizzard 영문 페이지에 카드로
-  // 노출되지 않아 매핑 누락. reconfigure는 구르기로 추정 — 사용자 검수 권장.
+  // NOTE: PASSIVE는 Blizzard 페이지에 카드 없음. reconfigure는 모드 전환 능력 (DB ABILITY_2의 "재설정")으로 확인됨.
   bastion: {
     'configuration-recon': 'PRIMARY',
+    'a-36-tactical-grenade': 'SECONDARY',
     'configuration-assault': 'ABILITY_1',
     reconfigure: 'ABILITY_2',
     'configuration-artillery': 'ULTIMATE',
@@ -149,12 +149,13 @@ export const ABILITY_ID_TO_SLOT: Record<string, Partial<Record<string, AbilitySl
     'power-block': 'ABILITY_2',
     'meteor-strike': 'ULTIMATE',
   },
-  // NOTE: Freja의 카드 의미가 명확하지 않음 — take-aim/quick-dash 의미 미확정. 검수 권장.
+  // NOTE: Freja PRIMARY(석궁)는 Blizzard 페이지에 카드 없음 — ko sync는 매핑된 slot만 upsert하고
+  // PRIMARY는 시드 데이터 그대로 보존한다.
   freja: {
-    'take-aim': ['PRIMARY', 'SECONDARY'],
+    'take-aim': 'SECONDARY',
     updraft: 'ABILITY_1',
-    'bola-shot': 'ABILITY_2',
-    'quick-dash': 'ULTIMATE',
+    'quick-dash': 'ABILITY_2',
+    'bola-shot': 'ULTIMATE',
   },
   genji: {
     shuriken: ['PRIMARY', 'SECONDARY'],
