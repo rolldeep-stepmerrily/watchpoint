@@ -11,7 +11,7 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters';
 import { TransformInterceptor } from './common/interceptors';
 
-const bootstrap = async () => {
+const bootstrap = async (): Promise<void> => {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const configService = app.get(ConfigService);
@@ -35,7 +35,9 @@ const bootstrap = async () => {
   if (isProduction) {
     app.use(helmet());
     app.use(compression());
-  } else {
+  }
+
+  if (!isProduction) {
     const config = new DocumentBuilder().setTitle('Watchpoint API').setVersion('0.1.0').build();
 
     const document = SwaggerModule.createDocument(app, config);

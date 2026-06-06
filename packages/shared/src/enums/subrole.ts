@@ -31,6 +31,12 @@ export const SUBROLES = [
   'Survivor',
 ] as const satisfies readonly Subrole[];
 
-export function isSubrole(value: unknown): value is Subrole {
+/**
+ * 주어진 값이 유효한 Subrole 식별자(Bruiser/Sharpshooter 등)인지 검증
+ *
+ * @param {unknown} value 검증할 값
+ * @returns {boolean} Subrole로 안전하게 좁힐 수 있으면 true
+ */
+export const isSubrole = (value: unknown): value is Subrole => {
   return typeof value === 'string' && (SUBROLES as readonly string[]).includes(value);
-}
+};

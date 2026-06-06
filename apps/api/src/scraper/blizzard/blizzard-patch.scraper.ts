@@ -2,6 +2,7 @@ import { ResponseCache } from '@@cache';
 import { PrismaService } from '@@db';
 import { PatchNoteStatus, ScrapeSource } from '@@prisma';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { isDefined } from 'class-validator';
 
 import { HERO_CATALOG_BY_CODENAME } from '../../domain/hero-catalog';
 import { HeroIconMatcher } from '../../seeder';
@@ -277,7 +278,7 @@ export class BlizzardPatchScraper {
     }>;
     hasUnmappedHero: boolean;
   }> {
-    const heroNames = parsed.map((entry) => entry.heroName).filter((name): name is string => Boolean(name));
+    const heroNames = parsed.map((entry) => entry.heroName).filter((name): name is string => isDefined(name));
     const heroes =
       heroNames.length > 0 ? await this.prismaService.hero.findMany({ where: { name: { in: heroNames } } }) : [];
     const heroByName = new Map(heroes.map((hero) => [hero.name, hero.id]));
