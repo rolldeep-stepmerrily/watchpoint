@@ -7,10 +7,13 @@ import { PrismaModule } from '../common/prisma';
 import { RedisModule } from '../common/redis';
 import { ScraperModule } from '../scraper/scraper.module';
 import { SeederModule } from '../seeder';
+import { AssetsUploadCommand } from './commands/assets-upload.command';
 import { HeroEditCommand } from './commands/hero-edit.command';
 import { HeroIconsDownloadCommand } from './commands/hero-icons-download.command';
 import { HeroIconsDownloadAllCommand } from './commands/hero-icons-download-all.command';
 import { HeroPerksEditCommand } from './commands/hero-perks-edit.command';
+import { HeroPortraitDownloadCommand } from './commands/hero-portrait-download.command';
+import { HeroPortraitDownloadAllCommand } from './commands/hero-portrait-download-all.command';
 import { HeroSyncCommand } from './commands/hero-sync.command';
 import { HeroSyncAllCommand } from './commands/hero-sync-all.command';
 import { HeroSyncEnCommand } from './commands/hero-sync-en.command';
@@ -36,6 +39,11 @@ import { PatchSyncEnCommand } from './commands/patch-sync-en.command';
         REDIS_PASSWORD: Joi.string().allow('').optional(),
         SCRAPER_USER_AGENT: Joi.string().default('WatchpointBot/0.1'),
         SCRAPER_REQUEST_DELAY_MS: Joi.number().default(2000),
+        MINIO_ENDPOINT: Joi.string().uri().optional(),
+        MINIO_ACCESS_KEY: Joi.string().optional(),
+        MINIO_SECRET_KEY: Joi.string().optional(),
+        MINIO_BUCKET: Joi.string().default('watchpoint-icons'),
+        MINIO_PUBLIC_URL: Joi.string().uri().optional(),
       }).unknown(true),
     }),
     PrismaModule,
@@ -58,8 +66,11 @@ import { PatchSyncEnCommand } from './commands/patch-sync-en.command';
     HeroSyncKoAllCommand,
     HeroEditCommand,
     HeroPerksEditCommand,
+    HeroPortraitDownloadCommand,
+    HeroPortraitDownloadAllCommand,
     HeroIconsDownloadCommand,
     HeroIconsDownloadAllCommand,
+    AssetsUploadCommand,
   ],
 })
 export class CliModule {}

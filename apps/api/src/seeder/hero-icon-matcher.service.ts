@@ -38,6 +38,21 @@ export interface DownloadResult {
   skipped?: string;
 }
 
+export interface PortraitDownloadResult {
+  codename: string;
+  saved: boolean;
+  url?: string;
+  skipped?: string;
+}
+
+/**
+ * Blizzard 한국어 영웅 페이지에서 portrait 이미지 src를 뽑는 정규식.
+ * 페이지에는 여러 사이즈(960/1600/2600)와 형식의 img가 섞여 있어, 페이지에 항상 한 번은 등장하는
+ * `/<해상도>_<HeroName>.jpg` 패턴 중 960 사이즈를 선택 (1600/2600은 영웅 상세 페이지에서 무거움).
+ */
+const PORTRAIT_SRC_REGEX =
+  /src="(https:\/\/blz-contentstack-images\.akamaized\.net\/[^"]+\/960_[^"]+\.(?:jpg|png|webp))"/;
+
 @Injectable()
 export class HeroIconMatcher {
   private readonly logger = new Logger(HeroIconMatcher.name);
@@ -48,6 +63,38 @@ export class HeroIconMatcher {
     private readonly prisma: PrismaService,
     private readonly diffLogger: HeroDiffLogger,
   ) {}
+
+  /**
+   * Blizzard 한국어 영웅 페이지에서 portrait 이미지를 다운로드하고 DB hero.portraitUrl을 로컬 path로 갱신.
+   * 페이지 4xx면 skip (KR-only 영웅이라도 한국어 페이지는 있는 게 보통).
+   */
+  async downloadPortraitFor(codename: string): Promise<PortraitDownloadResult> {
+    const slug = CODENAME_TO_BLIZZARD_SLUG[codename] ?? codename;
+    const url = `${BLIZZARD_HERO_BASE}${slug}/`;
+    const html = await this.http.fetchHtmlOrNullOnClientError(url);
+    if (html === null) {
+      return { codename, saved: false, skipped: `Blizzard KO page 4xx for ${codename}` };
+    }
+
+    const match = html.match(PORTRAIT_SRC_REGEX);
+    if (!match) {
+      return { codename, saved: false, skipped: 'portrait src 패턴 매칭 실패' };
+    }
+
+    const portraitSrcUrl = match[1];
+    const ext = portraitSrcUrl.match(/\.(\w+)$/)?.[1] ?? 'jpg';
+    const relPath = `${codename}/portrait.${ext}`;
+    const { bytes } = await this.http.fetchBytes(portraitSrcUrl);
+    const absPath = pathResolve(process.cwd(), PUBLIC_ICONS_REL, relPath);
+    await mkdir(dirname(absPath), { recursive: true });
+    await writeFile(absPath, bytes);
+    this.logger.log(`saved portrait ${relPath} (${bytes.byteLength} bytes)`);
+
+    const portraitUrl = `/icons/heroes/${relPath}`;
+    await this.prisma.hero.update({ where: { codename }, data: { portraitUrl } });
+
+    return { codename, saved: true, url: portraitUrl };
+  }
 
   async downloadFor(codename: string): Promise<DownloadResult> {
     const hero = await this.prisma.hero.findUnique({

@@ -28,9 +28,13 @@
     "hero:edit": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:edit",
     "hero:perks:edit": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:perks:edit",
     "hero:icons:download": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:icons:download",
-    "hero:icons:download:all": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:icons:download:all"
+    "hero:icons:download:all": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:icons:download:all",
+    "hero:portrait:download": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:portrait:download",
+    "hero:portrait:download:all": "ts-node -r tsconfig-paths/register src/cli/main.ts hero:portrait:download:all",
+    "assets:upload": "ts-node -r tsconfig-paths/register src/cli/main.ts assets:upload"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1063.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.0.0",
