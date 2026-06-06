@@ -39,12 +39,14 @@ export class SearchQuery extends Query<SearchResult> {
 }
 
 /**
- * LIKE/ILIKE의 와일드카드(%, _)와 escape 문자(\)를 리터럴로 다루기 위해 이스케이프.
- * PostgreSQL 기본 escape character는 백슬래시.
+ * LIKE/ILIKE의 와일드카드(%, _)와 escape 문자(\)를 리터럴로 다루기 위해 이스케이프 — PostgreSQL 기본 escape character는 백슬래시
+ *
+ * @param {string} value 사용자 입력 검색어
+ * @returns {string} 와일드카드/escape 문자가 이스케이프된 안전한 LIKE 패턴 조각
  */
-function escapeLikePattern(value: string): string {
+const escapeLikePattern = (value: string): string => {
   return value.replace(/[\\%_]/g, '\\$&');
-}
+};
 
 @QueryHandler(SearchQuery)
 export class SearchQueryHandler implements IQueryHandler<SearchQuery> {

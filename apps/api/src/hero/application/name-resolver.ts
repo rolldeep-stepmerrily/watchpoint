@@ -8,35 +8,42 @@ import { DEFAULT_LOCALE, type Locale } from '@watchpoint/shared';
  *   resolveName('파멸의 일격', { en: 'Meteor Strike' }, 'ko') // → '파멸의 일격'
  *   resolveName('파멸의 일격', null,                     'en') // → '파멸의 일격' (fallback)
  */
-export function resolveName(name: string, nameTranslations: unknown, locale: Locale = DEFAULT_LOCALE): string {
+export const resolveName = (name: string, nameTranslations: unknown, locale: Locale = DEFAULT_LOCALE): string => {
   if (locale === DEFAULT_LOCALE) {
     return name;
   }
+
   if (nameTranslations === null || typeof nameTranslations !== 'object') {
     return name;
   }
+
   const translated = (nameTranslations as Record<string, unknown>)[locale];
+
   return typeof translated === 'string' && translated.length > 0 ? translated : name;
-}
+};
 
 /**
  * 자유 텍스트(description, body, summary 등)의 다국어 해석.
  * base 타입을 그대로 보존: base가 string이면 string, string | null이면 string | null 반환.
  */
-export function resolveDescription<T extends string | null>(
+export const resolveDescription = <T extends string | null>(
   base: T,
   translations: unknown,
   locale: Locale = DEFAULT_LOCALE,
-): T {
+): T => {
   if (locale === DEFAULT_LOCALE) {
     return base;
   }
+
   if (translations === null || typeof translations !== 'object') {
     return base;
   }
+
   const translated = (translations as Record<string, unknown>)[locale];
+
   if (typeof translated === 'string' && translated.length > 0) {
     return translated as T;
   }
+
   return base;
-}
+};

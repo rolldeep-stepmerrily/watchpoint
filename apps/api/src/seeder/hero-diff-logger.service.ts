@@ -258,22 +258,41 @@ export class HeroDiffLogger {
   }
 }
 
-function toJson(value: unknown): Prisma.InputJsonValue | typeof Prisma.JsonNull {
+/**
+ * Prisma JSON 컬럼에 저장 가능한 값으로 변환 — null/undefined는 Prisma.JsonNull로 매핑
+ *
+ * @param {unknown} value 직렬화할 값
+ * @returns {Prisma.InputJsonValue | typeof Prisma.JsonNull} Prisma에 안전하게 넘길 수 있는 JSON 값
+ */
+const toJson = (value: unknown): Prisma.InputJsonValue | typeof Prisma.JsonNull => {
   if (value === undefined || value === null) {
     return Prisma.JsonNull;
   }
 
   return value as Prisma.InputJsonValue;
-}
+};
 
-function equalJson(a: unknown, b: unknown): boolean {
+/**
+ * 두 JSON 값을 깊은 비교 — undefined/null 차이는 무시
+ *
+ * @param {unknown} a 비교 대상 A
+ * @param {unknown} b 비교 대상 B
+ * @returns {boolean} 직렬화 결과가 같으면 true
+ */
+const equalJson = (a: unknown, b: unknown): boolean => {
   return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
-}
+};
 
-function formatVal(v: unknown): string {
+/**
+ * diff 로그용 사람이 읽기 좋은 값 포맷터 — null/undefined는 ∅ 기호로 표기
+ *
+ * @param {unknown} v 출력할 값
+ * @returns {string} 포맷된 문자열
+ */
+const formatVal = (v: unknown): string => {
   if (v === undefined || v === null) {
     return '∅';
   }
 
   return typeof v === 'object' ? JSON.stringify(v) : String(v);
-}
+};
