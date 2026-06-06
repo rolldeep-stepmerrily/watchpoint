@@ -52,15 +52,27 @@ export class BootSeederService implements OnApplicationBootstrap {
     }
 
     const perkCount = await this.prisma.heroPerk.count();
-    const expected = heroCount * PERKS_PER_HERO;
+    const abilityCount = await this.prisma.heroAbility.count();
+    const abilitiesWithId = await this.prisma.heroAbility.count({ where: { blizzardId: { not: null } } });
+    const expectedPerks = heroCount * PERKS_PER_HERO;
 
-    if (perkCount >= expected) {
-      this.logger.log(`auto-seed skip: perks ${perkCount} >= expected ${expected}`);
+    // perks와 abilities.blizzardId 둘 다 충분히 채워졌으면 skip.
+    // db seed는 perks만 채우고 ability.blizzardId는 비워두므로, 첫 부팅에는 blizzardId 조건이 트리거.
+    const perksOk = perkCount >= expectedPerks;
+    const blizzardIdRatio = abilityCount > 0 ? abilitiesWithId / abilityCount : 0;
+    const abilitiesOk = blizzardIdRatio >= 0.8;
+
+    if (perksOk && abilitiesOk) {
+      this.logger.log(
+        `auto-seed skip: perks ${perkCount}/${expectedPerks} OK + abilities with blizzardId ${abilitiesWithId}/${abilityCount} OK`,
+      );
 
       return;
     }
 
-    this.logger.warn(`auto-seed start (background): perks ${perkCount} < expected ${expected}, heroes=${heroCount}`);
+    this.logger.warn(
+      `auto-seed start (background): perks ${perkCount}/${expectedPerks}, blizzardId ${abilitiesWithId}/${abilityCount} (${Math.round(blizzardIdRatio * 100)}%)`,
+    );
 
     this.runSeed().catch((error: unknown) => {
       this.logger.error(`auto-seed failed: ${(error as Error).message}`, (error as Error).stack);
