@@ -50,6 +50,9 @@ importers:
       '@prisma/client':
         specifier: ^7.0.0
         version: 7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@5.9.3))(typescript@5.9.3)
+      '@prisma/client-runtime-utils':
+        specifier: ^7.8.0
+        version: 7.8.0
       '@scalar/nestjs-api-reference':
         specifier: ^0.5.1
         version: 0.5.14
@@ -71,6 +74,9 @@ importers:
       domhandler:
         specifier: ^6.0.1
         version: 6.0.1
+      dotenv:
+        specifier: ^16.4.0
+        version: 16.6.1
       express:
         specifier: ^5.2.1
         version: 5.2.1
@@ -95,6 +101,12 @@ importers:
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
+      ts-node:
+        specifier: ^10.9.1
+        version: 10.9.2(@types/node@22.19.19)(typescript@5.9.3)
+      tsconfig-paths:
+        specifier: ^4.2.0
+        version: 4.2.0
       undici:
         specifier: ^6.20.0
         version: 6.25.0
@@ -126,9 +138,6 @@ importers:
       '@types/supertest':
         specifier: ^6.0.0
         version: 6.0.3
-      dotenv:
-        specifier: ^16.4.0
-        version: 16.6.1
       jest:
         specifier: ^29.5.0
         version: 29.7.0(@types/node@22.19.19)(ts-node@10.9.2(@types/node@22.19.19)(typescript@5.9.3))
@@ -147,12 +156,6 @@ importers:
       ts-loader:
         specifier: ^9.4.3
         version: 9.5.7(typescript@5.9.3)(webpack@5.106.0)
-      ts-node:
-        specifier: ^10.9.1
-        version: 10.9.2(@types/node@22.19.19)(typescript@5.9.3)
-      tsconfig-paths:
-        specifier: ^4.2.0
-        version: 4.2.0
       typescript:
         specifier: ^5.8.0
         version: 5.9.3
