@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { JsonLd } from '@/components/json-ld';
 import { getPatchNoteList } from '@/lib/api';
 import { getLocale } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
+import { absoluteUrl, buildBreadcrumbJsonLd, buildItemListJsonLd, SITE_NAME } from '@/lib/seo';
 
 export const revalidate = 60;
 
@@ -22,8 +24,20 @@ export default async function PatchNotesPage() {
   const t = getLabels(lang);
   const { items, total } = await getPatchNoteList({ pageSize: 50, lang });
 
+  const itemList = buildItemListJsonLd(
+    items.map((patch) => ({
+      name: `${patch.version} · ${patch.title}`,
+      url: absoluteUrl(`/patch-notes/${patch.version}`),
+    })),
+  );
+  const breadcrumb = buildBreadcrumbJsonLd([
+    { name: SITE_NAME, url: absoluteUrl('/') },
+    { name: t.patchNotes.title, url: absoluteUrl('/patch-notes') },
+  ]);
+
   return (
     <div className="space-y-6">
+      <JsonLd data={[itemList, breadcrumb]} />
       <header className="border-b border-(--color-border) pb-5">
         <p className="text-[11px] font-semibold uppercase tracking-widest text-(--color-text-muted)">Patch Notes</p>
         <div className="flex items-baseline gap-3 mt-1">

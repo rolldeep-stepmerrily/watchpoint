@@ -3,11 +3,12 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { HeroPortrait } from '@/components/hero-portrait';
+import { JsonLd } from '@/components/json-ld';
 import { getHero, getHeroPatchHistory } from '@/lib/api';
 import { roleColorVar } from '@/lib/format';
 import { getLocale } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
-import { absoluteUrl } from '@/lib/seo';
+import { absoluteUrl, buildBreadcrumbJsonLd, buildHeroPageJsonLd, SITE_NAME } from '@/lib/seo';
 
 import { HeroDetailTabs } from './hero-detail-tabs';
 
@@ -62,8 +63,23 @@ export default async function HeroDetailPage({ params }: Props) {
     notFound();
   }
 
+  const heroUrl = absoluteUrl(`/heroes/${hero.codename}`);
+  const heroDescription = hero.description ?? t.hero.descriptionFallback(hero.name);
+  const heroPageJsonLd = buildHeroPageJsonLd({
+    name: hero.name,
+    description: heroDescription,
+    url: heroUrl,
+    image: hero.portraitUrl ?? undefined,
+  });
+  const breadcrumb = buildBreadcrumbJsonLd([
+    { name: SITE_NAME, url: absoluteUrl('/') },
+    { name: t.heroes.title, url: absoluteUrl('/heroes') },
+    { name: hero.name, url: heroUrl },
+  ]);
+
   return (
     <article className="space-y-8">
+      <JsonLd data={[heroPageJsonLd, breadcrumb]} />
       <HeroBanner
         hero={hero}
         t={t}
