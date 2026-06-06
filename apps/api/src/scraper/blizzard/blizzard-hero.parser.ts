@@ -77,7 +77,7 @@ export class BlizzardHeroParser {
       const $el = $(element);
       const name = $el.find('h3.heading').first().text().trim();
       const description = this.extractDescription($el.find('p[slot="description"]').first());
-      if (!name || !description) {
+      if (!(name && description)) {
         return;
       }
       const id = ids[abilities.length] ?? '';

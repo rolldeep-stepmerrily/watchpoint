@@ -45,7 +45,7 @@ export class BlizzardIconParser {
       const label = $el.attr('label')?.trim();
       const url = $el.find('blz-image[slot="icon"]').first().attr('src')?.trim();
 
-      if (!id || !label || !url) {
+      if (!(id && label && url)) {
         return;
       }
 
@@ -59,7 +59,7 @@ export class BlizzardIconParser {
       const tierMatch = cls.match(/\b(minor|major)\b/);
       const numberMatch = cls.match(/\b(\d+)\b/);
 
-      if (!tierMatch || !numberMatch) {
+      if (!(tierMatch && numberMatch)) {
         return;
       }
 

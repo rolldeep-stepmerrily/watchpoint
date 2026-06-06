@@ -5,7 +5,8 @@ import { HERO_REGISTRY } from '../hero-registry';
 
 @Command({
   name: 'hero:sync:ko:all',
-  description: 'hero-registry에 등록된 모든 영웅의 한국어 이름/설명/능력을 Blizzard 한국어 페이지에서 순차 동기화합니다.',
+  description:
+    'hero-registry에 등록된 모든 영웅의 한국어 이름/설명/능력을 Blizzard 한국어 페이지에서 순차 동기화합니다.',
 })
 export class HeroSyncKoAllCommand extends CommandRunner {
   constructor(private readonly scraper: BlizzardHeroKoScraper) {

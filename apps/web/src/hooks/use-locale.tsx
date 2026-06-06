@@ -14,6 +14,7 @@ interface LocaleContextValue {
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 function writeCookie(name: string, value: string): void {
+  // biome-ignore lint/suspicious/noDocumentCookie: 가벼운 1바이트 lang 쿠키 — 별도 wrapper 도입할 만큼 가치 없음
   document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
 }
 

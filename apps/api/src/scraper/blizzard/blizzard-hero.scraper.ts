@@ -175,6 +175,7 @@ export class BlizzardHeroEnScraper {
     }
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: 3단계 매칭(blizzardId → override → 1:1 fallback)이 한 흐름. 분할 시 흐름 가독성 떨어짐.
   private matchAbilities(
     dbAbilities: ReadonlyArray<{
       id: number;

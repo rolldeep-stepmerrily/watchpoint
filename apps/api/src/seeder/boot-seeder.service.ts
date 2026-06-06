@@ -51,7 +51,7 @@ export class BootSeederService implements OnApplicationBootstrap {
 
     this.logger.warn(`auto-seed start (background): perks ${perkCount} < expected ${expected}, heroes=${heroCount}`);
 
-    void this.runSeed().catch((error) => {
+    this.runSeed().catch((error: unknown) => {
       this.logger.error(`auto-seed failed: ${(error as Error).message}`, (error as Error).stack);
     });
   }

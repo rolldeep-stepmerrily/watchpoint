@@ -1,8 +1,8 @@
 import { PrismaService } from '@@db';
 import type { AbilitySlot, HeroAbility, HeroPerk } from '@@prisma';
-import { Injectable, Logger } from '@nestjs/common';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve as pathResolve } from 'node:path';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { BlizzardIconParser, type ParsedAbilityIcon, type ParsedPerkIcon } from '../scraper/blizzard';
 import { ScraperHttpClient } from '../scraper/common';
@@ -202,6 +202,7 @@ export class HeroIconMatcher {
    *       단 마지막에 ULTIMATE가 오는 영웅(Mercy의 Valkyrie 등)은 잘못 매칭되므로 override 필수.
    *       warn 로그로 검증 대상임을 알림.
    */
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: override + 카드 수 케이스별 분기가 한 함수에 모여있어야 매칭 알고리즘 흐름을 따라가기 쉬움. 분할 시 케이스 점프로 인지 부하 증가.
   private matchAbilities(
     dbAbilities: readonly HeroAbility[],
     parsedAbilities: readonly ParsedAbilityIcon[],
@@ -299,9 +300,7 @@ export class HeroIconMatcher {
   private async saveAndUpdate(
     url: string,
     relPath: string,
-    target:
-      | { kind: 'ability'; record: HeroAbility; blizzardId: string }
-      | { kind: 'perk'; record: HeroPerk },
+    target: { kind: 'ability'; record: HeroAbility; blizzardId: string } | { kind: 'perk'; record: HeroPerk },
   ): Promise<void> {
     const { bytes } = await this.http.fetchBytes(url);
     const absPath = pathResolve(process.cwd(), PUBLIC_ICONS_REL, relPath);
