@@ -1,8 +1,8 @@
 import { PrismaService } from '@@db';
 import type { AbilitySlot, HeroAbility, HeroPerk } from '@@prisma';
-import { Injectable, Logger } from '@nestjs/common';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve as pathResolve } from 'node:path';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { BlizzardIconParser, type ParsedAbilityIcon, type ParsedPerkIcon } from '../scraper/blizzard';
 import { ScraperHttpClient } from '../scraper/common';
@@ -38,6 +38,21 @@ export interface DownloadResult {
   skipped?: string;
 }
 
+export interface PortraitDownloadResult {
+  codename: string;
+  saved: boolean;
+  url?: string;
+  skipped?: string;
+}
+
+/**
+ * Blizzard 한국어 영웅 페이지에서 portrait 이미지 src를 뽑는 정규식.
+ * 페이지에는 여러 사이즈(960/1600/2600)와 형식의 img가 섞여 있어, 페이지에 항상 한 번은 등장하는
+ * `/<해상도>_<HeroName>.jpg` 패턴 중 960 사이즈를 선택 (1600/2600은 영웅 상세 페이지에서 무거움).
+ */
+const PORTRAIT_SRC_REGEX =
+  /src="(https:\/\/blz-contentstack-images\.akamaized\.net\/[^"]+\/960_[^"]+\.(?:jpg|png|webp))"/;
+
 @Injectable()
 export class HeroIconMatcher {
   private readonly logger = new Logger(HeroIconMatcher.name);
@@ -48,6 +63,38 @@ export class HeroIconMatcher {
     private readonly prisma: PrismaService,
     private readonly diffLogger: HeroDiffLogger,
   ) {}
+
+  /**
+   * Blizzard 한국어 영웅 페이지에서 portrait 이미지를 다운로드하고 DB hero.portraitUrl을 로컬 path로 갱신.
+   * 페이지 4xx면 skip (KR-only 영웅이라도 한국어 페이지는 있는 게 보통).
+   */
+  async downloadPortraitFor(codename: string): Promise<PortraitDownloadResult> {
+    const slug = CODENAME_TO_BLIZZARD_SLUG[codename] ?? codename;
+    const url = `${BLIZZARD_HERO_BASE}${slug}/`;
+    const html = await this.http.fetchHtmlOrNullOnClientError(url);
+    if (html === null) {
+      return { codename, saved: false, skipped: `Blizzard KO page 4xx for ${codename}` };
+    }
+
+    const match = html.match(PORTRAIT_SRC_REGEX);
+    if (!match) {
+      return { codename, saved: false, skipped: 'portrait src 패턴 매칭 실패' };
+    }
+
+    const portraitSrcUrl = match[1];
+    const ext = portraitSrcUrl.match(/\.(\w+)$/)?.[1] ?? 'jpg';
+    const relPath = `${codename}/portrait.${ext}`;
+    const { bytes } = await this.http.fetchBytes(portraitSrcUrl);
+    const absPath = pathResolve(process.cwd(), PUBLIC_ICONS_REL, relPath);
+    await mkdir(dirname(absPath), { recursive: true });
+    await writeFile(absPath, bytes);
+    this.logger.log(`saved portrait ${relPath} (${bytes.byteLength} bytes)`);
+
+    const portraitUrl = `/icons/heroes/${relPath}`;
+    await this.prisma.hero.update({ where: { codename }, data: { portraitUrl } });
+
+    return { codename, saved: true, url: portraitUrl };
+  }
 
   async downloadFor(codename: string): Promise<DownloadResult> {
     const hero = await this.prisma.hero.findUnique({
@@ -108,7 +155,11 @@ export class HeroIconMatcher {
       }
 
       const relPath = this.abilityRelPath(codename, ability, match.parsed.url);
-      await this.saveAndUpdate(match.parsed.url, relPath, { kind: 'ability', record: ability });
+      await this.saveAndUpdate(match.parsed.url, relPath, {
+        kind: 'ability',
+        record: ability,
+        blizzardId: match.parsed.id,
+      });
       result.abilityMatched += 1;
     }
 
@@ -198,6 +249,7 @@ export class HeroIconMatcher {
    *       단 마지막에 ULTIMATE가 오는 영웅(Mercy의 Valkyrie 등)은 잘못 매칭되므로 override 필수.
    *       warn 로그로 검증 대상임을 알림.
    */
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: override + 카드 수 케이스별 분기가 한 함수에 모여있어야 매칭 알고리즘 흐름을 따라가기 쉬움. 분할 시 케이스 점프로 인지 부하 증가.
   private matchAbilities(
     dbAbilities: readonly HeroAbility[],
     parsedAbilities: readonly ParsedAbilityIcon[],
@@ -295,7 +347,7 @@ export class HeroIconMatcher {
   private async saveAndUpdate(
     url: string,
     relPath: string,
-    target: { kind: 'ability'; record: HeroAbility } | { kind: 'perk'; record: HeroPerk },
+    target: { kind: 'ability'; record: HeroAbility; blizzardId: string } | { kind: 'perk'; record: HeroPerk },
   ): Promise<void> {
     const { bytes } = await this.http.fetchBytes(url);
     const absPath = pathResolve(process.cwd(), PUBLIC_ICONS_REL, relPath);
@@ -306,7 +358,10 @@ export class HeroIconMatcher {
     const iconUrl = `/icons/heroes/${relPath}`;
 
     if (target.kind === 'ability') {
-      await this.prisma.heroAbility.update({ where: { id: target.record.id }, data: { iconUrl } });
+      await this.prisma.heroAbility.update({
+        where: { id: target.record.id },
+        data: { iconUrl, blizzardId: target.blizzardId },
+      });
 
       return;
     }

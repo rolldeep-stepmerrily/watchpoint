@@ -69,6 +69,8 @@ export function HeroListTable({ items, locale }: Props) {
           return (
             new Date(a.releasedAt).getTime() - new Date(b.releasedAt).getTime() || collator.compare(a.name, b.name)
           );
+        default:
+          return collator.compare(a.name, b.name);
       }
     };
 

@@ -1,5 +1,6 @@
 export { BlizzardHeroParser } from './blizzard-hero.parser';
 export { BlizzardHeroEnScraper } from './blizzard-hero.scraper';
+export { BlizzardHeroKoScraper } from './blizzard-hero-ko.scraper';
 export {
   BlizzardIconParser,
   type ParsedAbilityIcon,

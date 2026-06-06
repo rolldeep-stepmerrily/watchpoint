@@ -54,6 +54,9 @@ model HeroAbility {
   heroId                   Int
   slot                     AbilitySlot
   key                      String?
+  /// Blizzard 페이지의 ability id (예: "fusion-cannons"). 한국어 sync 시 매칭 결과로 채워지고,
+  /// 영문 sync에서 동일 id로 ability를 식별해 다국어 데이터를 안전하게 병합한다.
+  blizzardId               String?
   name                     String
   nameTranslations         Json?
   description              String
@@ -68,6 +71,7 @@ model HeroAbility {
 
   @@unique([heroId, slot, order])
   @@index([heroId])
+  @@index([heroId, blizzardId])
   @@map("hero_abilities")
 }
 
@@ -244,6 +248,7 @@ enum ScrapeSource {
   BLIZZARD_PATCH_NOTES
   BLIZZARD_PATCH_NOTES_EN
   BLIZZARD_HERO_EN
+  BLIZZARD_HERO_KO
   NAMUWIKI_HERO
 }
 

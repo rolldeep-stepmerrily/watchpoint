@@ -67,7 +67,9 @@ export class BlizzardPatchScraper {
       await this.responseCache.invalidateAll();
     }
     if (summary.affectedHeroIds.length > 0) {
-      void this.syncAffectedHeroes(summary.affectedHeroIds);
+      this.syncAffectedHeroes(summary.affectedHeroIds).catch((error: unknown) => {
+        this.logger.error(`syncAffectedHeroes failed: ${(error as Error).message}`, (error as Error).stack);
+      });
     }
     return summary;
   }
@@ -188,6 +190,7 @@ export class BlizzardPatchScraper {
     return total;
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: persist는 patch별 create/update + PUBLISHED 가드 + affected hero 집계가 한 흐름에 묶임. 분할 시 가독성 떨어져서 일단 유지.
   private async persist(patches: ParsedPatchNote[]): Promise<SyncSummary> {
     const summary: SyncSummary = {
       fetched: patches.length,

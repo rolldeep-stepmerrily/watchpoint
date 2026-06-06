@@ -3,6 +3,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { SeederModule } from '../seeder';
 import {
   BlizzardHeroEnScraper,
+  BlizzardHeroKoScraper,
   BlizzardHeroParser,
   BlizzardIconParser,
   BlizzardPatchCron,
@@ -11,6 +12,7 @@ import {
   BlizzardPatchScraper,
 } from './blizzard';
 import { ScrapeJobRecorder, ScraperHttpClient } from './common';
+import { MinioUploader } from './minio';
 import { NamuwikiHeroParser, NamuwikiHeroScraper } from './namuwiki';
 
 @Module({
@@ -27,19 +29,25 @@ import { NamuwikiHeroParser, NamuwikiHeroScraper } from './namuwiki';
     BlizzardPatchCron,
     BlizzardHeroParser,
     BlizzardHeroEnScraper,
+    BlizzardHeroKoScraper,
     BlizzardIconParser,
 
     /** namuwiki */
     NamuwikiHeroParser,
     NamuwikiHeroScraper,
+
+    /** minio */
+    MinioUploader,
   ],
   exports: [
     BlizzardPatchScraper,
     BlizzardPatchEnScraper,
     NamuwikiHeroScraper,
     BlizzardHeroEnScraper,
+    BlizzardHeroKoScraper,
     BlizzardIconParser,
     ScraperHttpClient,
+    MinioUploader,
   ],
 })
 export class ScraperModule {}
