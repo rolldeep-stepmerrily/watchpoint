@@ -1,47 +1,46 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-06-06 작업 종료 시점. develop = `8a29686` (PR #72/#73 머지), main = `39bcd8c` (미릴리스).
-> 영웅 데이터 정리 완료 — 한국어/영문 모두 Blizzard 페이지 단일 소스. Sierra/Freja/Bastion 정정.
-> **다음 작업 = Railway(API) + Next.js(Web) prod 배포** (`watchpoint_next_deploy.md`).
+> 2026-06-06 작업 종료 시점. develop = `ca96da0` (SEO 보강), main = `278da86` (PR #78 머지, Vercel 정상 배포 중).
+> **Railway API + Vercel Web 모두 prod 배포 완료**. 도메인 `o-watchpoint.com` 연결됨.
+> 이번 세션: vercel.json 위치 픽스, 코드 컨벤션 정리 12건, SEO JSON-LD/메타데이터 일괄 추가.
 
 ## 0. 다음 작업
 
-### 1순위: Railway (API) prod 배포 + Next.js (Web) 호스팅·배포
-- 컨텍스트: `~/.claude/projects/.../memory/watchpoint_next_deploy.md`
-- main 릴리스 PR → Railway 자동 배포 → env 2개 추가 → Next.js 호스팅 결정 → 배포 검증
+### 1순위: SEO 보강 release PR → main 머지 → Vercel 자동 배포
+- develop의 `ca96da0` (SEO 커밋) 아직 main에 없음
+- 새 release PR 만들어 머지 → Vercel 재배포 → JSON-LD/메타 반영 확인
+- 검증: 배포된 페이지에서 `view-source:` → `<script type="application/ld+json">` 확인, `/robots.txt`/`/sitemap.xml` 200 응답
 
-### (참고) 이전 작업 — 완료
-- **PR #72 fix(api)**: 영문 ability 매핑을 blizzardId 기반으로 안전화
-- **PR #73 feat(api)**: 한국어 ability 데이터를 Blizzard 한국어 페이지에서 자동 동기화. namuwiki/시드 한국어 이름 → Blizzard 페이지 단일 소스. Sierra(5개 능력 이름 정정), Freja(ABILITY_2/ULTIMATE 자리 정정), Bastion(ABILITY_2 "구르기"→"재설정")
-- **이전 1순위 작업 = 영문 sync 마무리** (Bastion/Freja/Sierra 매핑 검수 → PR → 머지)
-- 검수 미완 3명:
-  - **Bastion** ABILITY_2 구르기 ↔ `reconfigure` 의심
-  - **Freja** ULTIMATE 클러스터 애로우 ↔ `quick-dash` 명백한 오류
-  - **Sierra** 신영웅, 1:1 추정 다수 어긋남
-- 정정 후: `icon-overrides.ts` 수정 → 영웅별 단일 재sync (`hero:icons:download <cn>` + `hero:sync:en <cn>`) → commit → PR → develop 머지 → main 릴리스
-- 이번 세션 완료 (commit `099110e`):
-  - `og:title`/`og:description` 대신 `blz-page-header` 사용 (parser 재작성)
-  - `hero_abilities.blizzardId` 컬럼 + 한국어 sync 자동 저장
-  - 영문 sync는 blizzardId 우선 매칭 (override fallback 유지)
-  - 30명 override 추가 (총 44명)
-  - 51명 재sync. 영문 230/266 매칭
+### 2순위: MinIO 자산 업로드 + cdn 서브도메인
+- 현재 영웅 portrait/ability/perk 아이콘은 `apps/web/public/icons/...` 로컬 호스팅
+- `pnpm assets:upload` 실행 → MinIO bucket에 일괄 업로드 + DB URL 일괄 교체
+- Railway에서 `cdn.o-watchpoint.com` 서브도메인을 MinIO에 연결
+- `MINIO_PUBLIC_URL` env를 cdn 도메인으로 갱신 (Railway + Vercel)
+- 검증: 영웅 상세 페이지의 portrait/아이콘이 cdn 도메인에서 로드되는지
 
-### 2순위: Railway (API) prod 배포
-- 컨텍스트: `~/.claude/projects/.../memory/watchpoint_next_deploy.md`
-- 1순위 머지 후 main HEAD 업데이트 → Railway 자동 배포 트리거
-- 마이그레이션 4개 자동 적용 예상 (subrole NOT NULL / ability iconUrl / hero_change_log / **ability blizzardId**)
-- env 2개 추가: `AUTO_SEED_ON_BOOT=true`, `SCRAPER_CRON_ENABLED=true`
+### 3순위: 검색엔진 등록 + 파비콘
+- **Google Search Console** 등록 → 메타 verification 태그 추가 → 사이트맵 제출
+- **Naver Search Advisor** 등록 (한국 검색 트래픽)
+- **Bing Webmaster** 등록 (선택)
+- `apps/web/src/app/icon.tsx`, `apple-icon.tsx` 동적 파비콘 생성 (Watchpoint 로고)
+- `manifest.json` (선택, PWA 홈화면 추가용)
 
-### 3순위: Next.js (Web) 배포
-- 호스팅 결정: Vercel / Railway / Cloudflare Pages
-- env: `WEB_API_BASE_URL`
+### 4순위: 운영 데이터 보강 + 모니터링
+- prod에서 `pnpm patch:sync:en` (한국어 영문 패치노트 보강)
+- 첫 cron tick 모니터링 (6h 주기) + `hero_change_logs` 확인
+- `INTERNAL_API_KEY` Railway env 설정 → `/internal/*` 회복
+- prod MinIO에 능력/특전 아이콘 다운로드 (`hero:icons:download:all`)
 
-### 4순위: 배포 검증 + 후속
-- 능력/특전 아이콘 렌더링 (한국어 + ?lang=en)
-- 패치노트/영웅 정렬
-- `INTERNAL_API_KEY` 추가 → `/internal/*` 회복
-- prod `patch:sync:en` (한국어 영문 패치노트 보강)
-- 첫 cron tick + `hero_change_logs` 모니터링
+### 5순위 (큰 작업, 보류): URL 기반 locale routing
+- 현재 cookie 기반 i18n → 페이지가 전부 Dynamic Rendering
+- `/ko/...`, `/en/...` URL 라우팅으로 옮기면:
+  - `generateStaticParams` 가능 → 정적 프리렌더로 SEO/속도 향상
+  - `hreflang` + `alternates.languages` 가능 → 다국어 검색 인덱싱
+- 라우팅/링크/lang-toggle 전체 리팩토링 필요
+
+### 6순위 (큰 작업, 보류): 테스트 작성
+- API: 핸들러 단위 테스트, e2e 통합 테스트
+- Web: RSC 페이지 스냅샷, 핵심 인터랙션 e2e
 
 ---
 
@@ -49,115 +48,137 @@
 
 | 영역 | 상태 | 비고 |
 |---|---|---|
-| 도메인 모델 + i18n + HeroPerk | ✅ | |
-| 공개 API (GET 7종) + 캐시 | ✅ | `?lang=` 지원 |
-| 라이트 테마 + Overwatch 색상 | ✅ | PR #56 |
-| 영웅 목록 (op.gg 스타일 + 정렬) | ✅ | PR #60 + #66 |
-| 영웅 상세 (banner + tabs) | ✅ | PR #61 |
-| 패치노트 list/detail 리디자인 | ✅ | PR #65 |
-| 특전 시스템 (51명 × 4 perks = 204개) | ✅ | PR #63 |
-| 능력/특전 아이콘 자체 호스팅 (~435개) | ✅ | PR #63 + 이번 세션 PASSIVE 8개 추가 |
-| 부트 자동 시더 | ✅ | PR #68 |
-| 패치 cron 자동 영웅 sync + audit log | ✅ | PR #69 |
-| **영문 ability 매핑 (blizzardId 기반)** | 🟡 **작업 중** | 브랜치 `fix-blizzard-hero-en-scraper`. 3명 검수 후 PR |
-| Biome 규칙 + VSCode 저장 시 포맷 | ✅ | PR #58 |
-| 스크래퍼 (Blizzard 패치/영웅, namuwiki) | ✅ | Cron + CLI + auto-trigger |
-| Throttler / Helmet / Compression / Validation | ✅ | |
-| Railway (API) prod 배포 | 🔲 | 영문 sync 머지 후 |
-| Next.js (Web) prod 배포 | 🔲 | 호스팅 결정 + 영문 sync 후 |
-| 홈 페이지 디자인 | 🟡 placeholder | |
-| PASSIVE 아이콘 (대부분 영문에서 누락) | 🟡 부분 | 8명 추가 다운로드. 나머지는 영문 페이지에 카드 없음 |
-| KR-only 영웅 데이터 (7명) | 🔲 부족 | domina/anran/emre/vendetta/jetpack-cat/mizuki/wuyang |
-| Prod 영문 데이터 보강 | 🔲 대기 | 배포 후 |
-| `revalidatePath` (web ISR 무효화) | 🔲 미구현 | |
-| 테스트 (jest/e2e) | 🔲 미작성 | |
+| **Railway API prod 배포** | ✅ | `api.o-watchpoint.com` |
+| **Vercel Web prod 배포** | ✅ | `o-watchpoint.com` (PR #78 머지 후) |
+| **도메인 연결** | ✅ | 가비아 → 가비아 DNS → Railway/Vercel |
+| **boot-seeder 4-phase 자동화** | ✅ | ko/en/portrait/icons (PR #74) |
+| **Prisma 7 runtime deps** | ✅ | PR #76 |
+| **Vercel monorepo build (vercel.json)** | ✅ | PR #79 |
+| **SEO 메타데이터 (페이지별 generateMetadata)** | ✅ | OG/Twitter/canonical 전부 적용됨 |
+| **SEO JSON-LD 구조화 데이터** | 🟡 | develop에 있음, main 머지 대기 |
+| **sitemap.xml + robots.txt** | ✅ | 동적 영웅/패치 포함 |
+| **opengraph-image (홈/영웅/패치)** | ✅ | Pretendard 폰트 적용 |
+| **MinIO 자산 prod 업로드** | 🔲 | `assets:upload` 실행 대기 |
+| **cdn.o-watchpoint.com 서브도메인** | 🔲 | Railway에서 연결 필요 |
+| **파비콘 / apple-icon / manifest** | 🔲 | 디자인 자산 필요 |
+| **Google/Naver Search Console 등록** | 🔲 | verification 메타 추가 후 |
+| **URL 기반 locale routing** | 🔲 | hreflang/generateStaticParams 위한 선행 작업 |
+| **prod 영문 패치노트 보강** | 🔲 | `patch:sync:en` 실행 |
+| **첫 cron tick 모니터링** | 🔲 | 배포 6h 후 |
+| **`INTERNAL_API_KEY`** | 🔲 | Railway env 설정 |
+| **테스트 (jest/e2e)** | 🔲 | 미작성 |
+| **홈 페이지 디자인** | 🟡 placeholder | |
+| **`revalidatePath` (web ISR 무효화)** | 🔲 | 미구현 |
 
 ---
 
-## 2. 이번 세션 주요 작업 (2026-06-04)
+## 2. 이번 세션 주요 작업 (2026-06-06)
 
-### 발견된 버그
-1. **영문 페이지 og 메타 무용지물** — Blizzard EN 페이지의 `og:title`/`og:description`이 모든 영웅에서 동일한 "Overwatch" 게임 일반 정보로 고정. 모든 영웅의 영문 이름/설명이 "Overwatch"로 채워지고 있었음
-2. **fallback 1:1 매칭 slot 어긋남** — Genji 같이 PASSIVE 카드가 영문/한국어 페이지에 노출되는 영웅들에서 한국어 한글 매칭부터 slot이 어긋남 (어제 STATUS의 "51명 매칭 성공"은 카운트만 잡힌 거였음). 영문 sync는 그 잘못된 매핑을 그대로 전파
-3. **junkrat 0/5 매칭 실패** — DB SECONDARY 없는데 영문 카드 5개 → +1 merge 조건 안 맞아 매칭 0
+### Vercel 배포 디버깅
+1. **빌드 경고 2건** (PR #78): Next.js 15.5의 `experimental.typedRoutes` → 최상위 `typedRoutes`로 이동. Pretendard `@import`를 `@import "tailwindcss"` 앞으로 옮겨 CSS @import 순서 위반 해소
+2. **outputDirectory 경로 doubling** (PR #79): 루트 `vercel.json`의 `outputDirectory: "apps/web/.next"` + 대시보드 Root Directory `apps/web` 이 합쳐져 `/vercel/path0/apps/web/apps/web/.next`로 찾던 문제. `vercel.json`을 `apps/web/`로 옮기고 outputDirectory 명시 제거 (framework auto-detection 위임)
 
-### 해결 구조 (commit `099110e`)
-- **parser 재작성**: og 메타 → `blz-page-header h2[slot="heading"]` / `p[slot="description"]`. abilities는 `blz-tab-control[id]`와 `blz-feature[slot="slide"]` zip
-- **blizzardId 컬럼**: `hero_abilities.blizzardId` 추가. 한국어 sync 매칭 시 자동 저장 → 영문 sync는 id 기반 안전 매칭 (한국어/영문 페이지가 동일한 ability id 사용)
-- **30명 override 추가**: fallback 1:1이 잘못 매핑하던 영웅 모두 ABILITY_ID_TO_SLOT에 등록 (기존 14명 → 총 44명)
-- **scripts/dump-en-cards.sh** 추가: 영문 카드 vs DB 비교용 일회성 도구
+### 코드 컨벤션 정리 (PR #79 포함, 12건)
+- `function` 키워드 → 화살표 함수 (main, cli/main, name-resolver, hero-diff-logger, search.query, lib/api, shared 타입가드)
+- if/else → early return (main.ts, http-logger middleware)
+- `Boolean(name)` → `isDefined(name)` (blizzard-patch.scraper)
+- JSDoc 보강 (api/web/shared 합 9건)
+- 빌드/lint 모두 통과
 
-### 검증 결과
-- 51명 한국어 + 영문 재sync 완료
-- 영문 ability 매핑 230/266 (86.5%). 미매핑 36개 = 영문 페이지 카드 없는 PASSIVE/SECONDARY + KR-only 영웅
-- 깨졌던 영웅 검증: Baptiste 6/6, Genji 6/6, Kiriko 5/6, Reinhardt 5/6, Junker-Queen 5/6 (PASSIVE 미매핑 정상)
-- **Bastion/Freja/Sierra 매핑 의심** — 사용자 검수 후 정정 예정
-
-### 잔재 청소
-- 이전 영문 sync에서 잘못 채워진 ability 4개의 `nameTranslations.en`/`descriptionTranslations.en` 직접 SQL UPDATE로 청소 (junker-queen SECONDARY, bastion SECONDARY, mauga PRIMARY/SECONDARY)
+### SEO 보강 (commit `ca96da0`, main 머지 대기)
+- **JSON-LD 구조화 데이터** 빌더 (`apps/web/src/lib/seo.ts`) + `<JsonLd />` 컴포넌트
+  - `WebSite + SearchAction` (홈)
+  - `ItemList + BreadcrumbList` (영웅/패치 목록)
+  - `WebPage(Thing) + BreadcrumbList` (영웅 상세)
+  - `Article + BreadcrumbList` (패치 상세)
+- 홈 전용 `generateMetadata` (사이트명+설명 absolute title)
+- locale별 `keywords` (ko/en/ja 9~10개씩)
+- `authors`/`creator`/`publisher`/`googleBot` 메타
+- `viewport` export: themeColor 라이트/다크 분기, colorScheme
+- `robots.ts`: `/_next/` 차단 + `host` 필드 추가
+- `</script>` 인젝션 방지 escape 포함
 
 ---
 
-## 3. 자동화 시스템 요약
+## 3. 인프라 현황
+
+### 배포
+| 컴포넌트 | 호스팅 | 도메인 |
+|---|---|---|
+| NestJS API | Railway | `api.o-watchpoint.com` |
+| Next.js Web | Vercel | `o-watchpoint.com` |
+| PostgreSQL | Railway (Managed) | (private) |
+| Redis | Railway (Managed) | (private) |
+| MinIO (S3-호환) | Railway | Railway 기본 URL (cdn 미연결) |
+
+### 빌드 / 배포 자동화
+- **Railway API**: `develop` → `main` 머지 시 자동 트리거. `railway.json`에 `corepack enable && pnpm install --frozen-lockfile && pnpm --filter @watchpoint/shared build && pnpm --filter @watchpoint/api build`
+- **Vercel Web**: `main` 푸시 시 자동 트리거. `apps/web/vercel.json`에 monorepo cd 설정. Root Directory = `apps/web`
+- **boot-seeder**: API 부팅 시 `AUTO_SEED_ON_BOOT=true`면 perks/blizzardId 검사 → 부족하면 4-phase 시드 백그라운드 실행
+
+### env 필수 변수
+- **Railway API**: `DATABASE_URL`, `REDIS_URL`, `MINIO_ENDPOINT`/`ACCESS_KEY`/`SECRET_KEY`/`BUCKET`/`PUBLIC_URL`, `AUTO_SEED_ON_BOOT=true`, `SCRAPER_CRON_ENABLED=true`, `NODE_ENV=production`, `API_PORT`
+- **Vercel Web**: `WEB_API_BASE_URL=https://api.o-watchpoint.com`, `WEB_PUBLIC_URL=https://o-watchpoint.com`, `MINIO_PUBLIC_URL` (영웅 이미지 hostname 화이트리스트)
+
+---
+
+## 4. 자동화 시스템 요약
 
 ### 부트 자동 시더 (`AUTO_SEED_ON_BOOT=true`)
-- `OnApplicationBootstrap` → `perk count < hero × 4` 감지 시 백그라운드 시드 (51명 약 17분)
+- `OnApplicationBootstrap` → perks 부족 OR `abilities.blizzardId` 비율 < 80% 감지 시 백그라운드 4-phase 시드
+- 4 phase: 한국어 sync → 영문 sync → portrait 다운로드 → ability/perk 아이콘 다운로드
+- Blizzard CDN throttle(2초)로 51명 × 4 phase ≈ 25분 소요
 
 ### 패치 cron 자동 영웅 sync (`SCRAPER_CRON_ENABLED=true`)
 - `BlizzardPatchCron` 6시간마다 (`0 */6 * * *`)
 - 새 패치/non-PUBLISHED 업데이트 → 영웅별 `NamuwikiHeroScraper.sync` + `HeroIconMatcher.downloadFor`
 - `hero_change_logs`에 audit
 
-### HeroChangeLog audit
-- 10가지 변경 타입 (HERO_STAT / ABILITY_* / PERK_*)
-- target + before(JSON) + after(JSON) 구조화 저장
-
-### blizzardId 기반 영문 매핑 (이번 세션 신규)
-- 한국어 sync(`HeroIconMatcher.downloadFor`) 시 `ability.blizzardId` 자동 저장
-- 영문 sync(`BlizzardHeroEnScraper`)는 (1) blizzardId 매칭 → (2) override → (3) fallback 순서
+### blizzardId 기반 영문 매핑
+- 한국어 sync 시 `ability.blizzardId` 자동 저장
+- 영문 sync는 (1) blizzardId 매칭 → (2) override → (3) fallback 순서
 - 신규 영웅 추가 시 한국어 sync만 돌리면 영문도 자동 정확 매핑
 
 ---
 
-## 4. 알려진 이슈
+## 5. 알려진 이슈
 
-### 4.1 작업 중
-- Bastion/Freja/Sierra 매핑 검수 미완
-
-### 4.2 데이터
+### 5.1 데이터
 - PASSIVE 아이콘 대부분 영문 페이지에 카드 없음 (역할군 패시브). 8명만 추가 다운로드됨
 - KR-only 영웅 7명: ability 부족 (anran/domina=0, emre/jetpack-cat/mizuki/vendetta/wuyang=1)
-- mauga 무기(간 톰/쿠앙 머), junker-queen SECONDARY(재기드 블레이드), bastion SECONDARY(전술 수류탄) — Blizzard 영문 페이지에 카드 없음, 영문 빈값
+- mauga 무기, junker-queen SECONDARY, bastion SECONDARY — Blizzard 영문 페이지에 카드 없음, 영문 빈값
 
-### 4.3 운영
-- prod 영문 데이터 미보강 (배포 후)
+### 5.2 운영
+- prod MinIO 자산 미업로드 (로컬 `apps/web/public/icons/...`만 있음)
 - `INTERNAL_API_KEY` 미설정
 - 통합 테스트 미작성
+- 홈 페이지 디자인 placeholder
+
+### 5.3 SEO 한계 (현재 cookie i18n 때문에)
+- 페이지 전부 Dynamic Rendering (cookies 사용)
+- hreflang/alternates.languages 미설정
+- `generateStaticParams` 미사용 → 빌드 타임 프리렌더 안 됨
 
 ---
 
-## 5. 최근 머지
+## 6. 최근 머지
 
 | PR | 내용 |
 |---|---|
-| #56 | feat(web): 라이트 테마 |
-| #57 | chore(api): Hero.subrole NOT NULL + enum |
-| #58 | chore: Biome useBlockStatements + VSCode 자동 포맷 |
-| #60 | feat(web): 영웅 목록 op.gg 스타일 dense 테이블 |
-| #61 | feat(web): 영웅 상세 banner + tabs |
-| #63 | feat(api): 능력/특전 아이콘 자동 다운로드 + perks 한국어 시드 |
-| #65 | feat(web): 패치노트 list/detail 리디자인 |
-| #66 | feat(web): 영웅 목록 정렬 |
-| #68 | feat(api): 부트 자동 시더 |
-| #69 | feat(api): 패치 cron 자동 영웅 sync + audit |
-| #67, #70 | release: develop → main |
+| #74 | release: 영웅 데이터 자동 동기화 (Blizzard 단일 소스) |
+| #75 | release: Railway 빌드 fix + boot-seeder 4-phase 자동화 |
+| #76 | release: prod runtime deps fix (ts-node + @prisma/client-runtime-utils) |
+| #77 | release: boot-seeder 트리거 조건 보강 (blizzardId 비율) |
+| #78 | release: Next.js 빌드 경고 정리 |
+| #79 | release: Vercel 배포 경로 픽스 + 코드 컨벤션 정리 |
+
+(다음 예정) **#80**: release: SEO 보강 (JSON-LD + 메타 + viewport)
 
 ---
 
-## 6. 메모리 / 참고
+## 7. 메모리 / 참고
 
 - 메모리 인덱스: `~/.claude/projects/.../memory/MEMORY.md`
-- 영문 sync 작업 컨텍스트: `~/.claude/projects/.../memory/watchpoint_en_sync_fix.md`
 - 배포 작업 컨텍스트: `~/.claude/projects/.../memory/watchpoint_next_deploy.md`
 - 기획/스펙: `SPEC.md`
 - 설치/운영: `README.md`
