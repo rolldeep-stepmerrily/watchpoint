@@ -14,9 +14,7 @@ const minioRemotePattern = MINIO_PUBLIC_URL
 const config: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@watchpoint/shared'],
-  experimental: {
-    typedRoutes: true,
-  },
+  typedRoutes: true,
   images: {
     remotePatterns: [
       ...minioRemotePattern,
