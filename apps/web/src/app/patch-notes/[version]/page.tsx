@@ -2,11 +2,12 @@ import type { PatchNoteDetailDto, PatchNoteEntryDto } from '@@shared';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
+import { JsonLd } from '@/components/json-ld';
 import { getPatchNote } from '@/lib/api';
 import { CATEGORY_ORDER, categoryColorVar } from '@/lib/format';
 import { getLocale } from '@/lib/i18n';
 import { getLabels, type Labels } from '@/lib/labels';
-import { absoluteUrl } from '@/lib/seo';
+import { absoluteUrl, buildArticleJsonLd, buildBreadcrumbJsonLd, SITE_NAME } from '@/lib/seo';
 
 export const revalidate = 600;
 
@@ -60,8 +61,23 @@ export default async function PatchNoteDetailPage({ params }: Props) {
   const grouped = groupByCategory(patch.entries);
   const totalEntries = patch.entries.length;
 
+  const patchUrl = absoluteUrl(`/patch-notes/${patch.version}`);
+  const patchDescription = patch.summary ?? t.patchNotes.descriptionFallback(patch.version, patch.title);
+  const articleJsonLd = buildArticleJsonLd({
+    headline: `${patch.version} · ${patch.title}`,
+    description: patchDescription,
+    url: patchUrl,
+    datePublished: patch.releasedAt,
+  });
+  const breadcrumb = buildBreadcrumbJsonLd([
+    { name: SITE_NAME, url: absoluteUrl('/') },
+    { name: t.patchNotes.title, url: absoluteUrl('/patch-notes') },
+    { name: patch.version, url: patchUrl },
+  ]);
+
   return (
     <article className="space-y-8">
+      <JsonLd data={[articleJsonLd, breadcrumb]} />
       <PatchBanner
         patch={patch}
         grouped={grouped}

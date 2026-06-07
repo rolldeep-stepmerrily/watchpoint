@@ -1,10 +1,33 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { JsonLd } from '@/components/json-ld';
 import { getHeroList, getPatchNoteList } from '@/lib/api';
 import { getLocale } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
+import { buildWebSiteJsonLd, SITE_NAME } from '@/lib/seo';
 
 export const revalidate = 3600;
+
+/**
+ * 홈 페이지 메타데이터 — 사이트명을 title로 단독 노출(레이아웃 template 미적용), 설명은 locale별
+ *
+ * @returns {Promise<Metadata>} 홈 전용 메타데이터
+ */
+export const generateMetadata = async (): Promise<Metadata> => {
+  const t = getLabels(await getLocale());
+
+  return {
+    title: { absolute: `${SITE_NAME} — ${t.site.description}` },
+    description: t.home.description,
+    alternates: { canonical: '/' },
+    openGraph: {
+      title: SITE_NAME,
+      description: t.home.description,
+      url: '/',
+    },
+  };
+};
 
 export default async function HomePage() {
   const lang = await getLocale();
@@ -16,6 +39,7 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-16">
+      <JsonLd data={buildWebSiteJsonLd(t.site.description)} />
       {/* Hero section */}
       <section
         className="relative overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface-elevated) px-8 py-14 sm:px-12 sm:py-20"
