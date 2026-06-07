@@ -1,8 +1,7 @@
 export const OG_SIZE = { width: 1200, height: 630 } as const;
 export const OG_CONTENT_TYPE = 'image/png';
 
-const FONT_URL =
-  'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/packages/pretendard/dist/public/static/Pretendard-Bold.ttf';
+const FONT_URL = 'https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/public/static/alternative/Pretendard-Bold.ttf';
 
 let cachedFont: ArrayBuffer | undefined;
 
