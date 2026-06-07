@@ -45,6 +45,20 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+const googleVerification = process.env.WEB_GOOGLE_SITE_VERIFICATION;
+const naverVerification = process.env.WEB_NAVER_SITE_VERIFICATION;
+
+const buildVerification = (): Metadata['verification'] | undefined => {
+  if (!(googleVerification || naverVerification)) {
+    return undefined;
+  }
+
+  return {
+    ...(googleVerification ? { google: googleVerification } : {}),
+    ...(naverVerification ? { other: { 'naver-site-verification': naverVerification } } : {}),
+  };
+};
+
 /**
  * 루트 레이아웃 메타데이터 생성 — 사이트 전역 기본값 + locale별 키워드/OG locale 설정
  *
@@ -53,6 +67,7 @@ export const viewport: Viewport = {
 export const generateMetadata = async (): Promise<Metadata> => {
   const lang = await getLocale();
   const t = getLabels(lang);
+  const verification = buildVerification();
 
   return {
     metadataBase: new URL(SITE_URL),
@@ -83,6 +98,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
       googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
     },
     formatDetection: { email: false, address: false, telephone: false },
+    ...(verification ? { verification } : {}),
   };
 };
 
