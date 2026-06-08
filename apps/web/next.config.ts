@@ -16,11 +16,7 @@ const config: NextConfig = {
   transpilePackages: ['@watchpoint/shared'],
   typedRoutes: true,
   images: {
-    remotePatterns: [
-      ...minioRemotePattern,
-      // 잔재로 남은 namuwiki portraitUrl — `hero:portrait:download:all` 후 모두 MinIO로 옮기면 제거.
-      { protocol: 'https', hostname: 'i.namu.wiki' },
-    ],
+    remotePatterns: [...minioRemotePattern],
   },
   async rewrites() {
     return [

@@ -34,7 +34,7 @@ export function HeroPortrait({ src, alt, role, size, loading = 'lazy' }: HeroPor
   }
 
   return (
-    // biome-ignore lint/performance/noImgElement: namuwiki 외부 호스트, next/image remotePatterns 회피
+    // biome-ignore lint/performance/noImgElement: 외부 cdn 호스트 가능성, next/image remotePatterns 회피
     <img
       src={src}
       alt={alt}

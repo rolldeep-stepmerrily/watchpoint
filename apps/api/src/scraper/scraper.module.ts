@@ -13,7 +13,6 @@ import {
 } from './blizzard';
 import { ScrapeJobRecorder, ScraperHttpClient } from './common';
 import { MinioUploader } from './minio';
-import { NamuwikiHeroParser, NamuwikiHeroScraper } from './namuwiki';
 
 @Module({
   imports: [forwardRef(() => SeederModule)],
@@ -32,17 +31,12 @@ import { NamuwikiHeroParser, NamuwikiHeroScraper } from './namuwiki';
     BlizzardHeroKoScraper,
     BlizzardIconParser,
 
-    /** namuwiki */
-    NamuwikiHeroParser,
-    NamuwikiHeroScraper,
-
     /** minio */
     MinioUploader,
   ],
   exports: [
     BlizzardPatchScraper,
     BlizzardPatchEnScraper,
-    NamuwikiHeroScraper,
     BlizzardHeroEnScraper,
     BlizzardHeroKoScraper,
     BlizzardIconParser,

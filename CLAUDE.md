@@ -63,8 +63,8 @@ pnpm patch:sync                       # 블리자드 패치노트 동기화 (최
 pnpm patch:backfill                   # 페이지네이션 따라 과거 패치 백필 (--until, --max-pages)
 pnpm patch:list
 pnpm patch:review <version>
-pnpm hero:sync <codename>
-pnpm hero:sync:all
+pnpm hero:sync <codename>             # Blizzard 한국어 페이지 기반
+pnpm hero:sync:all                    # Blizzard 한국어 페이지 기반
 pnpm hero:edit <codename>
 ```
 
@@ -147,8 +147,8 @@ throw new AppException(HERO_ERRORS.NOT_FOUND);
 
 ### 스크래퍼 패턴
 
-- **자동(Cron)**: 블리자드 패치노트만. `@Cron(SCRAPER_PATCH_CRON)` 6시간 주기.
-- **수동(CLI)**: 나무위키 영웅 동기화 (`pnpm hero:sync <codename>`). 일괄 자동 크롤링 금지(차단 리스크).
+- **자동(Cron)**: 블리자드 패치노트만. `@Cron(SCRAPER_PATCH_CRON)` 6시간 주기. 새 패치 감지 시 영향 받은 영웅을 `BlizzardHeroKoScraper.sync`로 재동기화.
+- **수동(CLI)**: 단일 영웅 강제 sync (`pnpm hero:sync <codename>`). 일괄 자동 크롤링 금지(차단 리스크).
 - 모든 스크래핑은 `ScrapeJob` 레코드를 남김 — RUNNING/SUCCESS/FAILED/SKIPPED.
 - HTTP fetch는 `undici` + `cheerio` 우선. 동적 렌더링 필요 시에만 `playwright`.
 - 단일 도메인 동시 요청 1, 요청 간 최소 2초 (`SCRAPER_REQUEST_DELAY_MS`).
@@ -192,4 +192,4 @@ docker-compose up -d    # PostgreSQL + Redis 실행
 ## 데이터 출처 / 라이선스
 
 - 패치노트: [Overwatch 공식](https://overwatch.blizzard.com/ko-kr/news/patch-notes/) (2026-01 이후)
-- 영웅 정보: [나무위키](https://namu.wiki/) — CC BY-NC-SA 2.0 KR. 영웅 상세 페이지에 `sourceUrl` 항상 노출.
+- 영웅 정보: [Overwatch 공식 영웅 페이지](https://overwatch.blizzard.com/ko-kr/heroes/) — 한국어 sync는 `BlizzardHeroKoScraper`, 영문은 `BlizzardHeroEnScraper`. 영웅 상세 페이지에 `sourceUrl` 항상 노출. 본 서비스는 Blizzard Entertainment와 무관한 비공식 팬 프로젝트.

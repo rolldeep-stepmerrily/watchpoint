@@ -85,7 +85,7 @@ export class HeroEditCommand extends CommandRunner {
     return value;
   }
 
-  @Option({ flags: '--source-url <url>', description: '출처 URL (나무위키 페이지 등)' })
+  @Option({ flags: '--source-url <url>', description: '출처 URL (Blizzard 페이지 등)' })
   parseSourceUrl(value: string): string {
     return value;
   }

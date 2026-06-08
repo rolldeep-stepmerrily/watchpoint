@@ -13,7 +13,7 @@ const PUBLIC_ICONS_ROOT_REL = '../web/public/icons';
  * - 키 구조 = 로컬 path 그대로 유지 (예: `heroes/d-va/portrait.jpg`).
  * - 멱등 — 같은 키에 다시 업로드되면 덮어쓰기. DB URL도 매번 동일 패턴이라 차이 없음.
  * - DB 매칭은 path suffix 기준 (`/icons/heroes/...` 또는 `https://.../icons/heroes/...`).
- *   기존 namuwiki/외부 CDN URL이 portraitUrl에 남아있는 영웅은 file path 패턴으로 따로 매칭 안 되니
+ *   기존 외부 CDN URL이 portraitUrl에 남아있는 영웅은 file path 패턴으로 따로 매칭 안 되니
  *   `hero:portrait:download:all`을 먼저 돌려서 로컬 path 형태로 만들어 둘 것.
  */
 @Command({
