@@ -143,7 +143,7 @@
 
 ### 패치 cron 자동 영웅 sync (`SCRAPER_CRON_ENABLED=true`)
 - `BlizzardPatchCron` 6시간마다 (`0 */6 * * *`)
-- 새 패치/non-PUBLISHED 업데이트 → 영웅별 `NamuwikiHeroScraper.sync` + `HeroIconMatcher.downloadFor`
+- 새 패치/non-PUBLISHED 업데이트 → 영웅별 `BlizzardHeroKoScraper.sync` + `HeroIconMatcher.downloadFor`
 - `hero_change_logs`에 audit
 
 ### blizzardId 기반 영문 매핑

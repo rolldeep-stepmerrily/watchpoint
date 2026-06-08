@@ -97,7 +97,7 @@
 | 필드 | 타입 | 설명 |
 |---|---|---|
 | id | Int | PK |
-| source | ScrapeSource | `BLIZZARD_PATCH_NOTES` / `NAMUWIKI_HERO` |
+| source | ScrapeSource | `BLIZZARD_PATCH_NOTES` / `BLIZZARD_PATCH_NOTES_EN` / `BLIZZARD_HERO_KO` / `BLIZZARD_HERO_EN` (`NAMUWIKI_HERO` deprecated) |
 | target | String | 대상 식별자 (URL 또는 영웅 codename) |
 | status | ScrapeStatus | `RUNNING` / `SUCCESS` / `FAILED` / `SKIPPED` |
 | startedAt | DateTime | 시작 시각 |

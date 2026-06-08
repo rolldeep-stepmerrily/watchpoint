@@ -131,6 +131,6 @@ watchpoint/
 ## 데이터 출처
 
 - 패치노트: [Overwatch 공식 패치노트](https://overwatch.blizzard.com/ko-kr/news/patch-notes/) (2026-01 이후)
-- 영웅 정보: [나무위키](https://namu.wiki/) (CC BY-NC-SA 2.0 KR)
+- 영웅 정보: [Overwatch 공식 영웅 페이지](https://overwatch.blizzard.com/ko-kr/heroes/) (한국어/영문 양쪽)
 
-영웅 상세 페이지에는 항상 원본 출처 링크를 표기한다.
+영웅 상세 페이지에는 항상 원본 출처 링크를 표기한다. 본 사이트는 Blizzard Entertainment와 무관한 비공식 팬 프로젝트이다.
