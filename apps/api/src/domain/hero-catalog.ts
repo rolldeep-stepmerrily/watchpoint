@@ -4,7 +4,7 @@ import type { HeroRole } from '../generated/prisma/client';
 /**
  * 모든 오버워치 영웅의 정적 카탈로그.
  * 시드(seed.ts)와 hero-registry(CLI)가 모두 이 데이터를 참조해
- * codename ↔ 한글 이름 ↔ 나무위키 페이지가 항상 일치하도록 보장한다.
+ * codename ↔ 한글 이름이 항상 일치하도록 보장한다.
  *
  * 출시일은 정확하지 않을 수 있으므로 hero:edit으로 보정 가능.
  *
@@ -16,19 +16,17 @@ export interface HeroCatalogEntry {
   role: HeroRole;
   subrole: Subrole;
   releasedAt: string; // ISO date
-  pageTitle: string; // 나무위키 페이지 제목
 }
 
 export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
   // Tank
-  { codename: 'd-va', name: 'D.Va', role: 'TANK', subrole: 'Initiator', releasedAt: '2016-05-24', pageTitle: 'D.Va' },
+  { codename: 'd-va', name: 'D.Va', role: 'TANK', subrole: 'Initiator', releasedAt: '2016-05-24' },
   {
     codename: 'domina',
     name: '도미나',
     role: 'TANK',
     subrole: 'Stalwart',
     releasedAt: '2026-02-11',
-    pageTitle: '도미나',
   },
   {
     codename: 'doomfist',
@@ -36,7 +34,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'TANK',
     subrole: 'Initiator',
     releasedAt: '2017-07-27',
-    pageTitle: '둠피스트',
   },
   {
     codename: 'hazard',
@@ -44,7 +41,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'TANK',
     subrole: 'Initiator',
     releasedAt: '2024-12-10',
-    pageTitle: '해저드',
   },
   {
     codename: 'junker-queen',
@@ -52,7 +48,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'TANK',
     subrole: 'Stalwart',
     releasedAt: '2022-10-04',
-    pageTitle: '정커퀸',
   },
   {
     codename: 'mauga',
@@ -60,7 +55,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'TANK',
     subrole: 'Bruiser',
     releasedAt: '2023-12-05',
-    pageTitle: '마우가',
   },
   {
     codename: 'orisa',
@@ -68,7 +62,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'TANK',
     subrole: 'Bruiser',
     releasedAt: '2017-03-21',
-    pageTitle: '오리사',
   },
   {
     codename: 'ramattra',
@@ -76,7 +69,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'TANK',
     subrole: 'Stalwart',
     releasedAt: '2022-12-06',
-    pageTitle: '라마트라',
   },
   {
     codename: 'reinhardt',
@@ -84,7 +76,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'TANK',
     subrole: 'Stalwart',
     releasedAt: '2016-05-24',
-    pageTitle: '라인하르트(오버워치)',
   },
   {
     codename: 'roadhog',
@@ -92,7 +83,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'TANK',
     subrole: 'Bruiser',
     releasedAt: '2016-05-24',
-    pageTitle: '로드호그',
   },
   {
     codename: 'sigma',
@@ -100,7 +90,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'TANK',
     subrole: 'Stalwart',
     releasedAt: '2019-08-04',
-    pageTitle: '시그마(오버워치)',
   },
   {
     codename: 'winston',
@@ -108,7 +97,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'TANK',
     subrole: 'Initiator',
     releasedAt: '2016-05-24',
-    pageTitle: '윈스턴(오버워치)',
   },
   {
     codename: 'wrecking-ball',
@@ -116,7 +104,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'TANK',
     subrole: 'Initiator',
     releasedAt: '2018-07-23',
-    pageTitle: '레킹볼(오버워치)',
   },
   {
     codename: 'zarya',
@@ -124,18 +111,16 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'TANK',
     subrole: 'Bruiser',
     releasedAt: '2016-05-24',
-    pageTitle: '자리야',
   },
 
   // Damage
-  { codename: 'anran', name: '안란', role: 'DAMAGE', subrole: 'Flanker', releasedAt: '2026-02-11', pageTitle: '안란' },
+  { codename: 'anran', name: '안란', role: 'DAMAGE', subrole: 'Flanker', releasedAt: '2026-02-11' },
   {
     codename: 'ashe',
     name: '애쉬',
     role: 'DAMAGE',
     subrole: 'Sharpshooter',
     releasedAt: '2018-11-13',
-    pageTitle: '애쉬(오버워치)',
   },
   {
     codename: 'bastion',
@@ -143,7 +128,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Specialist',
     releasedAt: '2016-05-24',
-    pageTitle: '바스티온',
   },
   {
     codename: 'cassidy',
@@ -151,7 +135,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Sharpshooter',
     releasedAt: '2016-05-24',
-    pageTitle: '캐서디',
   },
   {
     codename: 'echo',
@@ -159,7 +142,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Recon',
     releasedAt: '2020-04-14',
-    pageTitle: '에코(오버워치)',
   },
   {
     codename: 'freja',
@@ -167,7 +149,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Recon',
     releasedAt: '2025-02-25',
-    pageTitle: '프레야',
   },
   {
     codename: 'genji',
@@ -175,7 +156,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Flanker',
     releasedAt: '2016-05-24',
-    pageTitle: '겐지(오버워치)',
   },
   {
     codename: 'hanzo',
@@ -183,7 +163,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Sharpshooter',
     releasedAt: '2016-05-24',
-    pageTitle: '한조(오버워치)',
   },
   {
     codename: 'junkrat',
@@ -191,7 +170,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Specialist',
     releasedAt: '2016-05-24',
-    pageTitle: '정크랫',
   },
   {
     codename: 'mei',
@@ -199,7 +177,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Specialist',
     releasedAt: '2016-05-24',
-    pageTitle: '메이(오버워치)',
   },
   {
     codename: 'pharah',
@@ -207,7 +184,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Recon',
     releasedAt: '2016-05-24',
-    pageTitle: '파라(오버워치)',
   },
   {
     codename: 'reaper',
@@ -215,7 +191,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Flanker',
     releasedAt: '2016-05-24',
-    pageTitle: '리퍼(오버워치)',
   },
   {
     codename: 'sierra',
@@ -223,7 +198,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Recon',
     releasedAt: '2026-04-22',
-    pageTitle: '시에라(오버워치)',
   },
   {
     codename: 'sojourn',
@@ -231,7 +205,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Sharpshooter',
     releasedAt: '2022-10-04',
-    pageTitle: '소전(오버워치)',
   },
   {
     codename: 'emre',
@@ -239,7 +212,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Specialist',
     releasedAt: '2026-02-11',
-    pageTitle: '엠레(오버워치)',
   },
   {
     codename: 'vendetta',
@@ -247,7 +219,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Flanker',
     releasedAt: '2025-12-10',
-    pageTitle: '벤데타(오버워치)',
   },
   {
     codename: 'soldier-76',
@@ -255,7 +226,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Specialist',
     releasedAt: '2016-05-24',
-    pageTitle: '솔저: 76',
   },
   {
     codename: 'sombra',
@@ -263,7 +233,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Recon',
     releasedAt: '2016-11-14',
-    pageTitle: '솜브라',
   },
   {
     codename: 'symmetra',
@@ -271,7 +240,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Specialist',
     releasedAt: '2016-05-24',
-    pageTitle: '시메트라',
   },
   {
     codename: 'torbjorn',
@@ -279,7 +247,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Specialist',
     releasedAt: '2016-05-24',
-    pageTitle: '토르비욘',
   },
   {
     codename: 'tracer',
@@ -287,7 +254,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Flanker',
     releasedAt: '2016-05-24',
-    pageTitle: '트레이서(오버워치)',
   },
   {
     codename: 'venture',
@@ -295,7 +261,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Flanker',
     releasedAt: '2024-04-16',
-    pageTitle: '벤처(오버워치)',
   },
   {
     codename: 'widowmaker',
@@ -303,7 +268,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'DAMAGE',
     subrole: 'Sharpshooter',
     releasedAt: '2016-05-24',
-    pageTitle: '위도우메이커',
   },
 
   // Support
@@ -313,7 +277,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Tactician',
     releasedAt: '2016-07-12',
-    pageTitle: '아나(오버워치)',
   },
   {
     codename: 'baptiste',
@@ -321,7 +284,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Tactician',
     releasedAt: '2019-03-19',
-    pageTitle: '바티스트(오버워치)',
   },
   {
     codename: 'brigitte',
@@ -329,7 +291,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Survivor',
     releasedAt: '2018-03-28',
-    pageTitle: '브리기테',
   },
   {
     codename: 'illari',
@@ -337,7 +298,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Survivor',
     releasedAt: '2023-08-10',
-    pageTitle: '일리아리',
   },
   {
     codename: 'jetpack-cat',
@@ -345,7 +305,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Tactician',
     releasedAt: '2026-02-11',
-    pageTitle: '제트팩 캣',
   },
   {
     codename: 'juno',
@@ -353,7 +312,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Survivor',
     releasedAt: '2024-08-20',
-    pageTitle: '주노(오버워치)',
   },
   {
     codename: 'kiriko',
@@ -361,7 +319,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Medic',
     releasedAt: '2022-10-04',
-    pageTitle: '키리코(오버워치)',
   },
   {
     codename: 'lifeweaver',
@@ -369,7 +326,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Medic',
     releasedAt: '2023-04-11',
-    pageTitle: '라이프위버',
   },
   {
     codename: 'lucio',
@@ -377,7 +333,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Tactician',
     releasedAt: '2016-05-24',
-    pageTitle: '루시우(오버워치)',
   },
   {
     codename: 'mercy',
@@ -385,7 +340,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Medic',
     releasedAt: '2016-05-24',
-    pageTitle: '메르시',
   },
   {
     codename: 'mizuki',
@@ -393,7 +347,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Survivor',
     releasedAt: '2026-02-11',
-    pageTitle: '미즈키(오버워치)',
   },
   {
     codename: 'moira',
@@ -401,7 +354,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Medic',
     releasedAt: '2017-11-17',
-    pageTitle: '모이라(오버워치)',
   },
   {
     codename: 'wuyang',
@@ -409,7 +361,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Survivor',
     releasedAt: '2025-08-27',
-    pageTitle: '우양',
   },
   {
     codename: 'zenyatta',
@@ -417,7 +368,6 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
     role: 'SUPPORT',
     subrole: 'Tactician',
     releasedAt: '2016-05-24',
-    pageTitle: '젠야타',
   },
 ];
 

@@ -3,7 +3,6 @@ import type { HeroRole, Subrole } from '@@prisma';
 import { HERO_CATALOG, type HeroCatalogEntry } from '../domain/hero-catalog';
 
 export interface HeroRegistryEntry {
-  pageTitle: string;
   koreanName: string;
   role: HeroRole;
   subrole: Subrole;
@@ -14,7 +13,6 @@ export const HERO_REGISTRY: Record<string, HeroRegistryEntry> = Object.fromEntri
   HERO_CATALOG.map((entry: HeroCatalogEntry) => [
     entry.codename,
     {
-      pageTitle: entry.pageTitle,
       koreanName: entry.name,
       role: entry.role,
       subrole: entry.subrole,
