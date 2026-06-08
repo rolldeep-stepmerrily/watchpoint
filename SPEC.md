@@ -11,7 +11,7 @@
 - **목표**: 블리자드 공식 패치노트와 영웅별 능력 수치를 정기적으로 수집·정규화하여 빠른 조회와 영웅별 패치 이력 추적을 제공.
 - **범위(v1)**: 패치노트(2026-01 이후) + 모든 영웅의 기본 능력/수치.
 - **비범위(v1)**: 유저 인증, 댓글, 즐겨찾기, 통계/메타 분석, 토너먼트/프로 씬 데이터.
-- **데이터 적재 정책**: 1차 시드는 나무위키(영웅) + 블리자드(패치노트)를 스크래핑, 이후 Cron이 주기적으로 신규 패치를 감지·적재. 자동 매핑 실패 건은 `PENDING_REVIEW`로 격리하여 admin CLI로 보정.
+- **데이터 적재 정책**: 영웅/패치노트 모두 블리자드 공식 페이지를 스크래핑. 이후 Cron이 주기적으로 신규 패치를 감지·적재. 자동 매핑 실패 건은 `PENDING_REVIEW`로 격리하여 admin CLI로 보정.
 
 ---
 
@@ -27,7 +27,7 @@
 | releasedAt | DateTime | 출시일 |
 | portraitUrl | String? | 초상화 이미지 URL |
 | description | String? | 영웅 소개 |
-| sourceUrl | String? | 1차 출처 (나무위키 등) |
+| sourceUrl | String? | 1차 출처 (Blizzard 공식 영웅 페이지) |
 
 ### HeroStat
 영웅 기본 수치(체력 구성/이동 속도 등). 패치마다 갱신 가능하므로 history는 `HeroStatRevision`으로 별도 보관.
@@ -169,13 +169,13 @@ ScrapePatchNotesUseCase (Cron, 6시간 주기)
 - HTTP fetch는 우선 `undici` + `cheerio`로 처리. 동적 렌더링이 필요해지면 `playwright` fallback.
 - 멱등성: `(sourceUrl, version)` unique 제약. 재시도해도 중복 적재되지 않음.
 
-### 2. 영웅 정보 — 나무위키
+### 2. 영웅 정보 — 블리자드 공식 영웅 페이지
 
-대상 예시: `https://namu.wiki/w/시에라(오버워치)`
+대상 예시: `https://overwatch.blizzard.com/ko-kr/heroes/sierra/` / `https://overwatch.blizzard.com/en-us/heroes/sierra/`
 
-- v1은 **수동 트리거 시드**. (일괄 자동 크롤링은 나무위키 약관·차단 리스크가 있어 보수적으로 운영.)
-- CLI: `pnpm hero:sync <codename>` — 단일 영웅의 페이지를 가져와 파싱 후 DB 갱신.
-- 파서는 영웅별 능력/수치 섹션을 정규식·DOM 쿼리로 추출. 실패 시 raw HTML을 `data/raw/heroes/<codename>.html`에 보관하여 수동 보정.
+- 부팅 시 자동 보강: `boot-seeder`가 ko/en 페이지를 순차 스크래핑해 한국어/영문 이름·설명·능력을 채움 (`BlizzardHeroKoScraper` + `BlizzardHeroEnScraper`).
+- 패치 cron이 새 패치 적재 시 영향 받은 영웅을 `BlizzardHeroKoScraper.sync`로 자동 재동기화.
+- CLI: `pnpm hero:sync <codename>` — 단일 영웅을 즉시 강제 sync. 일괄 자동 크롤링은 Blizzard CDN throttle(요청 간 2초)로 보수적 운영.
 
 ### 3. 보정 워크플로우 — Admin CLI
 
@@ -185,7 +185,7 @@ ScrapePatchNotesUseCase (Cron, 6시간 주기)
 pnpm patch:list                       # 최근 PENDING_REVIEW 패치 조회
 pnpm patch:review <version>           # JSON으로 열어서 수정 → PUBLISHED 승격
 pnpm hero:edit <codename>             # 단일 영웅 수치/능력 수정
-pnpm hero:sync <codename>             # 나무위키에서 다시 가져와 갱신
+pnpm hero:sync <codename>             # Blizzard 한국어 페이지에서 다시 가져와 갱신
 ```
 
 CLI는 `apps/api`의 NestJS standalone application 컨텍스트로 실행 (`nest-commander`).
@@ -239,7 +239,7 @@ apps/api/src/
 │   │   │   └── sync-hero.use-case.ts
 │   │   └── parsers/
 │   │       ├── blizzard-patch.parser.ts
-│   │       └── namuwiki-hero.parser.ts
+│   │       └── blizzard-hero.parser.ts
 │   └── infrastructure/
 │       └── http-fetcher.ts
 └── cli/
@@ -309,4 +309,4 @@ throw new AppException(HERO_ERRORS.NOT_FOUND);
 - **User-Agent**: `WatchpointBot/0.1 (+contact)` 형태로 명시.
 - **robots.txt**: 매 도메인 시작 시 한 번 확인.
 - **차단 감지**: HTTP 403/429 또는 Cloudflare 챌린지 감지 시 즉시 중단·`ScrapeJob.status=FAILED` 기록.
-- **저작권**: 나무위키 콘텐츠는 CC BY-NC-SA 2.0 KR. 노출 시 출처 링크(`sourceUrl`)를 영웅 상세 페이지에 항상 표시.
+- **저작권**: 본 사이트는 Blizzard Entertainment와 무관한 비공식 팬 프로젝트. Blizzard 공식 페이지에서 가져온 데이터는 영웅 상세 페이지에 출처 링크(`sourceUrl`)를 항상 표시.
