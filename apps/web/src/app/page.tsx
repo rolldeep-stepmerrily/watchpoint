@@ -99,7 +99,7 @@ export default async function HomePage() {
         <StatCard
           label="데이터"
           value="Blizzard"
-          sub="+ 나무위키"
+          sub="공식 출처"
         />
       </section>
 

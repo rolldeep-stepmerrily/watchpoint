@@ -308,7 +308,7 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       language: '언어 선택',
       languageComingSoon: '준비 중',
       pageLoading: '페이지 불러오는 중',
-      footerAttribution: '데이터 출처: Blizzard 공식 패치노트 / 나무위키 (CC BY-NC-SA 2.0 KR)',
+      footerAttribution: '데이터 출처: Blizzard 공식 패치노트 / Blizzard 공식 영웅 정보',
       error: {
         heading: '잠깐, 무언가 잘못됐어요.',
         body: '페이지를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도하거나 다른 페이지로 이동해 주세요.',
@@ -323,7 +323,7 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
     },
     home: {
       description:
-        '오버워치 패치노트와 영웅별 능력 상세 수치를 한곳에서 추적·열람합니다. 블리자드 공식 패치노트와 나무위키의 영웅 정보를 자동으로 모읍니다.',
+        '오버워치 패치노트와 영웅별 능력 상세 수치를 한곳에서 추적·열람합니다. 블리자드 공식 패치노트와 영웅 정보를 자동으로 모읍니다.',
       patchNotesHeading: '패치노트 →',
       patchNotesBody: '2026년 1월 이후의 모든 공식 패치 변경사항.',
       heroesHeading: '영웅 →',
@@ -422,7 +422,7 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       language: 'Language',
       languageComingSoon: 'Coming soon',
       pageLoading: 'Loading page',
-      footerAttribution: 'Sources: Blizzard official patch notes / Namuwiki (CC BY-NC-SA 2.0 KR)',
+      footerAttribution: 'Sources: Blizzard official patch notes / Blizzard official hero info',
       error: {
         heading: 'Something went wrong.',
         body: 'An error occurred while loading the page. Please try again in a moment or navigate elsewhere.',
@@ -437,7 +437,7 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
     },
     home: {
       description:
-        'Track and browse Overwatch patch notes and detailed hero ability stats in one place. Automatically aggregates official Blizzard patch notes and hero info from Namuwiki.',
+        'Track and browse Overwatch patch notes and detailed hero ability stats in one place. Automatically aggregates official Blizzard patch notes and hero info.',
       patchNotesHeading: 'Patch Notes →',
       patchNotesBody: 'All official patch changes since January 2026.',
       heroesHeading: 'Heroes →',
