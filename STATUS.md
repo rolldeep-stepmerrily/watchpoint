@@ -1,8 +1,8 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-06-07 작업 종료 시점. main = `4a48760` (PR #83 머지), develop = `7ed43c8`.
-> **운영 인프라 1차 완성** — Railway API + Vercel Web + MinIO cdn + SEO + 동적 favicon + OG image 모두 prod 반영.
-> 이번 세션: 도메인 연결(`o-watchpoint.com` apex + `cdn.o-watchpoint.com`), MinIO cdn 전환(523개 자산 업로드 + DB URL 일괄 교체), favicon/PWA manifest, OG image Pretendard URL 핫픽스.
+> 2026-06-08 작업 종료 시점. main = `40079b2` (PR #85 머지), develop = `19bf77a` (PR #84 머지).
+> **운영 인프라 1차 완성 + 데이터 출처 단일화** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 의존 전면 제거하고 Blizzard 공식만 사용.
+> 이번 세션(2026-06-08): 나무위키 스크래퍼/모듈/CLI/UI 표기 전부 제거, `BlizzardHeroKoScraper`로 한국어 sync 일원화, 광고/수익화 시 CC BY-NC-SA NC 위반 회피.
 
 ## 0. 다음 작업
 
@@ -54,6 +54,7 @@
 | **동적 favicon (icon.png/apple-icon.png)** | ✅ | PR #81, Watchpoint 로고 |
 | **PWA manifest** | ✅ | PR #81, `theme_color: #fa9c1d` |
 | **검색엔진 verification 메타 구조** | ✅ | PR #81, env 미설정 시 메타 생략 |
+| **나무위키 출처 제거 (Blizzard 일원화)** | ✅ | PR #84/#85, 광고/수익화 옵션 확보 |
 | **Google/Naver Search Console 등록** | 🔲 | verification env 채우기 후 |
 | **`INTERNAL_API_KEY`** | 🔲 | Railway env 설정 |
 | **prod 영문 패치노트 보강** | 🔲 | `patch:sync:en` 실행 |
@@ -65,7 +66,35 @@
 
 ---
 
-## 2. 이번 세션 주요 작업 (2026-06-07)
+## 2. 이번 세션 주요 작업 (2026-06-08)
+
+### 나무위키 데이터 출처 제거 (PR #84 → develop, PR #85 → main)
+**Why**: 나무위키 콘텐츠는 CC BY-NC-SA 2.0 KR — NC(비영리) 조건 명시. 광고/수익화 시 명백한 라이선스 위반. Blizzard 공식만 쓰면 NC 제약 사라짐 (단 Blizzard Fan Content Policy상 영리 운영은 여전히 회색지대).
+
+**삭제/교체**:
+- `apps/api/src/scraper/namuwiki/` 디렉토리 전체 제거 (parser/scraper/dto)
+- `scraper.module.ts`에서 namuwiki provider/export 제거
+- `blizzard-patch.scraper.ts`의 `syncAffectedHeroes` → `BlizzardHeroKoScraper.sync`로 교체 (boot-seeder의 ko-sync가 이미 동일 데이터 채우므로 손실 없음)
+- `hero:sync` / `hero:sync:all` CLI → `BlizzardHeroKoScraper`로 재배선 (단일 영웅 강제 sync 유지)
+- `hero-catalog.ts` / `hero-registry.ts`의 `pageTitle` 필드(나무위키용) 제거
+- `seed.ts`의 `sourceUrl` 초기값(`https://namu.wiki/w/...`) 제거 → ko-sync가 Blizzard URL로 채움
+- `ScrapeSource.NAMUWIKI_HERO` enum value는 기존 ScrapeJob row 호환 위해 `@deprecated` 주석만, schema는 유지
+- Web: footer 나무위키 링크/CC 라이선스 라벨 제거 → "Blizzard 공식 영웅 정보" 링크로 교체
+- Web: `next.config.ts` `i.namu.wiki` remotePatterns 제거
+- Web: `labels.ts` ko/en `footerAttribution` + `home.description` 갱신
+- Web: 홈 StatCard "데이터" sub `+ 나무위키` → `공식 출처`
+- Docs: CLAUDE/README/SPEC/STATUS 데이터 출처 섹션 동기화
+
+**검증 (prod)**:
+- `curl https://o-watchpoint.com/` → "나무위키"/"namu.wiki"/"Namuwiki"/"CC BY-NC-SA" 표기 0건
+- footer "Blizzard 공식 패치노트", "Blizzard 공식 영웅 정보", "Blizzard Entertainment와 무관한 팬 프로젝트" 정상 노출
+
+**DB 후속 (예정)**:
+- prod hero 중 `sourceUrl`이 `namu.wiki/*`인 row는 boot-seeder 재가동 / `pnpm hero:sync:all` 1회 실행하면 자연 갱신
+
+---
+
+## 3. 직전 세션 작업 (2026-06-07)
 
 ### 도메인 연결 (`o-watchpoint.com`)
 1. **apex Vercel 연결**: 가비아 DNS A 레코드 `@ → 216.198.79.1`
@@ -102,7 +131,7 @@
 
 ---
 
-## 3. 인프라 현황
+## 4. 인프라 현황
 
 ### 배포
 | 컴포넌트 | 호스팅 | 도메인 |
@@ -134,7 +163,7 @@
 
 ---
 
-## 4. 자동화 시스템 요약
+## 5. 자동화 시스템 요약
 
 ### 부트 자동 시더 (`AUTO_SEED_ON_BOOT=true`)
 - `OnApplicationBootstrap` → perks 부족 OR `abilities.blizzardId` 비율 < 80% 감지 시 백그라운드 4-phase 시드
@@ -152,26 +181,26 @@
 
 ---
 
-## 5. 알려진 이슈
+## 6. 알려진 이슈
 
-### 5.1 데이터
+### 6.1 데이터
 - PASSIVE 아이콘 대부분 영문 페이지에 카드 없음 (역할군 패시브). 8명만 추가 다운로드됨
 - KR-only 영웅 7명: ability 부족 (anran/domina=0, emre/jetpack-cat/mizuki/vendetta/wuyang=1)
 - mauga 무기, junker-queen SECONDARY, bastion SECONDARY — Blizzard 영문 페이지에 카드 없음, 영문 빈값
 
-### 5.2 운영
+### 6.2 운영
 - `INTERNAL_API_KEY` 미설정
 - 통합 테스트 미작성
 - 홈 페이지 디자인 placeholder
 
-### 5.3 SEO 한계 (현재 cookie i18n 때문에)
+### 6.3 SEO 한계 (현재 cookie i18n 때문에)
 - 페이지 전부 Dynamic Rendering (cookies 사용)
 - hreflang/alternates.languages 미설정
 - `generateStaticParams` 미사용 → 빌드 타임 프리렌더 안 됨
 
 ---
 
-## 6. 최근 머지
+## 7. 최근 머지
 
 | PR | 내용 |
 |---|---|
@@ -185,10 +214,12 @@
 | #81 | chore: 동적 favicon + PWA manifest + verification 메타 구조 |
 | #82 | fix(web): OG image용 Pretendard 폰트 URL을 npm 경로로 교체 |
 | #83 | hotfix: OG image용 Pretendard 폰트 URL 깨짐 (500 → 200) |
+| #84 | chore: 나무위키 데이터 출처 제거 (Blizzard 공식만 사용) |
+| #85 | release: 나무위키 제거를 main으로 |
 
 ---
 
-## 7. 메모리 / 참고
+## 8. 메모리 / 참고
 
 - 메모리 인덱스: `~/.claude/projects/.../memory/MEMORY.md`
 - 운영 인프라 컨텍스트: `~/.claude/projects/.../memory/watchpoint_post_deploy.md`
@@ -196,7 +227,7 @@
 - 설치/운영: `README.md`
 - 개발 컨벤션: `CLAUDE.md`
 
-## 8. MinIO 운영 메모
+## 9. MinIO 운영 메모
 
 ### bucket 정책 설정 (mc CLI)
 ```bash
