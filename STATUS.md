@@ -1,8 +1,8 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-06-08 작업 종료 시점. main = `40079b2` (PR #85 머지), develop = `19bf77a` (PR #84 머지).
+> 2026-06-08 작업 종료 시점. main = `8d25039` (PR #87 머지), develop = `881ce9b` (PR #86 머지).
 > **운영 인프라 1차 완성 + 데이터 출처 단일화** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 의존 전면 제거하고 Blizzard 공식만 사용.
-> 이번 세션(2026-06-08): 나무위키 스크래퍼/모듈/CLI/UI 표기 전부 제거, `BlizzardHeroKoScraper`로 한국어 sync 일원화, 광고/수익화 시 CC BY-NC-SA NC 위반 회피.
+> 이번 세션(2026-06-08): 나무위키 스크래퍼/모듈/CLI/UI/SPEC.md/Swagger DTO 표기 전부 제거 (PR #84/#85 본작업 + PR #86/#87 잔재 정리), `BlizzardHeroKoScraper`로 한국어 sync 일원화, 광고/수익화 시 CC BY-NC-SA NC 위반 회피.
 
 ## 0. 다음 작업
 
@@ -216,6 +216,8 @@
 | #83 | hotfix: OG image용 Pretendard 폰트 URL 깨짐 (500 → 200) |
 | #84 | chore: 나무위키 데이터 출처 제거 (Blizzard 공식만 사용) |
 | #85 | release: 나무위키 제거를 main으로 |
+| #86 | chore: 나무위키 잔재 정리 (SPEC.md/API DTO/cSpell) |
+| #87 | release: 잔재 정리를 main으로 |
 
 ---
 
