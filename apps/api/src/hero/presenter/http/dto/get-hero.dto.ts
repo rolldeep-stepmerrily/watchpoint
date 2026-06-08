@@ -105,7 +105,7 @@ export class GetHeroResponseDto implements HeroDetailDto {
   @ApiProperty({ nullable: true })
   description!: string | null;
 
-  @ApiProperty({ nullable: true, description: '나무위키 등 1차 출처' })
+  @ApiProperty({ nullable: true, description: 'Blizzard 공식 영웅 페이지 등 1차 출처' })
   sourceUrl!: string | null;
 
   @ApiProperty({ type: HeroStatItemDto, nullable: true })
