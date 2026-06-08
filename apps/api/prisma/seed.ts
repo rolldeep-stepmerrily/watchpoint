@@ -27,7 +27,6 @@ async function seedCatalog(): Promise<{ created: number; updated: number }> {
       role: entry.role,
       subrole: entry.subrole,
       releasedAt: new Date(`${entry.releasedAt}T00:00:00Z`),
-      sourceUrl: `https://namu.wiki/w/${entry.pageTitle}`,
     };
 
     if (existing) {

@@ -4,10 +4,9 @@ import { PatchNoteStatus, ScrapeSource } from '@@prisma';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { isDefined } from 'class-validator';
 
-import { HERO_CATALOG_BY_CODENAME } from '../../domain/hero-catalog';
 import { HeroIconMatcher } from '../../seeder';
 import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
-import { NamuwikiHeroScraper } from '../namuwiki/namuwiki-hero.scraper';
+import { BlizzardHeroKoScraper } from './blizzard-hero-ko.scraper';
 import { BlizzardPatchParser } from './blizzard-patch.parser';
 import type { ParsedPatchEntry, ParsedPatchNote } from './dto/parsed-patch-note.dto';
 
@@ -48,7 +47,7 @@ export class BlizzardPatchScraper {
     private readonly recorder: ScrapeJobRecorder,
     private readonly prismaService: PrismaService,
     private readonly responseCache: ResponseCache,
-    private readonly namuwikiScraper: NamuwikiHeroScraper,
+    private readonly koScraper: BlizzardHeroKoScraper,
     @Inject(forwardRef(() => HeroIconMatcher))
     private readonly iconMatcher: HeroIconMatcher,
   ) {}
@@ -77,9 +76,8 @@ export class BlizzardPatchScraper {
 
   /**
    * 새 패치 발견 → entries에 등장한 영웅들을 백그라운드로 재동기화.
-   * - namuwiki 영웅 페이지(능력 stats) 재크롤 — 며칠 안에 사용자들이 반영하는 점 활용
-   * - Blizzard ko-kr 페이지(능력/특전 아이콘 + perks 시드) 재크롤 — 패치로 perks가 reroll되면 자동 반영
-   * 두 단계 모두 diff logger가 hero_change_logs에 변경 사항 기록.
+   * - Blizzard ko-kr 페이지(이름/설명/능력) 재크롤 → diff logger가 hero_change_logs에 기록
+   * - 능력/특전 아이콘 재다운로드 → 패치로 perks가 reroll되면 자동 반영
    * 한 영웅 실패가 다음 영웅을 막지 않게 catch.
    */
   private async syncAffectedHeroes(heroIds: number[]): Promise<void> {
@@ -90,20 +88,13 @@ export class BlizzardPatchScraper {
     this.logger.log(`patch sync triggered hero auto-sync: ${heroes.length} heroes`);
 
     for (const { codename } of heroes) {
-      const catalog = HERO_CATALOG_BY_CODENAME[codename];
-      if (!catalog) {
-        this.logger.warn(`auto-sync skip ${codename}: not in HERO_CATALOG`);
-        continue;
-      }
       try {
-        const result = await this.namuwikiScraper.sync(codename, catalog.pageTitle, {
-          role: catalog.role,
-          subrole: catalog.subrole,
-          releasedAt: new Date(catalog.releasedAt),
-        });
-        this.logger.log(`auto-sync namu ${codename}: abilities=${result.abilitiesCount} hasStat=${result.hasStat}`);
+        const result = await this.koScraper.sync(codename);
+        this.logger.log(
+          `auto-sync ko ${codename}: matched=${result.matched} abilities=${result.abilitiesUpserted}/${result.abilitiesParsed}`,
+        );
       } catch (error) {
-        this.logger.warn(`auto-sync namu ${codename} failed: ${(error as Error).message}`);
+        this.logger.warn(`auto-sync ko ${codename} failed: ${(error as Error).message}`);
       }
       try {
         const result = await this.iconMatcher.downloadFor(codename);

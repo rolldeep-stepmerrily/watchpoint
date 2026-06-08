@@ -58,12 +58,12 @@ export function SiteFooter() {
             </li>
             <li>
               <a
-                href="https://namu.wiki/"
+                href="https://overwatch.blizzard.com/ko-kr/heroes/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-(--color-accent) transition-colors"
               >
-                나무위키 (CC BY-NC-SA 2.0 KR) →
+                Blizzard 공식 영웅 정보 →
               </a>
             </li>
             <li>
