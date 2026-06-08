@@ -26,5 +26,5 @@
   "[css]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "cSpell.words": ["codename", "namuwiki", "Overwatch", "subrole", "subroles", "Watchpoint"]
+  "cSpell.words": ["codename", "Overwatch", "subrole", "subroles", "Watchpoint"]
 }
