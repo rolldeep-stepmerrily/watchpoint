@@ -147,7 +147,7 @@ throw new AppException(HERO_ERRORS.NOT_FOUND);
 
 ### 스크래퍼 패턴
 
-- **자동(Cron)**: 블리자드 패치노트만. `@Cron(SCRAPER_PATCH_CRON)` 6시간 주기. 새 패치 감지 시 영향 받은 영웅을 `BlizzardHeroKoScraper.sync`로 재동기화.
+- **자동(Cron)**: 블리자드 패치노트만. `@Cron(SCRAPER_PATCH_CRON)` 6시간 주기. 한국어 sync(`BlizzardPatchScraper`) → 영문 sync(`BlizzardPatchEnScraper`) 순서로 1회 tick에 둘 다 실행. 새 패치 감지 시 영향 받은 영웅을 `BlizzardHeroKoScraper.sync`로 재동기화.
 - **수동(CLI)**: 단일 영웅 강제 sync (`pnpm hero:sync <codename>`). 일괄 자동 크롤링 금지(차단 리스크).
 - 모든 스크래핑은 `ScrapeJob` 레코드를 남김 — RUNNING/SUCCESS/FAILED/SKIPPED.
 - HTTP fetch는 `undici` + `cheerio` 우선. 동적 렌더링 필요 시에만 `playwright`.

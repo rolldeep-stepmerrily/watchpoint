@@ -1,8 +1,8 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-06-08 작업 종료 시점. main = `40079b2` (PR #85 머지), develop = `19bf77a` (PR #84 머지).
+> 2026-06-08 작업 종료 시점. main = `8d25039` (PR #87 머지), develop = `881ce9b` (PR #86 머지).
 > **운영 인프라 1차 완성 + 데이터 출처 단일화** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 의존 전면 제거하고 Blizzard 공식만 사용.
-> 이번 세션(2026-06-08): 나무위키 스크래퍼/모듈/CLI/UI 표기 전부 제거, `BlizzardHeroKoScraper`로 한국어 sync 일원화, 광고/수익화 시 CC BY-NC-SA NC 위반 회피.
+> 이번 세션(2026-06-08): 나무위키 스크래퍼/모듈/CLI/UI/SPEC.md/Swagger DTO 표기 전부 제거 (PR #84/#85 본작업 + PR #86/#87 잔재 정리), `BlizzardHeroKoScraper`로 한국어 sync 일원화, 광고/수익화 시 CC BY-NC-SA NC 위반 회피.
 
 ## 0. 다음 작업
 
@@ -15,8 +15,7 @@
 
 ### 2순위: 운영 데이터 보강 + 모니터링
 - **`INTERNAL_API_KEY`** Railway env 설정 (16자 이상 랜덤) → `/internal/*` 엔드포인트 회복
-- prod에서 `pnpm patch:sync:en` 실행 → 영문 패치노트 보강
-- 첫 cron tick 모니터링 (6h 주기, `SCRAPER_PATCH_CRON='0 */6 * * *'`) + `hero_change_logs` audit 확인
+- 첫 cron tick 모니터링 (6h 주기, `SCRAPER_PATCH_CRON='0 */6 * * *'`) — 이제 tick당 한국어+영문 sync 둘 다 실행. `hero_change_logs` audit + 영문 translations 채워지는지 확인
 
 ### 3순위 (큰 작업, 보류): URL 기반 locale routing
 - 현재 cookie 기반 i18n → 페이지 전부 Dynamic Rendering, hreflang/alternates.languages 미설정
@@ -57,7 +56,8 @@
 | **나무위키 출처 제거 (Blizzard 일원화)** | ✅ | PR #84/#85, 광고/수익화 옵션 확보 |
 | **Google/Naver Search Console 등록** | 🔲 | verification env 채우기 후 |
 | **`INTERNAL_API_KEY`** | 🔲 | Railway env 설정 |
-| **prod 영문 패치노트 보강** | 🔲 | `patch:sync:en` 실행 |
+| **영문 patch cron 자동화** | ✅ | tick당 ko + en sync 둘 다 실행 |
+| **prod 영문 패치노트 보강** | 🔲 | 다음 cron tick에 자동 처리 |
 | **첫 cron tick 모니터링** | 🔲 | 6h 주기 |
 | **URL 기반 locale routing** | 🔲 | hreflang/generateStaticParams 위한 선행 작업 |
 | **테스트 (jest/e2e)** | 🔲 | 미작성 |
@@ -172,7 +172,9 @@
 
 ### 패치 cron 자동 영웅 sync (`SCRAPER_CRON_ENABLED=true`)
 - `BlizzardPatchCron` 6시간마다 (`0 */6 * * *`)
+- tick당 한국어 sync(`BlizzardPatchScraper`) → 영문 sync(`BlizzardPatchEnScraper`) 순서로 둘 다 실행
 - 새 패치/non-PUBLISHED 업데이트 → 영웅별 `BlizzardHeroKoScraper.sync` + `HeroIconMatcher.downloadFor`
+- 영문 sync는 기존 PatchNote에 영문 translations 병합 (한국어 sync 실패해도 별도 시도)
 - `hero_change_logs`에 audit
 
 ### blizzardId 기반 영문 매핑
@@ -216,6 +218,8 @@
 | #83 | hotfix: OG image용 Pretendard 폰트 URL 깨짐 (500 → 200) |
 | #84 | chore: 나무위키 데이터 출처 제거 (Blizzard 공식만 사용) |
 | #85 | release: 나무위키 제거를 main으로 |
+| #86 | chore: 나무위키 잔재 정리 (SPEC.md/API DTO/cSpell) |
+| #87 | release: 잔재 정리를 main으로 |
 
 ---
 

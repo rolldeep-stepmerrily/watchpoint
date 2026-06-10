@@ -158,12 +158,15 @@
 
 ```
 ScrapePatchNotesUseCase (Cron, 6시간 주기)
-  └─ 패치노트 인덱스 페이지 fetch
-       └─ 신규 version 감지 (DB와 diff)
-            └─ 각 신규 패치 본문 fetch + 파싱
-                 ├─ 영웅 섹션 매핑 성공 → PatchNoteEntry 생성 (status=PUBLISHED)
-                 │     └─ HeroStatRevision 자동 생성
-                 └─ 매핑 실패 → status=PENDING_REVIEW
+  ├─ 한국어 인덱스 페이지 fetch (BlizzardPatchScraper)
+  │    └─ 신규 version 감지 (DB와 diff)
+  │         └─ 각 신규 패치 본문 fetch + 파싱
+  │              ├─ 영웅 섹션 매핑 성공 → PatchNoteEntry 생성 (status=PUBLISHED)
+  │              │     └─ HeroStatRevision 자동 생성
+  │              └─ 매핑 실패 → status=PENDING_REVIEW
+  └─ 영문 인덱스 페이지 fetch (BlizzardPatchEnScraper)
+       └─ 기존 PatchNote(version)에 영문 title/summary translations 병합
+            └─ 영웅 entry는 hero.nameTranslations.en으로 매칭해 영문 body 병합
 ```
 
 - HTTP fetch는 우선 `undici` + `cheerio`로 처리. 동적 렌더링이 필요해지면 `playwright` fallback.
