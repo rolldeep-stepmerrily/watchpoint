@@ -15,8 +15,7 @@
 
 ### 2순위: 운영 데이터 보강 + 모니터링
 - **`INTERNAL_API_KEY`** Railway env 설정 (16자 이상 랜덤) → `/internal/*` 엔드포인트 회복
-- prod에서 `pnpm patch:sync:en` 실행 → 영문 패치노트 보강
-- 첫 cron tick 모니터링 (6h 주기, `SCRAPER_PATCH_CRON='0 */6 * * *'`) + `hero_change_logs` audit 확인
+- 첫 cron tick 모니터링 (6h 주기, `SCRAPER_PATCH_CRON='0 */6 * * *'`) — 이제 tick당 한국어+영문 sync 둘 다 실행. `hero_change_logs` audit + 영문 translations 채워지는지 확인
 
 ### 3순위 (큰 작업, 보류): URL 기반 locale routing
 - 현재 cookie 기반 i18n → 페이지 전부 Dynamic Rendering, hreflang/alternates.languages 미설정
@@ -57,7 +56,8 @@
 | **나무위키 출처 제거 (Blizzard 일원화)** | ✅ | PR #84/#85, 광고/수익화 옵션 확보 |
 | **Google/Naver Search Console 등록** | 🔲 | verification env 채우기 후 |
 | **`INTERNAL_API_KEY`** | 🔲 | Railway env 설정 |
-| **prod 영문 패치노트 보강** | 🔲 | `patch:sync:en` 실행 |
+| **영문 patch cron 자동화** | ✅ | tick당 ko + en sync 둘 다 실행 |
+| **prod 영문 패치노트 보강** | 🔲 | 다음 cron tick에 자동 처리 |
 | **첫 cron tick 모니터링** | 🔲 | 6h 주기 |
 | **URL 기반 locale routing** | 🔲 | hreflang/generateStaticParams 위한 선행 작업 |
 | **테스트 (jest/e2e)** | 🔲 | 미작성 |
@@ -172,7 +172,9 @@
 
 ### 패치 cron 자동 영웅 sync (`SCRAPER_CRON_ENABLED=true`)
 - `BlizzardPatchCron` 6시간마다 (`0 */6 * * *`)
+- tick당 한국어 sync(`BlizzardPatchScraper`) → 영문 sync(`BlizzardPatchEnScraper`) 순서로 둘 다 실행
 - 새 패치/non-PUBLISHED 업데이트 → 영웅별 `BlizzardHeroKoScraper.sync` + `HeroIconMatcher.downloadFor`
+- 영문 sync는 기존 PatchNote에 영문 translations 병합 (한국어 sync 실패해도 별도 시도)
 - `hero_change_logs`에 audit
 
 ### blizzardId 기반 영문 매핑

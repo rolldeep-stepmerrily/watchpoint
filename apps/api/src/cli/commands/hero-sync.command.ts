@@ -21,7 +21,9 @@ export class HeroSyncCommand extends CommandRunner {
     }
 
     if (!HERO_REGISTRY[codename]) {
-      console.error(`'${codename}' 영웅이 hero-registry에 등록되지 않았습니다. src/domain/hero-catalog.ts에 추가하세요.`);
+      console.error(
+        `'${codename}' 영웅이 hero-registry에 등록되지 않았습니다. src/domain/hero-catalog.ts에 추가하세요.`,
+      );
       process.exit(1);
     }
 
