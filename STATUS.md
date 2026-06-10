@@ -19,9 +19,6 @@
 
 ### Sentry / Dependabot / MCP 활성화 후속
 - **Sentry env**: Railway env `SENTRY_DSN=<api dsn>` + Vercel env `NEXT_PUBLIC_SENTRY_DSN=<web dsn>` 설정 → API 자동 재배포 + Vercel 수동 Redeploy
-- **UptimeRobot 가입** + 3개 모니터 (web/api/cdn)
-- **GitHub PAT rotate + Docker 공식 MCP 전환** (`ghcr.io/github/github-mcp-server`) — 현재 deprecated npm 패키지 사용 중
-- **PostgreSQL prod superuser 패스워드 rotate** (Railway dashboard) + readonly role 기반 postgres-readonly MCP 등록
 
 ### 3순위 (큰 작업, 보류): URL 기반 locale routing
 - 현재 cookie 기반 i18n → 페이지 전부 Dynamic Rendering, hreflang/alternates.languages 미설정
@@ -63,13 +60,11 @@
 | **영문 patch cron 자동화** | ✅ | PR #88/#89, tick당 ko + en sync 둘 다 실행 |
 | **Sentry 에러 트래커 (API + Web)** | 🟡 코드 도입 | PR #90/#92. DSN env 채우면 활성 |
 | **Dependabot** | ✅ | PR #91/#92, 주간 PR (월요일 09:00 KST) |
-| **MCP (Railway/Vercel/GitHub)** | ✅ | user scope 등록. 새 세션부터 도구 노출 |
-| **MCP (PostgreSQL readonly)** | 🟡 readonly role 생성됨 | 본인 터미널에서 MCP add 명령 실행 |
+| **MCP (Railway/Vercel/GitHub/Postgres-RO)** | ✅ | user scope 등록 완료. 새 세션부터 도구 노출 |
 | **Google/Naver Search Console 등록** | 🔲 | verification env 채우기 후 |
 | **`INTERNAL_API_KEY`** | 🔲 | Railway env 설정 |
 | **prod 영문 패치노트 보강** | 🔲 | 다음 cron tick에 자동 처리 |
 | **첫 cron tick 모니터링** | 🔲 | 6h 주기 |
-| **UptimeRobot 등록** | 🔲 | api/web/cdn 3개 모니터 |
 | **URL 기반 locale routing** | 🔲 | hreflang/generateStaticParams 위한 선행 작업 |
 | **테스트 (jest/e2e)** | 🔲 | 미작성 |
 | **홈 페이지 디자인** | 🟡 placeholder | |
