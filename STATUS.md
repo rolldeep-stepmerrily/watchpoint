@@ -1,8 +1,8 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-06-10 작업 종료 시점. main = `a7b2aaa` (PR #89 머지), develop = `c3f4792` (PR #88 머지) — Sentry PR 머지 후 갱신 예정.
-> **운영 인프라 1차 완성 + 데이터 출처 단일화 + 자동화 강화** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 의존 전면 제거, patch cron이 한국어 + 영문 sync 둘 다 자동 실행.
-> 이번 세션(2026-06-10): patch cron tick에 영문 sync 자동화(PR #88/#89), Sentry 에러 트래커 도입(API + Web).
+> 2026-06-10 작업 종료 시점. main = `9ede2b6` (PR #92 머지), develop = `0876f96` (PR #91 머지).
+> **운영 인프라 1차 완성 + 데이터 출처 단일화 + 자동화 강화 + 관측성 1단계** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 의존 전면 제거, patch cron이 한국어 + 영문 sync 둘 다 자동 실행, Sentry 에러 트래커 코드 도입.
+> 이번 세션(2026-06-10): patch cron 영문 sync 자동화(PR #88/#89), Sentry 도입(API + Web, PR #90), Dependabot 설정(PR #91), Sentry + Dependabot main 릴리스(PR #92). MCP: Railway / Vercel / GitHub(deprecated 패키지) 등록.
 
 ## 0. 다음 작업
 
@@ -16,6 +16,12 @@
 ### 2순위: 운영 데이터 보강 + 모니터링
 - **`INTERNAL_API_KEY`** Railway env 설정 (16자 이상 랜덤) → `/internal/*` 엔드포인트 회복
 - 첫 cron tick 모니터링 (6h 주기, `SCRAPER_PATCH_CRON='0 */6 * * *'`) — 이제 tick당 한국어+영문 sync 둘 다 실행. `hero_change_logs` audit + 영문 translations 채워지는지 확인
+
+### Sentry / Dependabot / MCP 활성화 후속
+- **Sentry env**: Railway env `SENTRY_DSN=<api dsn>` + Vercel env `NEXT_PUBLIC_SENTRY_DSN=<web dsn>` 설정 → API 자동 재배포 + Vercel 수동 Redeploy
+- **UptimeRobot 가입** + 3개 모니터 (web/api/cdn)
+- **GitHub PAT rotate + Docker 공식 MCP 전환** (`ghcr.io/github/github-mcp-server`) — 현재 deprecated npm 패키지 사용 중
+- **PostgreSQL prod superuser 패스워드 rotate** (Railway dashboard) + readonly role 기반 postgres-readonly MCP 등록
 
 ### 3순위 (큰 작업, 보류): URL 기반 locale routing
 - 현재 cookie 기반 i18n → 페이지 전부 Dynamic Rendering, hreflang/alternates.languages 미설정
@@ -55,14 +61,15 @@
 | **검색엔진 verification 메타 구조** | ✅ | PR #81, env 미설정 시 메타 생략 |
 | **나무위키 출처 제거 (Blizzard 일원화)** | ✅ | PR #84/#85, 광고/수익화 옵션 확보 |
 | **영문 patch cron 자동화** | ✅ | PR #88/#89, tick당 ko + en sync 둘 다 실행 |
-| **Sentry 에러 트래커 (API + Web)** | 🟡 코드 도입 | DSN env 채우면 활성. Railway/Vercel env 설정 필요 |
+| **Sentry 에러 트래커 (API + Web)** | 🟡 코드 도입 | PR #90/#92. DSN env 채우면 활성 |
+| **Dependabot** | ✅ | PR #91/#92, 주간 PR (월요일 09:00 KST) |
+| **MCP (Railway/Vercel/GitHub)** | ✅ | user scope 등록. 새 세션부터 도구 노출 |
+| **MCP (PostgreSQL readonly)** | 🟡 readonly role 생성됨 | 본인 터미널에서 MCP add 명령 실행 |
 | **Google/Naver Search Console 등록** | 🔲 | verification env 채우기 후 |
 | **`INTERNAL_API_KEY`** | 🔲 | Railway env 설정 |
 | **prod 영문 패치노트 보강** | 🔲 | 다음 cron tick에 자동 처리 |
 | **첫 cron tick 모니터링** | 🔲 | 6h 주기 |
 | **UptimeRobot 등록** | 🔲 | api/web/cdn 3개 모니터 |
-| **추가 MCP (GitHub/Postgres)** | 🔲 | Railway/Vercel은 등록 완료 |
-| **Dependabot** | 🔲 | npm + github-actions 주간 PR |
 | **URL 기반 locale routing** | 🔲 | hreflang/generateStaticParams 위한 선행 작업 |
 | **테스트 (jest/e2e)** | 🔲 | 미작성 |
 | **홈 페이지 디자인** | 🟡 placeholder | |
@@ -255,6 +262,9 @@
 | #87 | release: 잔재 정리를 main으로 |
 | #88 | chore: patch cron tick에 영문 sync 통합 |
 | #89 | release: 영문 cron 자동화를 main으로 |
+| #90 | chore: Sentry 에러 트래커 도입 (API + Web) |
+| #91 | chore(ci): Dependabot 설정 — npm + github-actions 주간 PR |
+| #92 | release: Sentry + Dependabot을 main으로 |
 
 ---
 
