@@ -1,5 +1,6 @@
 import { GLOBAL_ERRORS } from '@@exceptions';
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import * as Sentry from '@sentry/nestjs';
 import { Response } from 'express';
 
 interface IErrorResponse {
@@ -17,6 +18,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
 
     const { statusCode, errorCode, message } = this.resolveError(exception);
+
+    if (statusCode >= HttpStatus.INTERNAL_SERVER_ERROR) {
+      Sentry.captureException(exception);
+    }
 
     response.status(statusCode).json({ statusCode, errorCode, message });
   }
