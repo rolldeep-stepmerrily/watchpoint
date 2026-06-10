@@ -10,6 +10,7 @@
     "check": "biome check --write src/"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.57.0",
     "@watchpoint/shared": "workspace:*",
     "next": "^15.1.0",
     "react": "^19.0.0",

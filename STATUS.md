@@ -1,8 +1,8 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-06-08 작업 종료 시점. main = `8d25039` (PR #87 머지), develop = `881ce9b` (PR #86 머지).
-> **운영 인프라 1차 완성 + 데이터 출처 단일화** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 의존 전면 제거하고 Blizzard 공식만 사용.
-> 이번 세션(2026-06-08): 나무위키 스크래퍼/모듈/CLI/UI/SPEC.md/Swagger DTO 표기 전부 제거 (PR #84/#85 본작업 + PR #86/#87 잔재 정리), `BlizzardHeroKoScraper`로 한국어 sync 일원화, 광고/수익화 시 CC BY-NC-SA NC 위반 회피.
+> 2026-06-10 작업 종료 시점. main = `a7b2aaa` (PR #89 머지), develop = `c3f4792` (PR #88 머지) — Sentry PR 머지 후 갱신 예정.
+> **운영 인프라 1차 완성 + 데이터 출처 단일화 + 자동화 강화** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 의존 전면 제거, patch cron이 한국어 + 영문 sync 둘 다 자동 실행.
+> 이번 세션(2026-06-10): patch cron tick에 영문 sync 자동화(PR #88/#89), Sentry 에러 트래커 도입(API + Web).
 
 ## 0. 다음 작업
 
@@ -54,11 +54,15 @@
 | **PWA manifest** | ✅ | PR #81, `theme_color: #fa9c1d` |
 | **검색엔진 verification 메타 구조** | ✅ | PR #81, env 미설정 시 메타 생략 |
 | **나무위키 출처 제거 (Blizzard 일원화)** | ✅ | PR #84/#85, 광고/수익화 옵션 확보 |
+| **영문 patch cron 자동화** | ✅ | PR #88/#89, tick당 ko + en sync 둘 다 실행 |
+| **Sentry 에러 트래커 (API + Web)** | 🟡 코드 도입 | DSN env 채우면 활성. Railway/Vercel env 설정 필요 |
 | **Google/Naver Search Console 등록** | 🔲 | verification env 채우기 후 |
 | **`INTERNAL_API_KEY`** | 🔲 | Railway env 설정 |
-| **영문 patch cron 자동화** | ✅ | tick당 ko + en sync 둘 다 실행 |
 | **prod 영문 패치노트 보강** | 🔲 | 다음 cron tick에 자동 처리 |
 | **첫 cron tick 모니터링** | 🔲 | 6h 주기 |
+| **UptimeRobot 등록** | 🔲 | api/web/cdn 3개 모니터 |
+| **추가 MCP (GitHub/Postgres)** | 🔲 | Railway/Vercel은 등록 완료 |
+| **Dependabot** | 🔲 | npm + github-actions 주간 PR |
 | **URL 기반 locale routing** | 🔲 | hreflang/generateStaticParams 위한 선행 작업 |
 | **테스트 (jest/e2e)** | 🔲 | 미작성 |
 | **홈 페이지 디자인** | 🟡 placeholder | |
@@ -66,7 +70,36 @@
 
 ---
 
-## 2. 이번 세션 주요 작업 (2026-06-08)
+## 2. 이번 세션 주요 작업 (2026-06-10)
+
+### 영문 patch cron 자동화 (PR #88 → develop, PR #89 → main)
+- `BlizzardPatchCron.run()`에서 한국어 sync 다음에 `BlizzardPatchEnScraper.sync()`도 자동 호출. tick(6h)마다 ko + en 둘 다 실행.
+- 둘은 try/catch 분리 — 한쪽 실패해도 다른 쪽 별도 시도.
+- 결과: 수동 `pnpm patch:sync:en`은 디버깅용만, 새 패치 영문 보강 자동화.
+
+### Sentry 에러 트래커 도입 (PR 진행 중)
+**Why**: cron 실패/prod 5xx/Next.js render 에러 가시성 0 → 1인 운영에서 장애 빠른 감지 필수. 무료 Developer 플랜(5K errors/month) 사용.
+
+**API**:
+- `apps/api/src/instrument.ts`가 `SENTRY_DSN`을 읽어 `Sentry.init`. `main.ts` 최상단 `import './instrument'`.
+- `HttpExceptionFilter`가 5xx 발생 시 자동 `Sentry.captureException` (4xx는 noise라 skip).
+- `BlizzardPatchCron`이 sync 실패 시 phase 태그(ko/en)와 함께 capture.
+- Joi schema에 `SENTRY_DSN` optional 추가.
+
+**Web**:
+- `sentry.{client,server,edge}.config.ts` + `instrumentation.ts` (Next.js 15 hook) + `next.config.ts`의 `withSentryConfig` wrap.
+- `NEXT_PUBLIC_SENTRY_DSN`이 build 시 inline.
+- `tunnelRoute: '/monitoring'` (adblock 우회), `hideSourceMaps`, `disableLogger`, `widenClientFileUpload` 옵션.
+
+**둘 다**: DSN env 비어 있으면 init 스킵 (silent). production만 `tracesSampleRate: 0.1`. Session replay는 일단 끔.
+
+**활성화 절차 (남은 작업)**:
+- API: Railway env `SENTRY_DSN` 설정 → 자동 재배포
+- Web: Vercel env `NEXT_PUBLIC_SENTRY_DSN` 설정 → 수동 Redeploy (NEXT_PUBLIC_ build-time inline)
+
+---
+
+## 3. 직전 세션 작업 (2026-06-08)
 
 ### 나무위키 데이터 출처 제거 (PR #84 → develop, PR #85 → main)
 **Why**: 나무위키 콘텐츠는 CC BY-NC-SA 2.0 KR — NC(비영리) 조건 명시. 광고/수익화 시 명백한 라이선스 위반. Blizzard 공식만 쓰면 NC 제약 사라짐 (단 Blizzard Fan Content Policy상 영리 운영은 여전히 회색지대).
@@ -94,7 +127,7 @@
 
 ---
 
-## 3. 직전 세션 작업 (2026-06-07)
+## 4. 2026-06-07 세션
 
 ### 도메인 연결 (`o-watchpoint.com`)
 1. **apex Vercel 연결**: 가비아 DNS A 레코드 `@ → 216.198.79.1`
@@ -131,7 +164,7 @@
 
 ---
 
-## 4. 인프라 현황
+## 5. 인프라 현황
 
 ### 배포
 | 컴포넌트 | 호스팅 | 도메인 |
@@ -163,7 +196,7 @@
 
 ---
 
-## 5. 자동화 시스템 요약
+## 6. 자동화 시스템 요약
 
 ### 부트 자동 시더 (`AUTO_SEED_ON_BOOT=true`)
 - `OnApplicationBootstrap` → perks 부족 OR `abilities.blizzardId` 비율 < 80% 감지 시 백그라운드 4-phase 시드
@@ -183,7 +216,7 @@
 
 ---
 
-## 6. 알려진 이슈
+## 7. 알려진 이슈
 
 ### 6.1 데이터
 - PASSIVE 아이콘 대부분 영문 페이지에 카드 없음 (역할군 패시브). 8명만 추가 다운로드됨
@@ -202,7 +235,7 @@
 
 ---
 
-## 7. 최근 머지
+## 8. 최근 머지
 
 | PR | 내용 |
 |---|---|
@@ -220,10 +253,12 @@
 | #85 | release: 나무위키 제거를 main으로 |
 | #86 | chore: 나무위키 잔재 정리 (SPEC.md/API DTO/cSpell) |
 | #87 | release: 잔재 정리를 main으로 |
+| #88 | chore: patch cron tick에 영문 sync 통합 |
+| #89 | release: 영문 cron 자동화를 main으로 |
 
 ---
 
-## 8. 메모리 / 참고
+## 9. 메모리 / 참고
 
 - 메모리 인덱스: `~/.claude/projects/.../memory/MEMORY.md`
 - 운영 인프라 컨텍스트: `~/.claude/projects/.../memory/watchpoint_post_deploy.md`
@@ -231,7 +266,7 @@
 - 설치/운영: `README.md`
 - 개발 컨벤션: `CLAUDE.md`
 
-## 9. MinIO 운영 메모
+## 10. MinIO 운영 메모
 
 ### bucket 정책 설정 (mc CLI)
 ```bash

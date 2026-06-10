@@ -80,6 +80,7 @@ pnpm hero:edit <codename>
 | CLI | nest-commander (운영 보정 명령어) |
 | Cache / Lock | ioredis |
 | API Docs | Scalar (`/docs`, 개발 환경만) |
+| 에러 트래커 | Sentry (`@sentry/nestjs` + `@sentry/nextjs`) — DSN 없으면 silent |
 | 공유 타입 | `packages/shared` (BE/FE 양쪽 import) |
 
 ## Biome 설정
@@ -159,6 +160,12 @@ throw new AppException(HERO_ERRORS.NOT_FOUND);
 
 - 영웅 상세 5분 / 패치노트 목록 1분 / 패치노트 상세 10분 TTL.
 - Next.js ISR `revalidate=3600`. 새 패치 적재 시 web의 `revalidatePath` 호출.
+
+### 에러 트래커 (Sentry)
+
+- **API**: `src/instrument.ts`가 `SENTRY_DSN`을 읽어 `Sentry.init`. `main.ts` 최상단 `import './instrument'`로 모듈 로드 전 초기화. `HttpExceptionFilter`가 5xx 발생 시 `Sentry.captureException`. `BlizzardPatchCron`이 sync 실패 시 phase 태그와 함께 capture.
+- **Web**: `sentry.{client,server,edge}.config.ts` + `instrumentation.ts` + `next.config.ts`의 `withSentryConfig` wrap. `NEXT_PUBLIC_SENTRY_DSN`을 build 시 inline.
+- 둘 다 DSN env 비어 있으면 init 스킵 → 로컬/개발은 silent. tracesSampleRate는 production만 0.1.
 
 ### 환경 변수
 
