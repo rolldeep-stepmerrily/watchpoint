@@ -1,3 +1,4 @@
+import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 
 const API_BASE = process.env.WEB_API_BASE_URL ?? 'http://localhost:3000';
@@ -28,4 +29,10 @@ const config: NextConfig = {
   },
 };
 
-export default config;
+export default withSentryConfig(config, {
+  silent: !process.env.CI,
+  tunnelRoute: '/monitoring',
+  disableLogger: true,
+  hideSourceMaps: true,
+  widenClientFileUpload: true,
+});
