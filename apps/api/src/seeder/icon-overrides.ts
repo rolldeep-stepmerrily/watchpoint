@@ -170,9 +170,10 @@ export const ABILITY_ID_TO_SLOT: Record<string, Partial<Record<string, AbilitySl
     'healing-pylon': 'ABILITY_2',
     'captive-sun': 'ULTIMATE',
   },
-  // NOTE: SECONDARY 재기드 블레이드(jagged-blade)는 Blizzard 페이지에 카드 없음 — 매핑 누락.
+  // NOTE: SECONDARY 톱니칼(jagged-blade)은 Blizzard 페이지에 카드 없음 — 나무위키 sync로 한국어 명칭/슬롯 매핑.
   'junker-queen': {
     scattergun: 'PRIMARY',
+    'jagged-blade': 'SECONDARY',
     carnage: 'ABILITY_1',
     'commanding-shout': 'ABILITY_2',
     rampage: 'ULTIMATE',
