@@ -2288,11 +2288,21 @@ export const HERO_DETAIL_SEEDS: readonly HeroDetailSeed[] = [
   },
 ];
 
+/**
+ * description은 BlizzardHeroKoScraper가 공식 페이지 헤더에서 채우는 게 정답.
+ * 부팅마다 `prisma db seed`가 도는 환경(Railway start:prod)에서 무조건 덮어쓰면
+ * ko sync가 채운 공식 description이 매번 옛 SEED 값으로 되돌아간다.
+ * → description은 hero row가 아직 비어 있을 때만 placeholder로 채우고, 이후엔 보존.
+ */
 async function applyHeroMeta(prisma: PrismaClient, heroId: number, seed: HeroDetailSeed): Promise<void> {
+  const existing = await prisma.hero.findUnique({
+    where: { id: heroId },
+    select: { description: true },
+  });
   await prisma.hero.update({
     where: { id: heroId },
     data: {
-      description: seed.description,
+      ...(existing?.description ? {} : { description: seed.description }),
       ...(seed.nameTranslations && {
         nameTranslations: seed.nameTranslations as Prisma.InputJsonValue,
       }),
