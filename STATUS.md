@@ -8,12 +8,8 @@
 ## 0. 다음 작업
 
 ### 1순위: 나무위키 재도입 후속 단계
-- **2단계 prod 적용 (사용자 직접 / 또는 다시 Railway CLI로)**: 5단계 적용 시 사용한 동일 패턴으로 가능
-  ```
-  pnpm --filter @watchpoint/api hero:sync:namu junker-queen
-  # prod /heroes/junker-queen?lang=ko → SECONDARY name '톱니칼' 확인
-  pnpm --filter @watchpoint/api hero:sync:namu:all   # 51명 일괄 (~2분)
-  ```
+- **1단계 (완료)**: 인프라 + 라이선스 (PR #110/#111)
+- **2단계 (완료)**: 한국어 ability 명칭 fallback (PR #112/#113) + Railway CLI로 prod 51명 sync 완료 — 능력 갱신 3 (junker-queen 톱니칼 등). 매칭 실패 35는 namu가 추출한 PASSIVE/하위역할 항목이 DB slot에 없어서 무시된 정상 케이스
 - **3단계 (스킵 확정)**: 아이콘 fallback — 나무위키 SSR 페이지에 능력 아이콘이 노출되지 않음(SPA 동적 렌더). 자동 fallback 불가. 누락 5개(freja PRIMARY, mauga PRIMARY/SECONDARY, junker-queen SECONDARY, bastion SECONDARY)는 수작업 업로드로 처리 가능
 - **4단계 (스킵 확정)**: 영웅 국적 표기 — 블리자드 페이지에 `blz-list-item.location` 안 `p[slot=description]`로 활동 지역 일관 노출되지만 첫 토큰이 도시/기지인 케이스(zarya/winston/wuyang/anran/soldier-76 등) 정확도 ↓. 정적 매핑 51명 작성하는 게 정확하지만 ROI 낮아 보류
 - **5단계 (완료)**: hero description seed 버그 수정 + prod 51명 갱신 (PR #115/#116). 원인: `apps/api/prisma/seeds/hero-details.ts`의 `applyHeroMeta()`가 매 부팅 `seed.description`을 무조건 덮어씀. 수정: 기존 description 비어있을 때만 placeholder로 채움. prod 적용: Railway CLI(`railway ssh keys add` + Postgres `DATABASE_PUBLIC_URL` + Redis `REDIS_PUBLIC_URL`)로 로컬에서 `pnpm hero:sync:ko:all` 실행 → 51/51 영웅 갱신, 264 abilities upserted
@@ -77,7 +73,7 @@
 | **검색엔진 verification 메타 구조** | ✅ | PR #81, env 미설정 시 메타 생략 |
 | **나무위키 출처 제거 (Blizzard 일원화)** | ↩ 되돌림 | PR #84/#85 → PR #110/#111로 재도입 |
 | **나무위키 source 재도입 (1단계 인프라)** | ✅ | PR #110/#111, footer/SPEC/README/CLAUDE 라이선스 명시 + 비영리 운영 확정 |
-| **나무위키 한국어 ability 명칭 fallback (2단계)** | ✅ 코드만 | PR #112/#113, Railway shell `hero:sync:namu:all` 실행 필요 |
+| **나무위키 한국어 ability 명칭 fallback (2단계)** | ✅ | PR #112/#113 + Railway CLI로 prod 51명 sync 완료 (능력 갱신 3, 톱니칼 등 적용) |
 | **나무위키 아이콘 fallback (3단계)** | ⏭ 스킵 | namuwiki SSR에 능력 아이콘 미노출, 수작업 업로드만 가능 |
 | **영웅 국적 표기 (4단계)** | ⏭ 스킵 | 블리자드 location 첫 토큰이 도시/기지인 케이스 多, 정적 매핑 ROI ↓ |
 | **hero description sync 버그 (5단계)** | ✅ | PR #115/#116 + Railway CLI로 prod 51명 description 공식값 갱신 완료 |
