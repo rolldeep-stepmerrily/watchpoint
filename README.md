@@ -2,7 +2,7 @@
 
 > *Quis custodiet ipsos custodes?* — 감시자들을 위한 감시 지점.
 
-오버워치 패치노트와 영웅별 능력 상세 수치를 한곳에서 추적·열람하는 읽기 전용 공개 서비스. Blizzard 공식 페이지를 자동 스크래핑하고, 패치마다 변경 이력을 audit으로 남겨 영웅별 사양 history를 추적합니다.
+오버워치 패치노트와 영웅별 능력 상세 수치를 한곳에서 추적·열람하는 읽기 전용 공개 서비스. Blizzard 공식 페이지를 1차 출처로 자동 스크래핑하고, 한국어 명칭/아이콘 공백/영웅 국적 등은 나무위키(CC BY-NC-SA 2.0 KR)로 보강. 패치마다 변경 이력을 audit으로 남겨 영웅별 사양 history를 추적합니다.
 
 ## 데모
 
@@ -21,7 +21,7 @@
 - **변경 이력 audit**: 패치별 능력 수치 diff를 `HeroStatRevision` / `hero_change_logs`에 자동 기록.
 - **이중 출처 + blizzardId 매핑**: 한국어 sync 시 `ability.blizzardId` 저장 → 영문 sync는 blizzardId 매칭으로 자동 i18n.
 - **격리된 PENDING_REVIEW**: 스크래퍼 자동 매핑 실패 패치는 격리, nest-commander CLI(`pnpm patch:review <version>`)로 보정 후 PUBLISHED 승격.
-- **데이터 라이선스 안전성**: Blizzard 공식만 사용 — CC BY-NC-SA NC 위반 회피, 향후 수익화 옵션 확보.
+- **이중 출처 + 라이선스 명시**: Blizzard 공식이 1차 출처(영웅 stat/ability/패치노트). 나무위키는 한국어 명칭 우선/아이콘 fallback/국적 등 보강(CC BY-NC-SA 2.0 KR — 비영리 운영 확정).
 
 ---
 

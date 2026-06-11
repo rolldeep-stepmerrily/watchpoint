@@ -199,4 +199,5 @@ docker-compose up -d    # PostgreSQL + Redis 실행
 ## 데이터 출처 / 라이선스
 
 - 패치노트: [Overwatch 공식](https://overwatch.blizzard.com/ko-kr/news/patch-notes/) (2026-01 이후)
-- 영웅 정보: [Overwatch 공식 영웅 페이지](https://overwatch.blizzard.com/ko-kr/heroes/) — 한국어 sync는 `BlizzardHeroKoScraper`, 영문은 `BlizzardHeroEnScraper`. 영웅 상세 페이지에 `sourceUrl` 항상 노출. 본 서비스는 Blizzard Entertainment와 무관한 비공식 팬 프로젝트.
+- 영웅 정보(1차): [Overwatch 공식 영웅 페이지](https://overwatch.blizzard.com/ko-kr/heroes/) — 한국어 sync는 `BlizzardHeroKoScraper`, 영문은 `BlizzardHeroEnScraper`. 영웅 상세 페이지에 `sourceUrl` 항상 노출. 본 서비스는 Blizzard Entertainment와 무관한 비공식 팬 프로젝트.
+- 영웅 정보(보강): [나무위키 오버워치 영웅 페이지](https://namu.wiki/w/) — `NamuwikiHeroScraper`. 블리자드 페이지에 없는 한국어 ability 명칭(예: 정커퀸 톱니칼) 우선 적용, 아이콘 fallback, 영웅 국적 등 메타. **라이선스: CC BY-NC-SA 2.0 KR** → 사이트는 **비영리 운영 확정** (광고/도네이션/유료 기능 도입 금지).
