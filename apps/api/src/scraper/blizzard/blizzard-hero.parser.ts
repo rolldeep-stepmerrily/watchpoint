@@ -4,7 +4,7 @@ import * as cheerio from 'cheerio';
 import type { AnyNode } from 'domhandler';
 
 import { SCRAPER_ERRORS } from '../scraper.error';
-import type { ParsedAbilityEn, ParsedHeroEn } from './dto/parsed-hero-en.dto';
+import type { ParsedAbilityEn, ParsedHeroEn, ParsedPerkEn } from './dto/parsed-hero-en.dto';
 
 @Injectable()
 export class BlizzardHeroParser {
@@ -27,8 +27,9 @@ export class BlizzardHeroParser {
       const name = this.parseHeroName($, $pageHeader, codename);
       const description = this.parseHeroDescription($pageHeader);
       const abilities = this.parseAbilities($);
+      const perks = this.parsePerks($);
 
-      return { codename, name, description, abilities, sourceUrl };
+      return { codename, name, description, abilities, perks, sourceUrl };
     } catch (error) {
       this.logger.error(`blizzard hero parse failed for ${codename}`, error as Error);
       throw new AppException(SCRAPER_ERRORS.PARSE_FAILED);
@@ -101,5 +102,50 @@ export class BlizzardHeroParser {
     const clone = $p.clone();
     clone.find('img').remove();
     return clone.text().replace(/\s+/g, ' ').trim();
+  }
+
+  /**
+   * Blizzard 영문 페이지의 perk 카드 추출.
+   *
+   * 마크업: `<div class="perk-details {left|right} {minor|major} N">` 4개.
+   * 각 카드 내부:
+   *   - `.perk-info > blz-header > h3[slot="subheading"]` → 이름
+   *   - `.perk-info > blz-header > div[slot="description"]` → 설명
+   *
+   * tier 매핑: minor → MINOR, major → MAJOR
+   * slot 매핑: left → 1, right → 2
+   */
+  private parsePerks($: cheerio.CheerioAPI): ParsedPerkEn[] {
+    const perks: ParsedPerkEn[] = [];
+    $('.perk-details').each((_, element) => {
+      const perk = this.parsePerkCard($(element));
+      if (perk) {
+        perks.push(perk);
+      }
+    });
+    return perks;
+  }
+
+  /**
+   * 단일 `.perk-details` 카드를 ParsedPerkEn으로 변환. 분류/텍스트 누락 시 null.
+   */
+  private parsePerkCard($card: cheerio.Cheerio<AnyNode>): ParsedPerkEn | null {
+    const classes = ($card.attr('class') ?? '').split(/\s+/);
+    const slot = classes.includes('left') ? 1 : classes.includes('right') ? 2 : null;
+    const tier = classes.includes('minor') ? 'MINOR' : classes.includes('major') ? 'MAJOR' : null;
+    if (!(slot && tier)) {
+      return null;
+    }
+    const name = $card.find('.perk-info blz-header h3[slot="subheading"]').first().text().trim();
+    const description = $card
+      .find('.perk-info blz-header div[slot="description"]')
+      .first()
+      .text()
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!(name && description)) {
+      return null;
+    }
+    return { tier, slot, name, description };
   }
 }
