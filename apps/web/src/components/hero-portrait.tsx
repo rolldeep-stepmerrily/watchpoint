@@ -14,7 +14,7 @@ const SIZE_CLASS = {
   sm: 'h-8 w-8 text-xs',
   md: 'h-20 w-20 text-2xl',
   lg: 'h-32 w-32 text-4xl',
-  xl: 'h-44 w-44 text-5xl md:h-56 md:w-56',
+  xl: 'h-52 w-52 text-5xl md:h-64 md:w-64 md:text-6xl',
 } as const;
 
 export function HeroPortrait({ src, alt, role, size, loading = 'lazy' }: HeroPortraitProps) {

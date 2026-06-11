@@ -26,7 +26,7 @@ export default async function HeroesLoading() {
         <Skeleton className="h-10 w-44" />
       </div>
 
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+      <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {CARD_KEYS.map((cardKey) => (
           <li key={cardKey}>
             <Skeleton className="aspect-[4/5] w-full rounded-xl" />

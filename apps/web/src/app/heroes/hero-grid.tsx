@@ -105,7 +105,7 @@ export function HeroGrid({ items, locale }: Props) {
       {visible.length === 0 ? (
         <p className="py-8 text-center text-sm text-(--color-text-muted)">{t.heroes.empty}</p>
       ) : (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {visible.map((hero, idx) => (
             <li key={hero.id}>
               <HeroCard
