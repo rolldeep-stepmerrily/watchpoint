@@ -43,7 +43,7 @@ export function HeroCard({ hero, locale, priority = false }: HeroCardProps) {
       />
 
       <div
-        className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent"
+        className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/60 to-transparent"
         aria-hidden
       />
       <div
