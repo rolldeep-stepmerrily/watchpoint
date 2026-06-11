@@ -20,6 +20,8 @@ import { HeroSyncEnCommand } from './commands/hero-sync-en.command';
 import { HeroSyncEnAllCommand } from './commands/hero-sync-en-all.command';
 import { HeroSyncKoCommand } from './commands/hero-sync-ko.command';
 import { HeroSyncKoAllCommand } from './commands/hero-sync-ko-all.command';
+import { HeroSyncNamuCommand } from './commands/hero-sync-namu.command';
+import { HeroSyncNamuAllCommand } from './commands/hero-sync-namu-all.command';
 import { PatchBackfillCommand } from './commands/patch-backfill.command';
 import { PatchListCommand } from './commands/patch-list.command';
 import { PatchReviewCommand } from './commands/patch-review.command';
@@ -64,6 +66,8 @@ import { PatchSyncEnCommand } from './commands/patch-sync-en.command';
     HeroSyncEnAllCommand,
     HeroSyncKoCommand,
     HeroSyncKoAllCommand,
+    HeroSyncNamuCommand,
+    HeroSyncNamuAllCommand,
     HeroEditCommand,
     HeroPerksEditCommand,
     HeroPortraitDownloadCommand,
