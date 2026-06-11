@@ -1,8 +1,9 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-06-10 작업 종료 시점. main = `9ede2b6` (PR #92 머지), develop = `0876f96` (PR #91 머지).
-> **운영 인프라 1차 완성 + 데이터 출처 단일화 + 자동화 강화 + 관측성 1단계** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 의존 전면 제거, patch cron이 한국어 + 영문 sync 둘 다 자동 실행, Sentry 에러 트래커 코드 도입.
-> 이번 세션(2026-06-10): patch cron 영문 sync 자동화(PR #88/#89), Sentry 도입(API + Web, PR #90), Dependabot 설정(PR #91), Sentry + Dependabot main 릴리스(PR #92). MCP: Railway / Vercel / GitHub(deprecated 패키지) 등록.
+> 2026-06-11 작업 종료 시점. main = `1ed8544` (PR #103 머지), develop = `61abd72` (PR #99 머지).
+> **운영 인프라 1차 완성 + 데이터 출처 단일화 + 자동화 강화 + 관측성 1단계 + Dependabot 첫 release** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 의존 전면 제거, patch cron이 한국어 + 영문 sync 둘 다 자동 실행, Sentry 에러 트래커 코드 도입, MCP 4종 등록 완료, Dependabot 안전한 5종 main release.
+> 이번 세션(2026-06-11): Dependabot 8개 PR 검토 후 안전한 5개(actions v6 / nestjs patch / biome patch) develop+main 머지(PR #103). major 3개(#97 Next.js 16, #98 @types/node 25, #100 undici 8)는 검토 보류.
+> 직전 세션(2026-06-10): patch cron 영문 sync 자동화(PR #88/#89), Sentry 도입(API + Web, PR #90), Dependabot 설정(PR #91), Sentry + Dependabot main 릴리스(PR #92), README 포트폴리오 갱신(PR #101/#102). MCP 4종 등록: Railway HTTP / Vercel HTTP / GitHub Docker / Postgres-RO npm.
 
 ## 0. 다음 작업
 
@@ -18,7 +19,14 @@
 - 첫 cron tick 모니터링 (6h 주기, `SCRAPER_PATCH_CRON='0 */6 * * *'`) — 이제 tick당 한국어+영문 sync 둘 다 실행. `hero_change_logs` audit + 영문 translations 채워지는지 확인
 
 ### Sentry / Dependabot / MCP 활성화 후속
-- **Sentry env**: Railway env `SENTRY_DSN=<api dsn>` + Vercel env `NEXT_PUBLIC_SENTRY_DSN=<web dsn>` 설정 → API 자동 재배포 + Vercel 수동 Redeploy
+- **Sentry env**: Railway `SENTRY_DSN`, Vercel `NEXT_PUBLIC_SENTRY_DSN` 모두 등록 완료. Vercel은 PR #103 main 배포로 build inline 재반영됨. Sentry dashboard에 prod 이벤트 도착 여부만 확인 남음.
+- **Dependabot 보류 PR (major 3개, 사용자 결정 필요)**:
+  - **#97 Next.js 16** (15.5.18 → 16.2.9): turbopack 변경, React 19 흐름. release note 검토 필요
+  - **#98 @types/node 25** (22.19.19 → 25.9.2): Node 22 LTS 런타임과 type 버전 어긋남. 호환 검증 필요
+  - **#100 undici 8** (6.25.0 → 8.4.1): scraper에서 사용 중. fetch API 호환 검증 필요
+- **GitHub PAT/PG superuser 비번 노출 후속 (user 직접)**:
+  - GitHub PAT revoke: https://github.com/settings/tokens
+  - PG superuser 비번 rotate: Railway dashboard (readonly role 비번은 이미 교체 완료)
 
 ### 3순위 (큰 작업, 보류): URL 기반 locale routing
 - 현재 cookie 기반 i18n → 페이지 전부 Dynamic Rendering, hreflang/alternates.languages 미설정
@@ -58,9 +66,9 @@
 | **검색엔진 verification 메타 구조** | ✅ | PR #81, env 미설정 시 메타 생략 |
 | **나무위키 출처 제거 (Blizzard 일원화)** | ✅ | PR #84/#85, 광고/수익화 옵션 확보 |
 | **영문 patch cron 자동화** | ✅ | PR #88/#89, tick당 ko + en sync 둘 다 실행 |
-| **Sentry 에러 트래커 (API + Web)** | 🟡 코드 도입 | PR #90/#92. DSN env 채우면 활성 |
-| **Dependabot** | ✅ | PR #91/#92, 주간 PR (월요일 09:00 KST) |
-| **MCP (Railway/Vercel/GitHub/Postgres-RO)** | ✅ | user scope 등록 완료. 새 세션부터 도구 노출 |
+| **Sentry 에러 트래커 (API + Web)** | 🟡 env 등록 완료 | PR #90/#92. Railway/Vercel env 등록 완료, dashboard 이벤트 도착 확인만 남음 |
+| **Dependabot** | ✅ | PR #91/#92 설정, PR #103로 첫 release 5종 적용 |
+| **MCP (Railway/Vercel/GitHub/Postgres-RO)** | ✅ | user scope 등록 완료. 4종 정상 동작 (GitHub은 공식 Docker 이미지) |
 | **Google/Naver Search Console 등록** | 🔲 | verification env 채우기 후 |
 | **`INTERNAL_API_KEY`** | 🔲 | Railway env 설정 |
 | **prod 영문 패치노트 보강** | 🔲 | 다음 cron tick에 자동 처리 |
@@ -72,7 +80,28 @@
 
 ---
 
-## 2. 이번 세션 주요 작업 (2026-06-10)
+## 2. 이번 세션 주요 작업 (2026-06-11)
+
+### Dependabot 8개 PR 검토 + 안전한 5종 main release (PR #103)
+**검토 결과 (8개)**:
+- ✅ **머지(5종)**: #93 `actions/checkout v4→v6`, #94 `actions/setup-node v4→v6`, #95 `pnpm/action-setup v4→v6`, #96 `@nestjs/* 11.1.20→11.1.26 patch`, #99 `@biomejs/biome 2.4.15→2.4.16 patch`
+- 🟡 **보류(3종, major)**: #97 `next 15→16`, #98 `@types/node 22→25`, #100 `undici 6→8` — 사용자 결정 후 별도 진행
+- 5종 develop 머지 후 `release: Dependabot safe 5종` PR #103 main 머지. Railway/Vercel auto-redeploy 확인.
+- target-branch=develop 컨벤션 그대로 동작, grouped PR 흐름 검증 완료.
+
+### MCP 4종 등록 완료 (직전 세션 연장)
+- **Railway**: HTTP (Bearer)
+- **Vercel**: HTTP (Bearer, read-only scope)
+- **GitHub**: 공식 Docker `ghcr.io/github/github-mcp-server` (PAT) — 기존 npm `@modelcontextprotocol/server-github`는 deprecated
+- **Postgres-RO**: npm stdio, readonly role (`watchpoint_readonly`) + `sslmode=no-verify` (Railway 자체 서명 cert)
+
+### Sentry env 등록 + Vercel build inline 반영
+- Railway `SENTRY_DSN` + Vercel `NEXT_PUBLIC_SENTRY_DSN` 모두 등록. PR #102/#103 main 머지로 Vercel build 재실행 → `NEXT_PUBLIC_SENTRY_DSN` inline 반영.
+- 남은 작업: Sentry dashboard에 prod 이벤트 도착 여부 확인.
+
+---
+
+## 3. 직전 세션 주요 작업 (2026-06-10)
 
 ### 영문 patch cron 자동화 (PR #88 → develop, PR #89 → main)
 - `BlizzardPatchCron.run()`에서 한국어 sync 다음에 `BlizzardPatchEnScraper.sync()`도 자동 호출. tick(6h)마다 ko + en 둘 다 실행.
@@ -101,7 +130,7 @@
 
 ---
 
-## 3. 직전 세션 작업 (2026-06-08)
+## 4. 직전 세션 작업 (2026-06-08)
 
 ### 나무위키 데이터 출처 제거 (PR #84 → develop, PR #85 → main)
 **Why**: 나무위키 콘텐츠는 CC BY-NC-SA 2.0 KR — NC(비영리) 조건 명시. 광고/수익화 시 명백한 라이선스 위반. Blizzard 공식만 쓰면 NC 제약 사라짐 (단 Blizzard Fan Content Policy상 영리 운영은 여전히 회색지대).
@@ -129,7 +158,7 @@
 
 ---
 
-## 4. 2026-06-07 세션
+## 5. 2026-06-07 세션
 
 ### 도메인 연결 (`o-watchpoint.com`)
 1. **apex Vercel 연결**: 가비아 DNS A 레코드 `@ → 216.198.79.1`
@@ -166,7 +195,7 @@
 
 ---
 
-## 5. 인프라 현황
+## 6. 인프라 현황
 
 ### 배포
 | 컴포넌트 | 호스팅 | 도메인 |
@@ -198,7 +227,7 @@
 
 ---
 
-## 6. 자동화 시스템 요약
+## 7. 자동화 시스템 요약
 
 ### 부트 자동 시더 (`AUTO_SEED_ON_BOOT=true`)
 - `OnApplicationBootstrap` → perks 부족 OR `abilities.blizzardId` 비율 < 80% 감지 시 백그라운드 4-phase 시드
@@ -218,26 +247,26 @@
 
 ---
 
-## 7. 알려진 이슈
+## 8. 알려진 이슈
 
-### 6.1 데이터
+### 8.1 데이터
 - PASSIVE 아이콘 대부분 영문 페이지에 카드 없음 (역할군 패시브). 8명만 추가 다운로드됨
 - KR-only 영웅 7명: ability 부족 (anran/domina=0, emre/jetpack-cat/mizuki/vendetta/wuyang=1)
 - mauga 무기, junker-queen SECONDARY, bastion SECONDARY — Blizzard 영문 페이지에 카드 없음, 영문 빈값
 
-### 6.2 운영
+### 8.2 운영
 - `INTERNAL_API_KEY` 미설정
 - 통합 테스트 미작성
 - 홈 페이지 디자인 placeholder
 
-### 6.3 SEO 한계 (현재 cookie i18n 때문에)
+### 8.3 SEO 한계 (현재 cookie i18n 때문에)
 - 페이지 전부 Dynamic Rendering (cookies 사용)
 - hreflang/alternates.languages 미설정
 - `generateStaticParams` 미사용 → 빌드 타임 프리렌더 안 됨
 
 ---
 
-## 8. 최근 머지
+## 9. 최근 머지
 
 | PR | 내용 |
 |---|---|
@@ -260,10 +289,18 @@
 | #90 | chore: Sentry 에러 트래커 도입 (API + Web) |
 | #91 | chore(ci): Dependabot 설정 — npm + github-actions 주간 PR |
 | #92 | release: Sentry + Dependabot을 main으로 |
+| #101 | docs(readme): 포트폴리오용 전면 갱신 |
+| #102 | release: 포트폴리오용 README 전면 갱신 |
+| #93 | chore(deps): bump actions/checkout v4→v6 |
+| #94 | chore(deps): bump actions/setup-node v4→v6 |
+| #95 | chore(deps): bump pnpm/action-setup v4→v6 |
+| #96 | chore(deps): bump nestjs group 11.1.20→11.1.26 (patch) |
+| #99 | chore(deps-dev): bump @biomejs/biome 2.4.15→2.4.16 (patch) |
+| #103 | release: Dependabot safe 5종 (actions v6 + nestjs patch + biome patch) |
 
 ---
 
-## 9. 메모리 / 참고
+## 10. 메모리 / 참고
 
 - 메모리 인덱스: `~/.claude/projects/.../memory/MEMORY.md`
 - 운영 인프라 컨텍스트: `~/.claude/projects/.../memory/watchpoint_post_deploy.md`
@@ -271,7 +308,7 @@
 - 설치/운영: `README.md`
 - 개발 컨벤션: `CLAUDE.md`
 
-## 10. MinIO 운영 메모
+## 11. MinIO 운영 메모
 
 ### bucket 정책 설정 (mc CLI)
 ```bash
