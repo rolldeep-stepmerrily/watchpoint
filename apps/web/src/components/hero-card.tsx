@@ -70,9 +70,11 @@ export function HeroCard({ hero, locale, priority = false }: HeroCardProps) {
         <h3 className="text-base font-extrabold leading-tight tracking-tight text-white drop-shadow-sm transition-colors duration-200 group-hover:text-(--color-accent) md:text-lg">
           {hero.name}
         </h3>
-        <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-white/60">
-          {subrole ?? hero.codename}
-        </p>
+        {subrole ? (
+          <p className="mt-1 text-xs font-semibold tracking-tight text-white/85">{subrole}</p>
+        ) : (
+          <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-white/60">{hero.codename}</p>
+        )}
       </div>
 
       <span
