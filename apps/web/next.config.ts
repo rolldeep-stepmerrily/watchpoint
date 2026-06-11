@@ -17,7 +17,14 @@ const config: NextConfig = {
   transpilePackages: ['@watchpoint/shared'],
   typedRoutes: true,
   images: {
-    remotePatterns: [...minioRemotePattern],
+    remotePatterns: [
+      ...minioRemotePattern,
+      /**
+       * 나무위키 이미지(portrait/icon 등) 직접 렌더링용. 다운로드 후 MinIO로 옮기기 전 임시 렌더 허용.
+       * MinIO에 자산 옮긴 뒤에는 hero/ability/perk row의 URL이 cdn 도메인으로 바뀌므로 자연 제거됨.
+       */
+      { protocol: 'https', hostname: 'i.namu.wiki' },
+    ],
   },
   async rewrites() {
     return [
