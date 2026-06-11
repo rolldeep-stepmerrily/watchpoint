@@ -28,6 +28,8 @@ interface SyncResult {
   matched: boolean;
   abilitiesMatched: number;
   abilitiesTotal: number;
+  perksMatched: number;
+  perksTotal: number;
 }
 
 @Injectable()
@@ -52,7 +54,14 @@ export class BlizzardHeroEnScraper {
       task: async () => {
         const html = await this.httpClient.fetchHtmlOrNullOnClientError(url);
         if (html === null) {
-          const summary: SyncResult = { codename, matched: false, abilitiesMatched: 0, abilitiesTotal: 0 };
+          const summary: SyncResult = {
+            codename,
+            matched: false,
+            abilitiesMatched: 0,
+            abilitiesTotal: 0,
+            perksMatched: 0,
+            perksTotal: 0,
+          };
           return {
             result: summary,
             diffSummary: { ...summary },
@@ -75,6 +84,7 @@ export class BlizzardHeroEnScraper {
    * 능력 매칭은 best-effort — DB의 ability(PASSIVE 제외)와 Blizzard 카드 순서를 정렬해 매핑한다.
    * Blizzard 카드 수가 DB ability 수보다 1개 적으면 첫 카드를 PRIMARY+SECONDARY 양쪽에 동일 적용
    * (Blizzard 영문 페이지는 일반적으로 좌·우클릭을 하나의 무기 카드로 묶기 때문).
+   * Perk는 (tier, slot) 1:1 직접 매칭으로 영문 translation 병합.
    */
   private async applyTranslations(parsed: ParsedHeroEn): Promise<SyncResult> {
     const hero = await this.prismaService.hero.findUnique({
@@ -94,10 +104,26 @@ export class BlizzardHeroEnScraper {
             descriptionTranslations: true,
           },
         },
+        perks: {
+          select: {
+            id: true,
+            tier: true,
+            slot: true,
+            nameTranslations: true,
+            descriptionTranslations: true,
+          },
+        },
       },
     });
     if (!hero) {
-      return { codename: parsed.codename, matched: false, abilitiesMatched: 0, abilitiesTotal: 0 };
+      return {
+        codename: parsed.codename,
+        matched: false,
+        abilitiesMatched: 0,
+        abilitiesTotal: 0,
+        perksMatched: 0,
+        perksTotal: 0,
+      };
     }
 
     const nameTranslations = mergeTranslation(hero.nameTranslations, 'en', parsed.name);
@@ -137,12 +163,59 @@ export class BlizzardHeroEnScraper {
       );
     }
 
+    const perksMatched = await this.applyPerkTranslations(parsed, hero.perks);
+
     return {
       codename: parsed.codename,
       matched: true,
       abilitiesMatched,
       abilitiesTotal: hero.abilities.length,
+      perksMatched,
+      perksTotal: hero.perks.length,
     };
+  }
+
+  /**
+   * Perk는 (tier, slot) 복합키가 명확해 매칭 로직이 단순하다.
+   * Blizzard 영문 페이지의 perk-details는 `left|right` × `minor|major` = 최대 4개.
+   * left → slot 1, right → slot 2, minor → MINOR, major → MAJOR로 직접 매핑.
+   */
+  private async applyPerkTranslations(
+    parsed: ParsedHeroEn,
+    dbPerks: ReadonlyArray<{
+      id: number;
+      tier: 'MINOR' | 'MAJOR';
+      slot: number;
+      nameTranslations: unknown;
+      descriptionTranslations: unknown;
+    }>,
+  ): Promise<number> {
+    if (parsed.perks.length === 0) {
+      return 0;
+    }
+
+    const dbByKey = new Map(dbPerks.map((p) => [`${p.tier}#${p.slot}`, p]));
+    let matched = 0;
+
+    for (const p of parsed.perks) {
+      const key = `${p.tier}#${p.slot}`;
+      const existing = dbByKey.get(key);
+      if (!existing) {
+        this.logger.warn(`${parsed.codename}: perk ${key} DB row 없음 — seed가 부족할 가능성`);
+        continue;
+      }
+      const nextName = mergeTranslation(existing.nameTranslations, 'en', p.name);
+      const nextDesc = mergeTranslation(existing.descriptionTranslations, 'en', p.description);
+      await this.prismaService.heroPerk.update({
+        where: { id: existing.id },
+        data: {
+          nameTranslations: nextName as Prisma.InputJsonValue,
+          descriptionTranslations: nextDesc as Prisma.InputJsonValue,
+        },
+      });
+      matched++;
+    }
+    return matched;
   }
 
   /**
