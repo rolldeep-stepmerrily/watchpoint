@@ -1,11 +1,22 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-06-11 작업 종료 시점. main = `fc8f566` (PR #106 머지), develop = `12f36e9` (PR #105 머지).
-> **운영 인프라 1차 완성 + 데이터 출처 단일화 + 자동화 강화 + 관측성 1단계 + Dependabot 첫 release + 영웅 페이지 리디자인** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 의존 전면 제거, patch cron이 한국어 + 영문 sync 둘 다 자동 실행, Sentry 에러 트래커 코드 도입, MCP 4종 등록 완료, Dependabot 안전한 5종 main release, 영웅 리스트/상세 포트레이트 카드 그리드 리디자인.
-> 이번 세션(2026-06-11): Dependabot 8개 PR 검토 후 안전한 5개 main release(PR #103), 영웅 리스트/상세 리디자인(PR #105/#106) — 32px 테이블 → portrait 카드 그리드, 상세 banner 강조. major 3개(#97 Next.js 16, #98 @types/node 25, #100 undici 8)는 검토 보류.
+> 2026-06-11 작업 종료 시점. main = `41cc5c0` (PR #113 머지), develop = `f99ef7c` (PR #112 머지).
+> **운영 인프라 1차 완성 + 데이터 출처 이중화 + 자동화 강화 + 관측성 1단계 + Dependabot 첫 release + 영웅 페이지 리디자인 + 나무위키 재도입(비영리 운영 확정)** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 출처 재도입(CC BY-NC-SA → 비영리 운영 확정), patch cron이 한국어 + 영문 sync 둘 다 자동 실행, Sentry 에러 트래커 코드 도입, MCP 4종 등록 완료, Dependabot 안전한 5종 main release, 영웅 리스트/상세 포트레이트 카드 그리드 리디자인, 나무위키 한국어 ability 명칭 fallback sync.
+> 이번 세션(2026-06-11): Dependabot 8개 PR 검토 후 안전한 5개 main release(PR #103), 영웅 리스트/상세 리디자인(PR #105/#106), 특전/능력 영문 sync(PR #108/#109), **나무위키 source 재도입 1단계 인프라(PR #110/#111), 2단계 한국어 ability 명칭 fallback sync(PR #112/#113)**. 3단계(아이콘 fallback)는 나무위키 SSR에 능력 아이콘이 노출되지 않아 스킵, 4단계(국적)/5단계(description sync 버그)로 진행 예정.
 > 직전 세션(2026-06-10): patch cron 영문 sync 자동화(PR #88/#89), Sentry 도입(API + Web, PR #90), Dependabot 설정(PR #91), Sentry + Dependabot main 릴리스(PR #92), README 포트폴리오 갱신(PR #101/#102). MCP 4종 등록: Railway HTTP / Vercel HTTP / GitHub Docker / Postgres-RO npm.
 
 ## 0. 다음 작업
+
+### 1순위: 나무위키 재도입 후속 단계
+- **2단계 prod 적용 (사용자 직접)**: Railway shell에서 단일 시험 후 일괄
+  ```
+  pnpm --filter @watchpoint/api hero:sync:namu junker-queen
+  # prod /heroes/junker-queen?lang=ko → SECONDARY name '톱니칼' 확인
+  pnpm --filter @watchpoint/api hero:sync:namu:all   # 51명 일괄 (~2분)
+  ```
+- **3단계 (스킵)**: 아이콘 fallback — 나무위키 SSR 페이지에 능력 아이콘이 노출되지 않음(SPA 동적 렌더). 자동 fallback 불가. 누락 5개(freja PRIMARY, mauga PRIMARY/SECONDARY, junker-queen SECONDARY, bastion SECONDARY)는 수작업 업로드로 처리 가능
+- **4단계**: 영웅 국적 표기 — 나무위키 정보 카드에 명시적 국적 행 없음, 본문 키워드 추출 또는 정적 매핑 검토
+- **5단계**: hero description 블리자드 공식 sync 버그 진단 — prod에 seed 데이터 그대로 남아있음(라인하르트 prod="거대 방벽과 로켓 해머로..." vs 공식 "라인하르트 빌헬름은 용맹...")
 
 ### 1순위: 검색엔진 등록 (대부분 user 수작업)
 - **Google Search Console** 도메인 등록 → DNS TXT 또는 HTML 메타 verification
@@ -64,7 +75,12 @@
 | **동적 favicon (icon.png/apple-icon.png)** | ✅ | PR #81, Watchpoint 로고 |
 | **PWA manifest** | ✅ | PR #81, `theme_color: #fa9c1d` |
 | **검색엔진 verification 메타 구조** | ✅ | PR #81, env 미설정 시 메타 생략 |
-| **나무위키 출처 제거 (Blizzard 일원화)** | ✅ | PR #84/#85, 광고/수익화 옵션 확보 |
+| **나무위키 출처 제거 (Blizzard 일원화)** | ↩ 되돌림 | PR #84/#85 → PR #110/#111로 재도입 |
+| **나무위키 source 재도입 (1단계 인프라)** | ✅ | PR #110/#111, footer/SPEC/README/CLAUDE 라이선스 명시 + 비영리 운영 확정 |
+| **나무위키 한국어 ability 명칭 fallback (2단계)** | ✅ 코드만 | PR #112/#113, Railway shell `hero:sync:namu:all` 실행 필요 |
+| **나무위키 아이콘 fallback (3단계)** | ⏭ 스킵 | namuwiki SSR에 능력 아이콘 미노출, 수작업 업로드만 가능 |
+| **영웅 국적 표기 (4단계)** | 🔲 | 나무위키 정보 카드 + 본문 분석 |
+| **hero description sync 버그 (5단계)** | 🔲 | prod에 seed 데이터 잔존 |
 | **영문 patch cron 자동화** | ✅ | PR #88/#89, tick당 ko + en sync 둘 다 실행 |
 | **Sentry 에러 트래커 (API + Web)** | 🟡 env 등록 완료 | PR #90/#92. Railway/Vercel env 등록 완료, dashboard 이벤트 도착 확인만 남음 |
 | **Dependabot** | ✅ | PR #91/#92 설정, PR #103로 첫 release 5종 적용 |
@@ -81,6 +97,28 @@
 ---
 
 ## 2. 이번 세션 주요 작업 (2026-06-11)
+
+### 나무위키 source 재도입 — 비영리 운영 확정 (PR #110/#111, #112/#113)
+**Why**: 블리자드 공식 페이지에 없는 한국어 ability 명칭(예: 정커퀸 톱니칼 ← 'jagged-blade'), 누락 아이콘 5개(freja PRIMARY / mauga PRIMARY+SECONDARY / junker-queen SECONDARY / bastion SECONDARY), 영웅 국적 등 메타 데이터가 나무위키에만 존재. 비영리 운영으로 영구 확정하면 CC BY-NC-SA 2.0 KR 만족 가능.
+
+**1단계 인프라 (PR #110/#111)**:
+- `ScrapeSource.NAMUWIKI_HERO` enum에서 `@deprecated` 제거
+- `NamuwikiHeroParser` / `NamuwikiHeroScraper` 모듈 재등록
+- web `next.config.ts`에 `i.namu.wiki` remotePattern 복원
+- footer/`labels.ts` `footerAttribution`에 "나무위키 (CC BY-NC-SA 2.0 KR)" 복원
+- SPEC.md/README.md/CLAUDE.md/cSpell에 라이선스 명시 + **비영리 운영 영구 확정** 문구 추가
+- memory `watchpoint_post_deploy.md`에 2026-06-11 비영리 결정 기록
+
+**2단계 한국어 ability 명칭 fallback (PR #112/#113)**:
+- `NamuwikiHeroParser` rewrite: anchor id(`#s-X.Y`) + 본문 TOC 텍스트 패턴 `^[\d.]+\. <키표시> - <한글>(<영문>)$` 사용 (Vue class 불안정성 우회)
+- `NamuwikiHeroScraper` rewrite: blizzardId 직매칭 → `ABILITY_ID_TO_SLOT` override → 실패 시 unmatched
+- `NAMUWIKI_PAGE_TITLES` 51명 codename → 나무위키 페이지 제목 매핑 (e.g., `'junker-queen': '정커퀸'`)
+- `ABILITY_ID_TO_SLOT['junker-queen']`에 `'jagged-blade': 'SECONDARY'` 추가 (톱니칼 → SECONDARY 슬롯)
+- CLI 신설: `hero:sync:namu <codename>` / `hero:sync:namu:all`
+- DB의 `ability.name`(한국어)만 덮어쓰고 `nameTranslations.en`은 보존(블리자드 영문 sync 데이터)
+- 활성화: Railway shell에서 `pnpm hero:sync:namu junker-queen` 단일 시험 → 정상이면 `:all`로 51명 일괄 적용
+
+**3단계 (스킵)**: 아이콘 fallback — 나무위키 raw HTML 검증 결과 능력 아이콘이 SSR에 포함되지 않음(SPA 동적 렌더링 + 텍스트 위주 위키). 자동 fallback 불가. 누락 5개는 인게임 스크린샷 수작업 업로드(`apps/web/public/icons/heroes/<codename>/abilities/<slot>.png`)로만 처리 가능.
 
 ### 영웅 리스트/상세 리디자인 (PR #105 → develop, PR #106 → main)
 **Why**: 기존 32px 썸네일 + 데이터 테이블 형태는 게임 콘텐츠 사이트에 어울리지 않음. portrait가 시각 정보로 기능하지 못함. 오버워치 공식 영웅 페이지 패턴(portrait 중심 카드)으로 전환.
@@ -317,6 +355,12 @@
 | #103 | release: Dependabot safe 5종 (actions v6 + nestjs patch + biome patch) |
 | #105 | feat(web): 영웅 리스트/상세 리디자인 — 큰 portrait 카드 그리드 |
 | #106 | release: 영웅 리스트/상세 리디자인 |
+| #108 | feat(api): 특전 EN 번역 sync (blizzard EN scraper에 parsePerks 추가) |
+| #109 | release: 특전 영문 sync 신규 구현 |
+| #110 | feat(api): 나무위키 source 재도입 — 1단계 인프라 + 라이선스 |
+| #111 | release: 나무위키 source 재도입 (1단계 — 인프라 + 라이선스) |
+| #112 | feat(api): 나무위키 한국어 ability 명칭 fallback sync (2단계) |
+| #113 | release: 나무위키 한국어 ability 명칭 fallback (2단계) |
 
 ---
 
