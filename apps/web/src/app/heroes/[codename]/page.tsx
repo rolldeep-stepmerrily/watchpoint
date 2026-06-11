@@ -100,27 +100,40 @@ function HeroBanner({ hero, t }: { hero: HeroDetailDto; t: ReturnType<typeof get
 
   return (
     <header
-      className="relative overflow-hidden rounded-xl border border-(--color-border) bg-(--color-surface-elevated)"
+      className="relative overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface-elevated)"
       style={{ boxShadow: 'var(--shadow-card)' }}
     >
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: `linear-gradient(135deg, ${roleFaint} 0%, transparent 55%)` }}
+        className="absolute inset-x-0 top-0 h-1"
+        style={{ background: roleColor }}
         aria-hidden
       />
-      <div className="relative grid gap-6 p-6 md:grid-cols-[auto_1fr] md:items-center md:p-8">
-        <HeroPortrait
-          src={hero.portraitUrl}
-          alt={hero.name}
-          role={hero.role}
-          size="lg"
-          loading="eager"
-        />
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at top right, ${roleFaint} 0%, transparent 60%), linear-gradient(135deg, ${roleFaint} 0%, transparent 50%)`,
+        }}
+        aria-hidden
+      />
 
-        <div className="min-w-0 space-y-3">
+      <div className="relative grid gap-6 p-6 md:grid-cols-[auto_1fr] md:items-end md:gap-8 md:p-10">
+        <div
+          className="relative shrink-0 self-start overflow-hidden rounded-xl border-2"
+          style={{ borderColor: roleColor, boxShadow: `0 8px 24px ${roleFaint}` }}
+        >
+          <HeroPortrait
+            src={hero.portraitUrl}
+            alt={hero.name}
+            role={hero.role}
+            size="xl"
+            loading="eager"
+          />
+        </div>
+
+        <div className="min-w-0 space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             <span
-              className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold px-2.5 py-1 rounded"
+              className="inline-flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest"
               style={{ color: roleColor, backgroundColor: roleFaint }}
             >
               <span
@@ -131,44 +144,46 @@ function HeroBanner({ hero, t }: { hero: HeroDetailDto; t: ReturnType<typeof get
               {t.role(hero.role)}
             </span>
             <span
-              className="inline-flex items-center text-[10px] font-medium px-2 py-1 rounded border border-(--color-border) text-(--color-text-muted)"
+              className="inline-flex items-center rounded-md border border-(--color-border) bg-(--color-surface) px-2 py-1 text-[10px] font-medium text-(--color-text-muted)"
               title={t.subrolePassive(hero.subrole)}
             >
               {t.subrole(hero.subrole)}
             </span>
-            <span className="text-[10px] text-(--color-text-faint) font-mono uppercase tracking-wider ml-auto">
+            <span className="ml-auto font-mono text-[10px] uppercase tracking-wider text-(--color-text-faint)">
               {t.hero.release} · {t.date(hero.releasedAt)}
             </span>
           </div>
 
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-(--color-text-strong)">
+            <h1 className="text-4xl font-black leading-none tracking-tight text-(--color-text-strong) md:text-6xl">
               {hero.name}
             </h1>
-            <p className="text-[11px] text-(--color-text-faint) mt-1 font-mono uppercase tracking-wider">
+            <p className="mt-2 font-mono text-xs uppercase tracking-[0.2em] text-(--color-text-faint)">
               {hero.codename}
             </p>
           </div>
 
           {hero.description && (
-            <p className="text-sm text-(--color-text-muted) leading-relaxed max-w-2xl">{hero.description}</p>
+            <p className="max-w-2xl text-sm leading-relaxed text-(--color-text-muted) md:text-base">
+              {hero.description}
+            </p>
           )}
 
           {hero.stat && (
-            <dl className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
-              <StatInline
+            <dl className="flex flex-wrap gap-x-3 gap-y-2 pt-2">
+              <StatChip
                 label={t.hero.statLabels.health}
                 value={hero.stat.health}
               />
-              <StatInline
+              <StatChip
                 label={t.hero.statLabels.armor}
                 value={hero.stat.armor}
               />
-              <StatInline
+              <StatChip
                 label={t.hero.statLabels.shield}
                 value={hero.stat.shield}
               />
-              <StatInline
+              <StatChip
                 label={t.hero.statLabels.moveSpeed}
                 value={hero.stat.moveSpeed}
               />
@@ -178,12 +193,12 @@ function HeroBanner({ hero, t }: { hero: HeroDetailDto; t: ReturnType<typeof get
       </div>
 
       <div
-        className="relative border-t border-(--color-border) bg-(--color-surface) px-6 py-3 md:px-8"
+        className="relative border-t border-(--color-border) bg-(--color-surface) px-6 py-3 md:px-10"
         style={{ borderLeftWidth: 3, borderLeftColor: roleColor }}
       >
-        <p className="text-xs text-(--color-text-muted) leading-relaxed">
+        <p className="text-xs leading-relaxed text-(--color-text-muted)">
           <span
-            className="font-semibold text-(--color-text)"
+            className="font-semibold"
             style={{ color: roleColor }}
           >
             {t.hero.subPassive} · {t.subrole(hero.subrole)}
@@ -207,7 +222,7 @@ function HeroBanner({ hero, t }: { hero: HeroDetailDto; t: ReturnType<typeof get
             href={hero.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="absolute top-3 right-6 text-[11px] text-(--color-accent) hover:text-(--color-accent-hover) font-mono underline decoration-dotted underline-offset-2"
+            className="absolute top-3 right-6 font-mono text-[11px] text-(--color-accent) underline decoration-dotted underline-offset-2 hover:text-(--color-accent-hover)"
           >
             {t.common.source} →
           </a>
@@ -217,11 +232,11 @@ function HeroBanner({ hero, t }: { hero: HeroDetailDto; t: ReturnType<typeof get
   );
 }
 
-function StatInline({ label, value }: { label: string; value: number }) {
+function StatChip({ label, value }: { label: string; value: number }) {
   return (
-    <div className="flex items-baseline gap-1.5">
-      <dt className="text-[10px] uppercase tracking-widest text-(--color-text-muted)">{label}</dt>
-      <dd className="text-lg font-bold font-mono text-(--color-text-strong)">{value}</dd>
+    <div className="inline-flex items-baseline gap-2 rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-1.5">
+      <dt className="text-[10px] font-semibold uppercase tracking-widest text-(--color-text-muted)">{label}</dt>
+      <dd className="font-mono text-lg font-bold text-(--color-text-strong)">{value}</dd>
     </div>
   );
 }

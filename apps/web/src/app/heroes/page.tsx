@@ -6,7 +6,7 @@ import { getLocale } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 import { absoluteUrl, buildBreadcrumbJsonLd, buildItemListJsonLd, SITE_NAME } from '@/lib/seo';
 
-import { HeroListTable } from './hero-list-table';
+import { HeroGrid } from './hero-grid';
 
 export const revalidate = 300;
 
@@ -45,7 +45,7 @@ export default async function HeroesPage() {
         <p className="text-xs text-(--color-text-muted) mt-1.5">{t.heroes.description}</p>
       </header>
 
-      <HeroListTable
+      <HeroGrid
         items={items}
         locale={lang}
       />
