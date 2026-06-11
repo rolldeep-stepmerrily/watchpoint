@@ -43,7 +43,7 @@ export function HeroCard({ hero, locale, priority = false }: HeroCardProps) {
       />
 
       <div
-        className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/60 to-transparent"
+        className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/40 to-transparent"
         aria-hidden
       />
       <div
@@ -66,14 +66,17 @@ export function HeroCard({ hero, locale, priority = false }: HeroCardProps) {
         </span>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 z-10 p-3.5">
-        <h3 className="text-base font-extrabold leading-tight tracking-tight text-white drop-shadow-sm transition-colors duration-200 group-hover:text-(--color-accent) md:text-lg">
+      <div
+        className="absolute inset-x-0 bottom-0 z-10 p-3.5"
+        style={{ textShadow: '0 1px 4px rgba(0, 0, 0, 0.85), 0 1px 2px rgba(0, 0, 0, 0.7)' }}
+      >
+        <h3 className="text-base font-extrabold leading-tight tracking-tight text-white transition-colors duration-200 group-hover:text-(--color-accent) md:text-lg">
           {hero.name}
         </h3>
         {subrole ? (
-          <p className="mt-1 text-xs font-semibold tracking-tight text-white/85">{subrole}</p>
+          <p className="mt-1 text-xs font-semibold tracking-tight text-white/90">{subrole}</p>
         ) : (
-          <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-white/60">{hero.codename}</p>
+          <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-white/75">{hero.codename}</p>
         )}
       </div>
 
