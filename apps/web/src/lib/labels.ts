@@ -308,7 +308,8 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       language: '언어 선택',
       languageComingSoon: '준비 중',
       pageLoading: '페이지 불러오는 중',
-      footerAttribution: '데이터 출처: Blizzard 공식 패치노트 / Blizzard 공식 영웅 정보',
+      footerAttribution:
+        '데이터 출처: Blizzard 공식 패치노트 / Blizzard 공식 영웅 정보 / 나무위키 (CC BY-NC-SA 2.0 KR)',
       error: {
         heading: '잠깐, 무언가 잘못됐어요.',
         body: '페이지를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도하거나 다른 페이지로 이동해 주세요.',
@@ -422,7 +423,8 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       language: 'Language',
       languageComingSoon: 'Coming soon',
       pageLoading: 'Loading page',
-      footerAttribution: 'Sources: Blizzard official patch notes / Blizzard official hero info',
+      footerAttribution:
+        'Sources: Blizzard official patch notes / Blizzard official hero info / Namuwiki (CC BY-NC-SA 2.0 KR)',
       error: {
         heading: 'Something went wrong.',
         body: 'An error occurred while loading the page. Please try again in a moment or navigate elsewhere.',

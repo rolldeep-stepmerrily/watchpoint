@@ -172,13 +172,19 @@ ScrapePatchNotesUseCase (Cron, 6시간 주기)
 - HTTP fetch는 우선 `undici` + `cheerio`로 처리. 동적 렌더링이 필요해지면 `playwright` fallback.
 - 멱등성: `(sourceUrl, version)` unique 제약. 재시도해도 중복 적재되지 않음.
 
-### 2. 영웅 정보 — 블리자드 공식 영웅 페이지
+### 2. 영웅 정보 — 블리자드 공식 영웅 페이지 + 나무위키 보강
 
-대상 예시: `https://overwatch.blizzard.com/ko-kr/heroes/sierra/` / `https://overwatch.blizzard.com/en-us/heroes/sierra/`
+대상 예시: `https://overwatch.blizzard.com/ko-kr/heroes/sierra/` / `https://overwatch.blizzard.com/en-us/heroes/sierra/` / `https://namu.wiki/w/시에라(오버워치)`
 
 - 부팅 시 자동 보강: `boot-seeder`가 ko/en 페이지를 순차 스크래핑해 한국어/영문 이름·설명·능력을 채움 (`BlizzardHeroKoScraper` + `BlizzardHeroEnScraper`).
 - 패치 cron이 새 패치 적재 시 영향 받은 영웅을 `BlizzardHeroKoScraper.sync`로 자동 재동기화.
+- 나무위키 보강(`NamuwikiHeroScraper`): 블리자드 페이지에 없는 정보를 보완. 한국어 ability/perk 명칭 우선 적용(예: 정커퀸 "톱니칼" vs 블리자드 "재기드 블레이드"), 블리자드 페이지에 카드 없는 능력의 아이콘 fallback, 영웅 국적 등 메타. 라이선스: CC BY-NC-SA 2.0 KR (BY 표기 + NC 비영리 + SA 동일조건).
 - CLI: `pnpm hero:sync <codename>` — 단일 영웅을 즉시 강제 sync. 일괄 자동 크롤링은 Blizzard CDN throttle(요청 간 2초)로 보수적 운영.
+
+### 라이선스/저작권 표기
+
+- 블리자드 공식 페이지 데이터: Blizzard Entertainment 자산. 본 서비스는 비공식 팬 프로젝트이며 Blizzard와 무관.
+- 나무위키 본문/이미지: **CC BY-NC-SA 2.0 KR** — 비영리 한정 + 동일조건 재배포. 본 사이트는 비영리 운영으로 광고/도네이션/유료 기능을 도입하지 않음. footer + 영웅 상세에 출처 표기.
 
 ### 3. 보정 워크플로우 — Admin CLI
 
