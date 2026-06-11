@@ -7,10 +7,20 @@ export interface ParsedAbilityEn {
   description: string;
 }
 
+export interface ParsedPerkEn {
+  /** MINOR | MAJOR */
+  tier: 'MINOR' | 'MAJOR';
+  /** 1 = left, 2 = right */
+  slot: 1 | 2;
+  name: string;
+  description: string;
+}
+
 export interface ParsedHeroEn {
   codename: string;
   name: string;
   description: string | null;
   abilities: ParsedAbilityEn[];
+  perks: ParsedPerkEn[];
   sourceUrl: string;
 }
