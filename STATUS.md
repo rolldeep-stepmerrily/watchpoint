@@ -1,8 +1,8 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-06-11 작업 종료 시점. main = `1ed8544` (PR #103 머지), develop = `61abd72` (PR #99 머지).
-> **운영 인프라 1차 완성 + 데이터 출처 단일화 + 자동화 강화 + 관측성 1단계 + Dependabot 첫 release** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 의존 전면 제거, patch cron이 한국어 + 영문 sync 둘 다 자동 실행, Sentry 에러 트래커 코드 도입, MCP 4종 등록 완료, Dependabot 안전한 5종 main release.
-> 이번 세션(2026-06-11): Dependabot 8개 PR 검토 후 안전한 5개(actions v6 / nestjs patch / biome patch) develop+main 머지(PR #103). major 3개(#97 Next.js 16, #98 @types/node 25, #100 undici 8)는 검토 보류.
+> 2026-06-11 작업 종료 시점. main = `fc8f566` (PR #106 머지), develop = `12f36e9` (PR #105 머지).
+> **운영 인프라 1차 완성 + 데이터 출처 단일화 + 자동화 강화 + 관측성 1단계 + Dependabot 첫 release + 영웅 페이지 리디자인** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 의존 전면 제거, patch cron이 한국어 + 영문 sync 둘 다 자동 실행, Sentry 에러 트래커 코드 도입, MCP 4종 등록 완료, Dependabot 안전한 5종 main release, 영웅 리스트/상세 포트레이트 카드 그리드 리디자인.
+> 이번 세션(2026-06-11): Dependabot 8개 PR 검토 후 안전한 5개 main release(PR #103), 영웅 리스트/상세 리디자인(PR #105/#106) — 32px 테이블 → portrait 카드 그리드, 상세 banner 강조. major 3개(#97 Next.js 16, #98 @types/node 25, #100 undici 8)는 검토 보류.
 > 직전 세션(2026-06-10): patch cron 영문 sync 자동화(PR #88/#89), Sentry 도입(API + Web, PR #90), Dependabot 설정(PR #91), Sentry + Dependabot main 릴리스(PR #92), README 포트폴리오 갱신(PR #101/#102). MCP 4종 등록: Railway HTTP / Vercel HTTP / GitHub Docker / Postgres-RO npm.
 
 ## 0. 다음 작업
@@ -81,6 +81,24 @@
 ---
 
 ## 2. 이번 세션 주요 작업 (2026-06-11)
+
+### 영웅 리스트/상세 리디자인 (PR #105 → develop, PR #106 → main)
+**Why**: 기존 32px 썸네일 + 데이터 테이블 형태는 게임 콘텐츠 사이트에 어울리지 않음. portrait가 시각 정보로 기능하지 못함. 오버워치 공식 영웅 페이지 패턴(portrait 중심 카드)으로 전환.
+
+**영웅 리스트 (`/heroes`)**:
+- 테이블 → `aspect-[4/5]` portrait 카드 그리드 (`HeroCard` + `HeroGrid` 신설, 기존 `HeroListTable` 제거)
+- 카드: full-bleed portrait + role 색상 top bar + 우상단 role badge + 하단 25% 옅은 그라데이션(from-black/40)
+- 텍스트 가독성: text-shadow로 그라데이션 의존도 낮춤, subrole 한글에 font-mono 제거하고 12px font-semibold
+- hover: portrait scale 1.1 + role color ring + 카드 lift
+- role tab/정렬 토글을 segmented control로 정리 (`SortToggle` 신설)
+- 그리드: `grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5` (기존 대비 컬럼 -1씩, 카드 폭 약 20% 증가)
+
+**영웅 상세 (`/heroes/[codename]`)**:
+- `HeroPortrait` `xl` 사이즈 추가 (h-52 md:h-64 — 208/256px)
+- 타이틀 4xl → 6xl, role gradient radial 배경 강조
+- stat을 chip 형태(border + bg + 모노 숫자)로 분리
+
+**기타**: `loading.tsx` 카드 그리드 비율로 맞춤, biome 자동 포맷 적용. 사용자 피드백 반영하여 그라데이션 옅게(2회), subrole 폰트 변경, 카드 크기 20% 확대.
 
 ### Dependabot 8개 PR 검토 + 안전한 5종 main release (PR #103)
 **검토 결과 (8개)**:
@@ -257,7 +275,7 @@
 ### 8.2 운영
 - `INTERNAL_API_KEY` 미설정
 - 통합 테스트 미작성
-- 홈 페이지 디자인 placeholder
+- 홈 페이지 디자인 placeholder (영웅 페이지는 리디자인 완료, 홈/패치노트도 같은 톤으로 점진 적용 검토)
 
 ### 8.3 SEO 한계 (현재 cookie i18n 때문에)
 - 페이지 전부 Dynamic Rendering (cookies 사용)
@@ -297,6 +315,8 @@
 | #96 | chore(deps): bump nestjs group 11.1.20→11.1.26 (patch) |
 | #99 | chore(deps-dev): bump @biomejs/biome 2.4.15→2.4.16 (patch) |
 | #103 | release: Dependabot safe 5종 (actions v6 + nestjs patch + biome patch) |
+| #105 | feat(web): 영웅 리스트/상세 리디자인 — 큰 portrait 카드 그리드 |
+| #106 | release: 영웅 리스트/상세 리디자인 |
 
 ---
 
