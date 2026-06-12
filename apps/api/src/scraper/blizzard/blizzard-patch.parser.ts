@@ -28,10 +28,18 @@ export class BlizzardPatchParser {
           return;
         }
 
+        // 날짜 파싱 실패 시 new Date() fallback은 위험 — 모든 미해석 patch가 "오늘" 발매로 잘못 색인되고
+        // backfill `until` 필터를 우회한다. 파싱 실패는 명시적으로 skip.
+        const releasedAt = this.parseKoreanDate(dateText);
+        if (!releasedAt) {
+          this.logger.warn(`patch skipped — releasedAt parse failed (version=${version}, raw="${dateText}")`);
+          return;
+        }
+
         patches.push({
           version,
           title,
-          releasedAt: this.parseKoreanDate(dateText) ?? new Date(),
+          releasedAt,
           sourceUrl,
           summary: null,
           entries: this.parseEntries($, node),

@@ -143,16 +143,29 @@ export class BlizzardPatchEnScraper {
       updates.push({ id: dbEntryId, title: parsed.title, body: parsed.body });
     }
 
+    // 기존 translations를 보존하면서 en만 병합. 단순 객체 덮어쓰기는 ja/다른 locale을 모두 지운다.
+    const existing =
+      updates.length > 0
+        ? await this.prismaService.patchNoteEntry.findMany({
+            where: { id: { in: updates.map((u) => u.id) } },
+            select: { id: true, titleTranslations: true, bodyTranslations: true },
+          })
+        : [];
+    const existingById = new Map(existing.map((e) => [e.id, e]));
+
     await Promise.all(
-      updates.map((u) =>
-        this.prismaService.patchNoteEntry.update({
+      updates.map((u) => {
+        const prev = existingById.get(u.id);
+        const titleTranslations = mergeTranslation(prev?.titleTranslations ?? null, 'en', u.title);
+        const bodyTranslations = mergeTranslation(prev?.bodyTranslations ?? null, 'en', u.body);
+        return this.prismaService.patchNoteEntry.update({
           where: { id: u.id },
           data: {
-            titleTranslations: { en: u.title } as Prisma.InputJsonValue,
-            bodyTranslations: { en: u.body } as Prisma.InputJsonValue,
+            titleTranslations: titleTranslations as Prisma.InputJsonValue,
+            bodyTranslations: bodyTranslations as Prisma.InputJsonValue,
           },
-        }),
-      ),
+        });
+      }),
     );
 
     return { matched: updates.length, total: dbHeroEntries.length };

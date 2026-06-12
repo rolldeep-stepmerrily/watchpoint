@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { HeroPortrait } from '@/components/hero-portrait';
 import { JsonLd } from '@/components/json-ld';
-import { getHero, getHeroPatchHistory } from '@/lib/api';
+import { ApiError, getHero, getHeroPatchHistory } from '@/lib/api';
 import { roleColorVar } from '@/lib/format';
 import { getLocale } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
@@ -45,8 +45,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         images: hero.portraitUrl ? [hero.portraitUrl] : undefined,
       },
     };
-  } catch {
-    return { title: t.heroes.notFound.title };
+  } catch (error) {
+    // 진짜 404일 때만 not-found title을 ISR에 캐싱. 5xx/네트워크 에러는 rethrow해서 캐시 오염을 막는다.
+    if (error instanceof ApiError && error.status === 404) {
+      return { title: t.heroes.notFound.title };
+    }
+    throw error;
   }
 }
 
@@ -59,8 +63,11 @@ export default async function HeroDetailPage({ params }: Props) {
   let history: HeroPatchHistoryDto;
   try {
     [hero, history] = await Promise.all([getHero(codename, lang), getHeroPatchHistory(codename, lang)]);
-  } catch {
-    notFound();
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      notFound();
+    }
+    throw error;
   }
 
   const heroUrl = absoluteUrl(`/heroes/${hero.codename}`);
