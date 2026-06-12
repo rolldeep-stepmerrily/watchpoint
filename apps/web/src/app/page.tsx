@@ -12,13 +12,18 @@ export const revalidate = 3600;
 /**
  * 홈 페이지 메타데이터 — 사이트명을 title로 단독 노출(레이아웃 template 미적용), 설명은 locale별
  *
+ * 한국어 locale에서는 title에만 '감시기지 Watchpoint' 별칭 prefix를 노출 — "감시기지" 검색 유도용.
+ * OG/Twitter/본문에는 노출하지 않음(사이트 공식 명칭은 Watchpoint 유지).
+ *
  * @returns {Promise<Metadata>} 홈 전용 메타데이터
  */
 export const generateMetadata = async (): Promise<Metadata> => {
-  const t = getLabels(await getLocale());
+  const lang = await getLocale();
+  const t = getLabels(lang);
+  const titleSite = lang === 'ko' ? `감시기지 ${SITE_NAME}` : SITE_NAME;
 
   return {
-    title: { absolute: `${SITE_NAME} — ${t.site.description}` },
+    title: { absolute: `${titleSite} — ${t.site.description}` },
     description: t.home.description,
     alternates: { canonical: '/' },
     openGraph: {
