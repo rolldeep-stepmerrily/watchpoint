@@ -264,7 +264,6 @@ watchpoint/
 ## 추가 문서
 
 - [SPEC.md](./SPEC.md) — 도메인 모델 + API 명세
-- [STATUS.md](./STATUS.md) — 진행 현황 + 인프라 상세 + 알려진 이슈
 - [CLAUDE.md](./CLAUDE.md) — 개발 컨벤션 (CQRS/에러처리/스크래퍼/캐시/Sentry)
 
 ---
