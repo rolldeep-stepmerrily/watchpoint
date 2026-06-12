@@ -13,22 +13,42 @@ import { cache } from 'react';
 const API_BASE = process.env.WEB_API_BASE_URL ?? 'http://localhost:3000';
 
 /**
+ * API 응답 ok가 아닐 때 throw. `status`로 404/500 구분이 가능해야 페이지가
+ * "정말 없는 hero"와 "transient 5xx"를 다르게 처리할 수 있다 (5xx는 rethrow → error.tsx).
+ */
+export class ApiError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly endpoint: string,
+  ) {
+    // path/query 본문은 message에 넣지 않는다 — search 쿼리가 Sentry 브레드크럼에 PII로 새는 것을 막기 위해.
+    super(`API ${status} for ${endpoint}`);
+    this.name = 'ApiError';
+  }
+}
+
+/**
  * RSC fetch wrapper — Next.js ISR revalidate 옵션을 적용해 API 응답을 JSON으로 파싱
  *
  * @param {string} path API_BASE 뒤에 붙는 경로(쿼리스트링 포함)
+ * @param {string} endpoint Sentry/로그에 노출할 안정 식별자(쿼리 X) — 예: `/heroes/[codename]`
  * @param {number} revalidate Next.js fetch cache revalidate 초 단위
  * @returns {Promise<T>} 파싱된 응답 객체
- * @throws {Error} 응답이 ok가 아닐 경우
+ * @throws {ApiError} 응답이 ok가 아닐 경우
  */
-const fetchJson = async <T>(path: string, revalidate: number): Promise<T> => {
+// Vercel serverless 기본 timeout(10s) 이내로 자르고, 응답이 느린 API 호출이 RSC 렌더 전체를 막지 못하게 한다.
+const FETCH_TIMEOUT_MS = 8000;
+
+const fetchJson = async <T>(path: string, endpoint: string, revalidate: number): Promise<T> => {
   const url = `${API_BASE}${path}`;
   const response = await fetch(url, {
     next: { revalidate },
     headers: { accept: 'application/json' },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
 
   if (!response.ok) {
-    throw new Error(`API ${response.status} for ${path}`);
+    throw new ApiError(response.status, endpoint);
   }
 
   return (await response.json()) as T;
@@ -69,17 +89,21 @@ export const getHeroList = (params: HeroListParams = {}): Promise<PaginatedDto<H
 
   const qs = search.toString();
 
-  return fetchJson<PaginatedDto<HeroSummaryDto>>(`/heroes${qs ? `?${qs}` : ''}`, 300);
+  return fetchJson<PaginatedDto<HeroSummaryDto>>(`/heroes${qs ? `?${qs}` : ''}`, '/heroes', 300);
 };
 
 export const getHero = cache((codename: string, lang?: Locale): Promise<HeroDetailDto> => {
   const qs = lang ? `?lang=${lang}` : '';
-  return fetchJson<HeroDetailDto>(`/heroes/${encodeURIComponent(codename)}${qs}`, 300);
+  return fetchJson<HeroDetailDto>(`/heroes/${encodeURIComponent(codename)}${qs}`, '/heroes/[codename]', 300);
 });
 
 export const getHeroPatchHistory = cache((codename: string, lang?: Locale): Promise<HeroPatchHistoryDto> => {
   const qs = lang ? `?lang=${lang}` : '';
-  return fetchJson<HeroPatchHistoryDto>(`/heroes/${encodeURIComponent(codename)}/patch-history${qs}`, 300);
+  return fetchJson<HeroPatchHistoryDto>(
+    `/heroes/${encodeURIComponent(codename)}/patch-history${qs}`,
+    '/heroes/[codename]/patch-history',
+    300,
+  );
 });
 
 export interface PatchNoteListParams {
@@ -109,10 +133,14 @@ export const getPatchNoteList = (params: PatchNoteListParams = {}): Promise<Pagi
 
   const qs = search.toString();
 
-  return fetchJson<PaginatedDto<PatchNoteSummaryDto>>(`/patch-notes${qs ? `?${qs}` : ''}`, 60);
+  return fetchJson<PaginatedDto<PatchNoteSummaryDto>>(`/patch-notes${qs ? `?${qs}` : ''}`, '/patch-notes', 60);
 };
 
 export const getPatchNote = cache((version: string, lang?: Locale): Promise<PatchNoteDetailDto> => {
   const qs = lang ? `?lang=${lang}` : '';
-  return fetchJson<PatchNoteDetailDto>(`/patch-notes/${encodeURIComponent(version)}${qs}`, 600);
+  return fetchJson<PatchNoteDetailDto>(
+    `/patch-notes/${encodeURIComponent(version)}${qs}`,
+    '/patch-notes/[version]',
+    600,
+  );
 });
