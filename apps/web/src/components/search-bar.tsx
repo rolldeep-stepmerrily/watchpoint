@@ -1,6 +1,6 @@
 'use client';
 
-import type { HeroSummaryDto, PatchNoteSummaryDto } from '@@shared';
+import type { SearchResponseDto } from '@@shared';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react';
@@ -9,15 +9,13 @@ import { HeroPortrait } from '@/components/hero-portrait';
 import { useLocale } from '@/hooks/use-locale';
 import { getLabels } from '@/lib/labels';
 
-interface SearchResponse {
-  heroes: HeroSummaryDto[];
-  patchNotes: PatchNoteSummaryDto[];
-}
+// 공유 DTO를 그대로 사용해 API 응답 shape 변화(예: 검색 결과에 새 카테고리 추가)에 자동 추종.
+type SearchResponse = SearchResponseDto;
 
 const MIN_LENGTH = 1;
-const DEBOUNCE_MS = 200;
+const DEBOUNCE_MS = 300;
 
-export function SearchBar() {
+export function SearchBar(): React.JSX.Element {
   const locale = useLocale();
   const t = getLabels(locale);
   const [query, setQuery] = useState('');
@@ -27,6 +25,10 @@ export function SearchBar() {
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  // 빠르게 타이핑할 때 늦게 도착한 응답이 새 응답을 덮어쓰는 race를 막는다.
+  // 각 fetch에 단조 증가하는 id를 붙이고 가장 큰 id 응답만 state에 반영.
+  const requestIdRef = useRef(0);
+  const latestAppliedRef = useRef(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -39,7 +41,10 @@ export function SearchBar() {
 
     const controller = new AbortController();
     setIsLoading(true);
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: debounce + abort + race-id 트랙킹이 한 효과 흐름에 묶임.
     const timer = setTimeout(async () => {
+      requestIdRef.current += 1;
+      const myId = requestIdRef.current;
       try {
         const response = await fetch(
           `/api/search?q=${encodeURIComponent(trimmed)}&lang=${encodeURIComponent(locale)}`,
@@ -49,13 +54,19 @@ export function SearchBar() {
           throw new Error(`status ${response.status}`);
         }
         const data = (await response.json()) as SearchResponse;
-        setResults(data);
+        if (myId >= latestAppliedRef.current) {
+          latestAppliedRef.current = myId;
+          setResults(data);
+        }
       } catch (error) {
-        if ((error as Error).name !== 'AbortError') {
+        if ((error as Error).name !== 'AbortError' && myId >= latestAppliedRef.current) {
+          latestAppliedRef.current = myId;
           setResults(null);
         }
       } finally {
-        setIsLoading(false);
+        if (myId === requestIdRef.current) {
+          setIsLoading(false);
+        }
       }
     }, DEBOUNCE_MS);
 
@@ -166,6 +177,7 @@ export function SearchBar() {
         <div
           ref={listRef}
           id="search-results"
+          role="listbox"
           className="absolute left-0 right-0 mt-2 rounded-lg border border-(--color-border) bg-(--color-surface) shadow-lg overflow-hidden max-h-[60vh] overflow-y-auto"
         >
           {isLoading && !results && <p className="px-3 py-3 text-xs text-(--color-text-muted)">{t.search.searching}</p>}
@@ -175,11 +187,17 @@ export function SearchBar() {
               <h3 className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-widest text-(--color-text-muted)">
                 {t.search.groupHeroes}
               </h3>
-              <ul>
+              {/* listbox 자식은 option이어야 한다는 W3C ARIA 요구라 div 기반 pattern을 그대로 사용. */}
+              <div>
                 {results.heroes.map((hero, index) => {
                   const isActive = activeIndex === index;
                   return (
-                    <li key={hero.id}>
+                    <div
+                      key={hero.id}
+                      role="option"
+                      tabIndex={-1}
+                      aria-selected={isActive}
+                    >
                       <Link
                         id={`search-result-${index}`}
                         data-index={index}
@@ -199,10 +217,10 @@ export function SearchBar() {
                         <span className="font-medium">{hero.name}</span>
                         <span className="text-xs text-(--color-text-muted) font-mono">{hero.codename}</span>
                       </Link>
-                    </li>
+                    </div>
                   );
                 })}
-              </ul>
+              </div>
             </section>
           )}
           {results && results.patchNotes.length > 0 && (
@@ -210,12 +228,17 @@ export function SearchBar() {
               <h3 className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-widest text-(--color-text-muted)">
                 {t.search.groupPatchNotes}
               </h3>
-              <ul>
+              <div>
                 {results.patchNotes.map((patch, offset) => {
                   const index = heroesCount + offset;
                   const isActive = activeIndex === index;
                   return (
-                    <li key={patch.id}>
+                    <div
+                      key={patch.id}
+                      role="option"
+                      tabIndex={-1}
+                      aria-selected={isActive}
+                    >
                       <Link
                         id={`search-result-${index}`}
                         data-index={index}
@@ -229,10 +252,10 @@ export function SearchBar() {
                         <span className="font-mono text-(--color-accent) mr-2">{patch.version}</span>
                         <span>{patch.title}</span>
                       </Link>
-                    </li>
+                    </div>
                   );
                 })}
-              </ul>
+              </div>
             </section>
           )}
         </div>
