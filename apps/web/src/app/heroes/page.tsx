@@ -10,6 +10,10 @@ import { HeroGrid } from './hero-grid';
 
 export const revalidate = 300;
 
+interface Props {
+  searchParams: Promise<{ q?: string }>;
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = getLabels(await getLocale());
   return {
@@ -20,10 +24,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function HeroesPage() {
+export default async function HeroesPage({ searchParams }: Props) {
   const lang = await getLocale();
   const t = getLabels(lang);
-  const { items, total } = await getHeroList({ pageSize: 100, lang });
+  // sitelinks searchbox(JSON-LD)에서 `/heroes?q={검색어}`로 진입한 사용자를 위한 q 필터.
+  // 트림 + 1자 이상만 API에 전달. 빈 q는 전체 목록.
+  const { q: rawQ } = await searchParams;
+  const q = rawQ?.trim();
+  const { items, total } = await getHeroList({ pageSize: 100, lang, ...(q && q.length > 0 ? { q } : {}) });
 
   const itemList = buildItemListJsonLd(
     items.map((hero) => ({ name: hero.name, url: absoluteUrl(`/heroes/${hero.codename}`) })),
