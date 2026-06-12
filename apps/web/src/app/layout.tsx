@@ -1,52 +1,16 @@
 import type { Metadata, Viewport } from 'next';
 
-import { SiteFooter } from '@/components/site-footer';
-import { SiteHeader } from '@/components/site-header';
-import { LocaleProvider } from '@/hooks/use-locale';
-import { getLocale } from '@/lib/i18n';
-import { getLabels } from '@/lib/labels';
-import { SITE_NAME, SITE_URL } from '@/lib/seo';
-
 import './globals.css';
 
-const KEYWORDS_BY_LOCALE: Record<'ko' | 'en' | 'ja', string[]> = {
-  ko: [
-    '오버워치',
-    '오버워치2',
-    '오버워치 패치노트',
-    '오버워치 영웅',
-    '오버워치 능력',
-    '오버워치 특전',
-    '영웅 스탯',
-    '패치 이력',
-    'Watchpoint',
-    '감시기지',
-    '감시기지 Watchpoint',
-    '오버워치 감시기지',
-  ],
-  en: [
-    'Overwatch',
-    'Overwatch 2',
-    'Overwatch patch notes',
-    'Overwatch heroes',
-    'hero abilities',
-    'hero stats',
-    'patch history',
-    'perks',
-    'Watchpoint',
-  ],
-  ja: ['オーバーウォッチ', 'パッチノート', 'ヒーロー', 'アビリティ', 'Watchpoint'],
-};
+import { SITE_NAME, SITE_URL } from '@/lib/seo';
 
-export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#1a1a1a' },
-  ],
-  colorScheme: 'light',
-  width: 'device-width',
-  initialScale: 1,
-};
+/**
+ * 루트 레이아웃 — `<html>`/`<body>`만 잡고 cookies/locale은 만지지 않는다.
+ * 과거에는 여기서 `cookies()`를 호출해 모든 라우트가 dynamic이 되며 ISR이 사이트 전체에서 비활성됐다.
+ * locale 처리는 `/[lang]/layout.tsx` 가 담당하고, prefix가 없는 URL은 middleware에서 default locale로 308 redirect.
+ *
+ * `<html lang>`은 default locale을 안전한 값으로 두고, `[lang]/layout` 안의 client effect가 router 변경 시 보정.
+ */
 
 const googleVerification = process.env.WEB_GOOGLE_SITE_VERIFICATION;
 const naverVerification = process.env.WEB_NAVER_SITE_VERIFICATION;
@@ -62,63 +26,35 @@ const buildVerification = (): Metadata['verification'] | undefined => {
   };
 };
 
-/**
- * 루트 레이아웃 메타데이터 생성 — 사이트 전역 기본값 + locale별 키워드/OG locale 설정
- *
- * @returns {Promise<Metadata>} Next.js Metadata 객체
- */
-export const generateMetadata = async (): Promise<Metadata> => {
-  const lang = await getLocale();
-  const t = getLabels(lang);
-  const verification = buildVerification();
-  // ko fallback title(자체 title 미지정 페이지 — 404 등)에만 '감시기지 Watchpoint' 별칭 prefix.
-  // template은 그대로 두어 영웅/패치 상세는 `<이름> · Watchpoint` 유지.
-  const defaultTitle = lang === 'ko' ? `감시기지 ${SITE_NAME}` : SITE_NAME;
-
-  return {
-    metadataBase: new URL(SITE_URL),
-    title: { default: defaultTitle, template: `%s · ${SITE_NAME}` },
-    description: t.site.description,
-    applicationName: SITE_NAME,
-    keywords: KEYWORDS_BY_LOCALE[lang],
-    authors: [{ name: SITE_NAME, url: SITE_URL }],
-    creator: SITE_NAME,
-    publisher: SITE_NAME,
-    alternates: { canonical: '/' },
-    openGraph: {
-      type: 'website',
-      siteName: SITE_NAME,
-      title: SITE_NAME,
-      description: t.site.description,
-      url: '/',
-      locale: lang === 'en' ? 'en_US' : lang === 'ja' ? 'ja_JP' : 'ko_KR',
-    },
-    twitter: {
-      card: 'summary',
-      title: SITE_NAME,
-      description: t.site.description,
-    },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
-    },
-    formatDetection: { email: false, address: false, telephone: false },
-    ...(verification ? { verification } : {}),
-  };
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#1a1a1a' },
+  ],
+  colorScheme: 'light',
+  width: 'device-width',
+  initialScale: 1,
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const lang = await getLocale();
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
+  },
+  formatDetection: { email: false, address: false, telephone: false },
+  ...(buildVerification() ? { verification: buildVerification() } : {}),
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
-    <html lang={lang}>
-      <body className="min-h-screen flex flex-col">
-        <LocaleProvider initialLocale={lang}>
-          <SiteHeader />
-          <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-10">{children}</main>
-          <SiteFooter />
-        </LocaleProvider>
-      </body>
+    <html lang="ko">
+      <body className="min-h-screen flex flex-col">{children}</body>
     </html>
   );
 }

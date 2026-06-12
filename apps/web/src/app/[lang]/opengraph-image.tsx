@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-import { getLocale } from '@/lib/i18n';
+import { resolveLang } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 import { loadPretendardBold, OG_ACCENT, OG_BACKGROUND, OG_CONTENT_TYPE, OG_MUTED, OG_SIZE, OG_TEXT } from '@/lib/og';
 import { SITE_NAME } from '@/lib/seo';
@@ -10,8 +10,13 @@ export const alt = SITE_NAME;
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
-export default async function OgImage() {
-  const t = getLabels(await getLocale());
+interface Props {
+  params: Promise<{ lang: string }>;
+}
+
+export default async function OgImage({ params }: Props) {
+  const lang = resolveLang((await params).lang);
+  const t = getLabels(lang);
   const fontData = await loadPretendardBold();
 
   return new ImageResponse(

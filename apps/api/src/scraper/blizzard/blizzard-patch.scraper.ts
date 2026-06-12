@@ -1,6 +1,6 @@
 import { ResponseCache } from '@@cache';
 import { PrismaService } from '@@db';
-import { PatchNoteStatus, ScrapeSource } from '@@prisma';
+import { PatchNoteStatus, Prisma, ScrapeSource } from '@@prisma';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { isDefined } from 'class-validator';
 
@@ -13,6 +13,11 @@ import type { ParsedPatchEntry, ParsedPatchNote } from './dto/parsed-patch-note.
 
 const PATCH_NOTES_URL = 'https://overwatch.blizzard.com/ko-kr/news/patch-notes/';
 
+interface AffectedPatch {
+  patchNoteId: number;
+  heroIds: number[];
+}
+
 interface SyncSummary {
   fetched: number;
   created: number;
@@ -23,6 +28,8 @@ interface SyncSummary {
   affectedHeroIds: number[];
   /** 새로 created되거나 (PUBLISHED 아닌) updated된 patch의 version 목록 — ISR revalidate 대상 */
   affectedVersions: string[];
+  /** patchNoteId ↔ heroIds 매핑. HeroStatRevision 작성용 */
+  affectedByPatch: AffectedPatch[];
 }
 
 interface BackfillOptions {
@@ -57,6 +64,10 @@ export class BlizzardPatchScraper {
   ) {}
 
   async sync(): Promise<SyncSummary> {
+    // syncAffectedHeroes 안에서 HeroStatRevision diff를 만들 때, 이 시각 이후에 작성된
+    // hero_change_logs만 묶기 위한 cutoff. patch sync의 entries persistence가 끝난 직후 시각으로 잡으면
+    // diff logger가 실제로 영웅 sync에서 기록한 changes만 정확히 골라낼 수 있다.
+    const tickStartedAt = new Date();
     const summary = await this.recorder.run({
       source: ScrapeSource.BLIZZARD_PATCH_NOTES,
       target: PATCH_NOTES_URL,
@@ -64,7 +75,9 @@ export class BlizzardPatchScraper {
         const html = await this.httpClient.fetchHtml(PATCH_NOTES_URL);
         const parsed = this.parser.parse(html, PATCH_NOTES_URL);
         const persisted = await this.persist(parsed);
-        return { result: persisted, diffSummary: { ...persisted } };
+        // recorder의 diffSummary는 Prisma JSON에 저장되니 affectedByPatch는 빼서 전달.
+        const { affectedByPatch: _, ...diffSummary } = persisted;
+        return { result: persisted, diffSummary };
       },
     });
     if (summary.created > 0 || summary.updated > 0) {
@@ -75,9 +88,11 @@ export class BlizzardPatchScraper {
       await this.webRevalidator.revalidate({ patchVersions: summary.affectedVersions });
     }
     if (summary.affectedHeroIds.length > 0) {
-      this.syncAffectedHeroes(summary.affectedHeroIds).catch((error: unknown) => {
-        this.logger.error(`syncAffectedHeroes failed: ${(error as Error).message}`, (error as Error).stack);
-      });
+      this.syncAffectedHeroes(summary.affectedHeroIds, summary.affectedByPatch, tickStartedAt).catch(
+        (error: unknown) => {
+          this.logger.error(`syncAffectedHeroes failed: ${(error as Error).message}`, (error as Error).stack);
+        },
+      );
     }
     return summary;
   }
@@ -86,16 +101,30 @@ export class BlizzardPatchScraper {
    * 새 패치 발견 → entries에 등장한 영웅들을 백그라운드로 재동기화.
    * - Blizzard ko-kr 페이지(이름/설명/능력) 재크롤 → diff logger가 hero_change_logs에 기록
    * - 능력/특전 아이콘 재다운로드 → 패치로 perks가 reroll되면 자동 반영
+   * - 영웅 sync 후 hero_change_logs를 patch별로 묶어 HeroStatRevision row 작성 (SPEC §1.3)
    * 한 영웅 실패가 다음 영웅을 막지 않게 catch.
    */
-  private async syncAffectedHeroes(heroIds: number[]): Promise<void> {
+  private async syncAffectedHeroes(
+    heroIds: number[],
+    affectedByPatch: AffectedPatch[],
+    tickStartedAt: Date,
+  ): Promise<void> {
+    const patchesByHero = new Map<number, number[]>();
+    for (const { patchNoteId, heroIds: ids } of affectedByPatch) {
+      for (const hid of ids) {
+        const arr = patchesByHero.get(hid) ?? [];
+        arr.push(patchNoteId);
+        patchesByHero.set(hid, arr);
+      }
+    }
+
     const heroes = await this.prismaService.hero.findMany({
       where: { id: { in: heroIds } },
-      select: { codename: true },
+      select: { id: true, codename: true },
     });
     this.logger.log(`patch sync triggered hero auto-sync: ${heroes.length} heroes`);
 
-    for (const { codename } of heroes) {
+    for (const { id: heroId, codename } of heroes) {
       try {
         const result = await this.koScraper.sync(codename);
         this.logger.log(
@@ -112,6 +141,12 @@ export class BlizzardPatchScraper {
       } catch (error) {
         this.logger.warn(`auto-sync icons ${codename} failed: ${(error as Error).message}`);
       }
+
+      try {
+        await this.writeRevisions(heroId, codename, patchesByHero.get(heroId) ?? [], tickStartedAt);
+      } catch (error) {
+        this.logger.warn(`revision write ${codename} failed: ${(error as Error).message}`);
+      }
     }
 
     this.logger.log('patch-triggered hero auto-sync complete');
@@ -120,6 +155,42 @@ export class BlizzardPatchScraper {
     if (codenames.length > 0) {
       await this.webRevalidator.revalidate({ heroCodenames: codenames });
     }
+  }
+
+  /**
+   * 영웅 sync로 생성된 hero_change_logs를 묶어 HeroStatRevision row를 작성.
+   *
+   * v1 구현 한계: 같은 영웅이 한 cron tick에 여러 patch에 영향 받으면 동일 diff가 N개 patch 모두에
+   * 매핑된다. PatchNote.entries.body로 fine-grained per-patch 변경을 추출하려면 NLP가 필요해 보류.
+   * SPEC §1.3 약속의 "어떤 패치에서 변했는지 추적"은 충족하되, 동일 변경이 patches에 중복 표시되는 점은
+   * 향후 수동 보정 또는 별도 분기 작업으로.
+   */
+  private async writeRevisions(
+    heroId: number,
+    codename: string,
+    patchNoteIds: number[],
+    tickStartedAt: Date,
+  ): Promise<void> {
+    if (patchNoteIds.length === 0) {
+      return;
+    }
+    const changes = await this.prismaService.heroChangeLog.findMany({
+      where: { heroId, createdAt: { gte: tickStartedAt } },
+      select: { changeType: true, target: true, targetKey: true, before: true, after: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (changes.length === 0) {
+      return;
+    }
+    const diff = { changes } as unknown as Prisma.InputJsonValue;
+    await Promise.all(
+      patchNoteIds.map((patchNoteId) =>
+        this.prismaService.heroStatRevision.create({
+          data: { heroId, patchNoteId, diff },
+        }),
+      ),
+    );
+    this.logger.log(`revision created: ${codename} × ${patchNoteIds.length} patch(es), ${changes.length} change(s)`);
   }
 
   /**
@@ -156,9 +227,10 @@ export class BlizzardPatchScraper {
           const reached = until ? filtered.length < parsed.length : false;
           const summary = await this.persist(filtered);
           const prev = this.parser.extractPrevPageUrl(html, url);
+          const { affectedByPatch: _, ...diffSummaryBase } = summary;
           return {
             result: { pageSummary: summary, prevUrl: prev, reachedUntil: reached },
-            diffSummary: { ...summary, url, prevUrl: prev ?? '' },
+            diffSummary: { ...diffSummaryBase, url, prevUrl: prev ?? '' },
           };
         },
       });
@@ -205,9 +277,11 @@ export class BlizzardPatchScraper {
       skipped: 0,
       affectedHeroIds: [],
       affectedVersions: [],
+      affectedByPatch: [],
     };
     const affected = new Set<number>();
     const versions = new Set<string>();
+    const affectedByPatch: AffectedPatch[] = [];
 
     for (const patch of patches) {
       try {
@@ -235,14 +309,19 @@ export class BlizzardPatchScraper {
           summary.updated += 1;
           if (!isPublished) {
             versions.add(patch.version);
+            const heroIdsForPatch: number[] = [];
             for (const entry of entries) {
               if (entry.heroId !== null) {
                 affected.add(entry.heroId);
+                heroIdsForPatch.push(entry.heroId);
               }
+            }
+            if (heroIdsForPatch.length > 0) {
+              affectedByPatch.push({ patchNoteId: existing.id, heroIds: Array.from(new Set(heroIdsForPatch)) });
             }
           }
         } else {
-          await this.prismaService.patchNote.create({
+          const created = await this.prismaService.patchNote.create({
             data: {
               version: patch.version,
               title: patch.title,
@@ -252,13 +331,19 @@ export class BlizzardPatchScraper {
               status,
               entries: { create: entries },
             },
+            select: { id: true },
           });
           summary.created += 1;
           versions.add(patch.version);
+          const heroIdsForPatch: number[] = [];
           for (const entry of entries) {
             if (entry.heroId !== null) {
               affected.add(entry.heroId);
+              heroIdsForPatch.push(entry.heroId);
             }
+          }
+          if (heroIdsForPatch.length > 0) {
+            affectedByPatch.push({ patchNoteId: created.id, heroIds: Array.from(new Set(heroIdsForPatch)) });
           }
         }
 
@@ -273,6 +358,7 @@ export class BlizzardPatchScraper {
 
     summary.affectedHeroIds = Array.from(affected);
     summary.affectedVersions = Array.from(versions);
+    summary.affectedByPatch = affectedByPatch;
 
     return summary;
   }

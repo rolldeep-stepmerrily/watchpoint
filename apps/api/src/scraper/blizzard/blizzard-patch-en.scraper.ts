@@ -4,6 +4,7 @@ import { Prisma, ScrapeSource } from '@@prisma';
 import { Injectable, Logger } from '@nestjs/common';
 
 import { mergeTranslation, ScrapeJobRecorder, ScraperHttpClient } from '../common';
+import { WebRevalidatorService } from '../web';
 import { BlizzardPatchParser } from './blizzard-patch.parser';
 import type { ParsedPatchEntry, ParsedPatchNote } from './dto/parsed-patch-note.dto';
 
@@ -15,6 +16,8 @@ interface SyncSummary {
   skipped: number;
   entriesMatched: number;
   entriesTotal: number;
+  /** 영문 translations가 새로 들어간 patch version 목록 — ISR revalidate 대상 */
+  affectedVersions: string[];
 }
 
 @Injectable()
@@ -27,6 +30,7 @@ export class BlizzardPatchEnScraper {
     private readonly recorder: ScrapeJobRecorder,
     private readonly prismaService: PrismaService,
     private readonly responseCache: ResponseCache,
+    private readonly webRevalidator: WebRevalidatorService,
   ) {}
 
   async sync(): Promise<SyncSummary> {
@@ -42,6 +46,11 @@ export class BlizzardPatchEnScraper {
     });
     if (summary.matched > 0 || summary.entriesMatched > 0) {
       await this.responseCache.invalidateAll();
+    }
+    // 영문 번역이 들어간 patch도 web ISR을 무효화해야 사용자가 1h 안에 영문 내용 본다.
+    // KO scraper는 신규 patch에만 revalidate를 쏘므로 en-only 갱신은 여기서 별도 처리.
+    if (summary.affectedVersions.length > 0) {
+      await this.webRevalidator.revalidate({ patchVersions: summary.affectedVersions });
     }
     return summary;
   }
@@ -60,9 +69,11 @@ export class BlizzardPatchEnScraper {
       skipped: 0,
       entriesMatched: 0,
       entriesTotal: 0,
+      affectedVersions: [],
     };
 
     const heroEnIndex = await this.buildHeroEnIndex();
+    const affected: string[] = [];
 
     for (const patch of patches) {
       const existing = await this.prismaService.patchNote.findUnique({
@@ -92,11 +103,14 @@ export class BlizzardPatchEnScraper {
         },
       });
       summary.matched += 1;
+      affected.push(patch.version);
 
       const entryMatched = await this.applyEntryTranslations(existing.entries, patch.entries, heroEnIndex);
       summary.entriesMatched += entryMatched.matched;
       summary.entriesTotal += entryMatched.total;
     }
+
+    summary.affectedVersions = affected;
 
     if (summary.skipped > 0) {
       this.logger.warn(`patch en sync: skipped ${summary.skipped} patches not in DB (run patch:sync first)`);

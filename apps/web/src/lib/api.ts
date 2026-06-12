@@ -65,6 +65,10 @@ export interface HeroListParams {
 /**
  * 영웅 목록 페이지네이션 조회 — role/q/page/pageSize/lang 필터 지원
  *
+ * cache()로 감싸지 않은 이유: `params`가 객체라 React.cache는 reference equality로만 dedupe.
+ * 같은 query라도 caller마다 새 객체면 캐싱 안 됨. 대신 Next.js fetch가 URL+headers 기준으로
+ * 같은 render 내 dedupe해주므로 단일 render에서 동일 URL 중복 호출은 한 번만 나간다.
+ *
  * @param {HeroListParams} [params] 쿼리 파라미터 (모두 optional)
  * @returns {Promise<PaginatedDto<HeroSummaryDto>>} 페이지네이션된 영웅 요약 목록
  */
@@ -114,6 +118,8 @@ export interface PatchNoteListParams {
 
 /**
  * 패치노트 목록 페이지네이션 조회 — page/pageSize/lang 필터 지원
+ *
+ * cache()로 감싸지 않은 이유는 getHeroList와 동일 — Next.js fetch dedupe에 의존.
  *
  * @param {PatchNoteListParams} [params] 쿼리 파라미터 (모두 optional)
  * @returns {Promise<PaginatedDto<PatchNoteSummaryDto>>} 페이지네이션된 패치노트 요약 목록

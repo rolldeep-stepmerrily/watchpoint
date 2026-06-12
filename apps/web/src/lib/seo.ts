@@ -30,18 +30,19 @@ const SITE_ALTERNATE_NAMES_KO = ['감시기지', '감시기지 Watchpoint', '오
  * @param {string} description 사이트 짧은 설명 (메타 description과 동일하게 권장)
  * @returns {JsonLdValue} schema.org WebSite JSON-LD 객체
  */
-export const buildWebSiteJsonLd = (description: string): JsonLdValue => ({
+export const buildWebSiteJsonLd = (description: string, lang: 'ko' | 'en' = 'ko'): JsonLdValue => ({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: SITE_NAME,
   alternateName: SITE_ALTERNATE_NAMES_KO,
-  url: SITE_URL,
+  url: `${SITE_URL}/${lang}`,
   description,
+  inLanguage: lang === 'ko' ? 'ko-KR' : 'en-US',
   potentialAction: {
     '@type': 'SearchAction',
     target: {
       '@type': 'EntryPoint',
-      urlTemplate: `${SITE_URL}/heroes?q={search_term_string}`,
+      urlTemplate: `${SITE_URL}/${lang}/heroes?q={search_term_string}`,
     },
     'query-input': 'required name=search_term_string',
   },
