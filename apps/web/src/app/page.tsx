@@ -89,22 +89,22 @@ export default async function HomePage() {
       {/* Stats strip */}
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <StatCard
-          label="등록된 영웅"
+          label={t.home.stats.heroesLabel}
           value={String(heroes.total)}
         />
         <StatCard
-          label="공개 패치노트"
+          label={t.home.stats.patchesLabel}
           value={String(patches.total)}
         />
         <StatCard
-          label="자동 수집"
+          label={t.home.stats.cronLabel}
           value="6h"
-          sub="cron 주기"
+          sub={t.home.stats.cronSub}
         />
         <StatCard
-          label="데이터"
+          label={t.home.stats.sourceLabel}
           value="Blizzard"
-          sub="공식 출처"
+          sub={t.home.stats.sourceSub}
         />
       </section>
 
