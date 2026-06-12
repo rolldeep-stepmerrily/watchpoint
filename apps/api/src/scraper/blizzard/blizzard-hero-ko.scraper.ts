@@ -125,11 +125,13 @@ export class BlizzardHeroKoScraper {
       };
     }
 
+    // description은 빈/없으면 기존 값 유지. parser가 일시적으로 description을 못 뽑는 경우(페이지 마크업 변경 등)
+    // 데이터가 명시적으로 사라지는 것을 막는다. PR #115/#116에서 seed가 description을 덮어쓰던 버그와 같은 카테고리.
     await this.prismaService.hero.update({
       where: { id: hero.id },
       data: {
         name: parsed.name,
-        description: parsed.description,
+        ...(parsed.description && parsed.description.length > 0 ? { description: parsed.description } : {}),
         sourceUrl: parsed.sourceUrl,
       },
     });
