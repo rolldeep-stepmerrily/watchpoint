@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 import { getHero } from '@/lib/api';
-import { getLocale } from '@/lib/i18n';
+import { resolveLang } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 import {
   loadPretendardBold,
@@ -21,12 +21,12 @@ export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
 interface Props {
-  params: Promise<{ codename: string }>;
+  params: Promise<{ lang: string; codename: string }>;
 }
 
 export default async function HeroOgImage({ params }: Props) {
-  const { codename } = await params;
-  const lang = await getLocale();
+  const { codename, lang: rawLang } = await params;
+  const lang = resolveLang(rawLang);
   const t = getLabels(lang);
   const fontData = await loadPretendardBold();
 

@@ -17,17 +17,27 @@
 
 ## 도메인 모델
 
+### 공통 — 다국어 필드 패턴
+
+이름/설명류 필드는 한국어를 기본(`name`/`description`/`title`/`body`/`summary`)으로 두고, 그 옆에
+`*Translations Json?`를 둬서 `{ ko, en, ja }` 형태로 보강한다. API의 `?lang=` 파라미터가 요청 로케일을 결정하면
+`name-resolver`가 `*Translations[lang]` → 기본 필드 순으로 폴백 해서 응답을 만든다.
+
 ### Hero
 | 필드 | 타입 | 설명 |
 |---|---|---|
 | id | Int | PK |
 | codename | String | 영문 식별자 (URL slug, unique) — 예: `sierra` |
 | name | String | 한글 영웅명 — 예: `시에라` |
+| nameTranslations | Json? | `{ ko, en, ja }` 형태의 이름 다국어 |
 | role | HeroRole | `TANK` / `DAMAGE` / `SUPPORT` |
+| subrole | Subrole | `Bruiser` / `Initiator` / `Stalwart` / `Sharpshooter` / `Flanker` / `Specialist` / `Recon` / `Tactician` / `Medic` / `Survivor` |
 | releasedAt | DateTime | 출시일 |
 | portraitUrl | String? | 초상화 이미지 URL |
-| description | String? | 영웅 소개 |
+| description | String? | 영웅 소개 (한국어 기본) |
+| descriptionTranslations | Json? | 설명 다국어 |
 | sourceUrl | String? | 1차 출처 (Blizzard 공식 영웅 페이지) |
+| createdAt / updatedAt | DateTime | audit |
 
 ### HeroStat
 영웅 기본 수치(체력 구성/이동 속도 등). 패치마다 갱신 가능하므로 history는 `HeroStatRevision`으로 별도 보관.
@@ -37,10 +47,10 @@
 | id | Int | PK |
 | heroId | Int | 영웅 FK (unique — 1:1) |
 | health | Int | 일반 체력 |
-| armor | Int | 방어구 |
-| shield | Int | 보호막 |
+| armor | Int | 방어구 (기본 0) |
+| shield | Int | 보호막 (기본 0) |
 | moveSpeed | Float | 이동 속도 (m/s) |
-| extras | Json | 영웅별 특수 수치 (예: 부스트 속도, 브레이크 시간 등) |
+| extras | Json? | 영웅별 특수 수치 (예: 부스트 속도, 브레이크 시간 등) |
 
 ### HeroAbility
 | 필드 | 타입 | 설명 |
@@ -49,12 +59,34 @@
 | heroId | Int | 영웅 FK |
 | slot | AbilitySlot | `PASSIVE` / `PRIMARY` / `SECONDARY` / `ABILITY_1` / `ABILITY_2` / `ULTIMATE` |
 | key | String? | 키 바인드 표기 — 예: `LMB`, `RMB`, `Shift`, `E`, `Q` |
-| name | String | 능력명 |
-| description | String | 설명 |
-| stats | Json | 데미지/쿨다운/사거리/탄창 등 정형 수치 |
-| order | Int | 표시 순서 |
+| blizzardId | String? | Blizzard 페이지에서 추출한 능력 식별자. 한국어 sync 시 저장 → 영문 sync 매칭에 사용 |
+| name | String | 능력명 (한국어 기본) |
+| nameTranslations | Json? | 다국어 |
+| description | String | 설명 (한국어 기본) |
+| descriptionTranslations | Json? | 다국어 |
+| stats | Json? | 데미지/쿨다운/사거리/탄창 등 정형 수치 |
+| iconUrl | String? | MinIO 호스팅된 능력 아이콘 URL |
+| order | Int | 표시 순서 (기본 0) |
 
-`(heroId, slot, order)` unique.
+`(heroId, slot, order)` unique. `(heroId, blizzardId)` 보조 인덱스.
+
+### HeroPerk
+영웅별 4종 특전(MINOR 2, MAJOR 2). 영문 sync는 `(tier, slot)` 복합키로 매칭한다.
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| id | Int | PK |
+| heroId | Int | 영웅 FK |
+| tier | PerkTier | `MINOR` / `MAJOR` |
+| slot | Int | 1 또는 2 (좌/우) |
+| name | String | 특전명 (한국어 기본) |
+| nameTranslations | Json? | 다국어 |
+| description | String | 설명 (한국어 기본) |
+| descriptionTranslations | Json? | 다국어 |
+| stats | Json? | 정형 수치 |
+| iconUrl | String? | MinIO 아이콘 URL |
+
+`(heroId, tier, slot)` unique.
 
 ### HeroStatRevision
 패치 적용 이력. 영웅 수치/능력이 어떤 패치에서 어떻게 변했는지 추적.
@@ -67,16 +99,34 @@
 | diff | Json | 변경 전/후 비교 (예: `{ "ability:fireBlast.damage": { "from": 80, "to": 90 } }`) |
 | appliedAt | DateTime | 적용 시각 |
 
+> **현 상태**: schema 정의만 존재하고 cron이 자동으로 row를 생성하지 않음. 후속 작업에서 `BlizzardPatchScraper.syncAffectedHeroes`가 diff를 만들도록 구현 예정. 그동안 영웅별 변경은 `HeroChangeLog`로만 audit된다.
+
+### HeroChangeLog
+스크래퍼 + cron이 실제로 작성하는 audit 로그. 이름/설명/능력별 diff를 row 단위로 저장.
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| id | Int | PK |
+| heroId | Int | 영웅 FK |
+| changeType | HeroChangeType | `NAME` / `DESCRIPTION` / `ABILITY_ADDED` / `ABILITY_REMOVED` / `ABILITY_UPDATED` / `PERK_ADDED` / `PERK_REMOVED` / `PERK_UPDATED` |
+| scrapeJobId | Int? | 트리거한 ScrapeJob FK |
+| payload | Json | before/after 또는 항목 식별자 |
+| createdAt | DateTime | |
+
 ### PatchNote
 | 필드 | 타입 | 설명 |
 |---|---|---|
 | id | Int | PK |
 | version | String | 패치 식별자 (예: `2026.01.14`) — unique |
-| title | String | 패치 제목 |
+| title | String | 패치 제목 (한국어 기본) |
+| titleTranslations | Json? | 다국어 |
 | releasedAt | DateTime | 공식 발표일 |
 | sourceUrl | String | 블리자드 원본 URL — unique |
-| summary | String? | 헤드라인 요약 |
-| status | PatchNoteStatus | `DRAFT` / `PUBLISHED` / `PENDING_REVIEW` |
+| summary | String? | 헤드라인 요약 (한국어 기본) |
+| summaryTranslations | Json? | 다국어 |
+| status | PatchNoteStatus | `DRAFT` / `PUBLISHED` / `PENDING_REVIEW` (기본 `DRAFT`) |
+
+> `BlizzardPatchScraper.persist`는 자동 매핑 성공 시 `PUBLISHED`, 매핑 실패가 있으면 `PENDING_REVIEW`로 저장한다. 공개 API(`/patch-notes*`, `/search`)는 `PUBLISHED`만 노출.
 
 ### PatchNoteEntry
 패치노트의 개별 항목(영웅 1명 단위 또는 일반 항목 단위로 쪼갠 것).
@@ -87,9 +137,12 @@
 | patchNoteId | Int | 패치노트 FK |
 | category | EntryCategory | `HERO_BALANCE` / `BUG_FIX` / `MAP` / `SYSTEM` / `GENERAL` |
 | heroId | Int? | 영웅 관련 항목인 경우 FK (없으면 일반 항목) |
-| title | String | 항목 제목 (예: `시에라` / `궁극기 충전 속도 조정`) |
-| body | String | 본문 (마크다운) |
-| order | Int | 표시 순서 |
+| perkId | Int? | 특전 단위 항목인 경우 FK |
+| title | String | 항목 제목 (한국어 기본) |
+| titleTranslations | Json? | 다국어 |
+| body | String | 본문 (한국어 기본, 마크다운) |
+| bodyTranslations | Json? | 다국어 |
+| order | Int | 표시 순서 (기본 0) |
 
 ### ScrapeJob
 스크래핑 실행 로그. 멱등성 보장 및 운영 가시성용.
@@ -97,7 +150,7 @@
 | 필드 | 타입 | 설명 |
 |---|---|---|
 | id | Int | PK |
-| source | ScrapeSource | `BLIZZARD_PATCH_NOTES` / `BLIZZARD_PATCH_NOTES_EN` / `BLIZZARD_HERO_KO` / `BLIZZARD_HERO_EN` (`NAMUWIKI_HERO` deprecated) |
+| source | ScrapeSource | `BLIZZARD_PATCH_NOTES` / `BLIZZARD_PATCH_NOTES_EN` / `BLIZZARD_HERO_KO` / `BLIZZARD_HERO_EN` / `NAMUWIKI_HERO` |
 | target | String | 대상 식별자 (URL 또는 영웅 codename) |
 | status | ScrapeStatus | `RUNNING` / `SUCCESS` / `FAILED` / `SKIPPED` |
 | startedAt | DateTime | 시작 시각 |
@@ -105,35 +158,55 @@
 | error | String? | 실패 사유 |
 | diffSummary | Json? | 변경 요약 (신규/수정/삭제 카운트) |
 
+### Enum 요약
+
+- **HeroRole**: `TANK` / `DAMAGE` / `SUPPORT`
+- **Subrole**: `Bruiser` / `Initiator` / `Stalwart` / `Sharpshooter` / `Flanker` / `Specialist` / `Recon` / `Tactician` / `Medic` / `Survivor`
+- **AbilitySlot**: `PASSIVE` / `PRIMARY` / `SECONDARY` / `ABILITY_1` / `ABILITY_2` / `ULTIMATE`
+- **PerkTier**: `MINOR` / `MAJOR`
+- **EntryCategory**: `HERO_BALANCE` / `BUG_FIX` / `MAP` / `SYSTEM` / `GENERAL`
+- **PatchNoteStatus**: `DRAFT` / `PUBLISHED` / `PENDING_REVIEW`
+- **HeroChangeType**: `NAME` / `DESCRIPTION` / `ABILITY_ADDED` / `ABILITY_REMOVED` / `ABILITY_UPDATED` / `PERK_ADDED` / `PERK_REMOVED` / `PERK_UPDATED`
+- **ScrapeSource**: `BLIZZARD_PATCH_NOTES` / `BLIZZARD_PATCH_NOTES_EN` / `BLIZZARD_HERO_KO` / `BLIZZARD_HERO_EN` / `NAMUWIKI_HERO`
+- **ScrapeStatus**: `RUNNING` / `SUCCESS` / `FAILED` / `SKIPPED`
+- **Locale** (`?lang=`): `ko` / `en` / `ja` (기본 `ko`)
+
 ---
 
 ## API 명세
 
-모든 엔드포인트는 **인증 불필요**, 응답은 전역 `TransformInterceptor`로 래핑된다.
+모든 엔드포인트는 **인증 불필요**, 응답은 전역 `TransformInterceptor`가 `null`/`undefined`을 빈 객체로 정규화하는 정도. 별도 envelope(예: `{ data: ... }`)는 적용하지 않는다.
+
+### 공통 쿼리
+
+- `?lang=ko|en|ja` — 응답 내 이름/설명류 필드의 로케일 선택. 누락 또는 invalid 값은 `ko`로 fallback.
+- 목록 엔드포인트(`/heroes`, `/patch-notes`)는 `?page=` (default 1) + `?pageSize=` (default 50, max 100) 페이지네이션. 100 초과 요청은 400 응답이라 sitemap/크롤러는 페이지네이션 사용 필수.
 
 ### Heroes
 
 | Method | Path | 설명 |
 |---|---|---|
-| `GET` | `/heroes` | 영웅 목록 (`?role=TANK\|DAMAGE\|SUPPORT`, `?q=` 이름 검색) |
-| `GET` | `/heroes/:codename` | 영웅 상세 (기본 정보 + stats + abilities) |
-| `GET` | `/heroes/:codename/abilities` | 능력 목록만 |
-| `GET` | `/heroes/:codename/patch-history` | 해당 영웅이 등장한 패치 이력 (최신순) |
+| `GET` | `/heroes` | 영웅 목록. `?role=TANK\|DAMAGE\|SUPPORT`, `?q=` 이름 검색, 공통 쿼리 |
+| `GET` | `/heroes/:codename` | 영웅 상세 (기본 정보 + stats + abilities + perks). `?lang=` |
+| `GET` | `/heroes/:codename/abilities` | 능력 목록만. 응답 shape `{ abilities: HeroAbilityDto[] }` |
+| `GET` | `/heroes/:codename/patch-history` | 해당 영웅이 등장한 패치 이력 (최신순). `PUBLISHED`만 노출 |
 
 ### Patch Notes
 
 | Method | Path | 설명 |
 |---|---|---|
-| `GET` | `/patch-notes` | 패치노트 목록 (페이지네이션, 최신순) |
-| `GET` | `/patch-notes/latest` | 가장 최근 패치노트 1건 |
+| `GET` | `/patch-notes` | 패치노트 목록 (페이지네이션, 최신순). `PUBLISHED`만 노출 |
+| `GET` | `/patch-notes/latest` | 가장 최근 패치노트 1건 (bare 객체) |
 | `GET` | `/patch-notes/:version` | 패치노트 상세 (모든 entry 포함) |
-| `GET` | `/patch-notes/:version/entries` | entry 목록 (`?category=HERO_BALANCE` 등으로 필터) |
+| `GET` | `/patch-notes/:version/entries` | entry 목록. `?category=HERO_BALANCE` 등 필터. 응답 shape `{ entries: PatchNoteEntryDto[] }` |
 
 ### Search
 
 | Method | Path | 설명 |
 |---|---|---|
-| `GET` | `/search?q=` | 영웅·패치노트 통합 검색 |
+| `GET` | `/search?q=` | 영웅·패치노트 통합 검색. `q`는 1~50자 trim. `PUBLISHED`만 노출. `?lang=` |
+
+응답 shape: `{ heroes: HeroSummaryDto[], patchNotes: PatchNoteSummaryDto[] }`.
 
 ### 헬스체크
 
@@ -142,11 +215,19 @@
 | `GET` | `/health` | 공개 | Railway/배포 환경 probe용 DB+Redis 헬스체크. throttler 적용 |
 | `GET` | `/internal/health` | localhost / `x-internal-key` | guard 적용한 동일 헬스체크 (내부 운영 도구가 부하 분리할 때 사용) |
 
+응답 shape: `{ status: 'ok'|'degraded', db: 'ok'|'fail', redis: 'ok'|'fail', timestamp: string }`.
+
 ### 운영(내부, 외부 노출 금지)
 
 | Method | Path | 설명 |
 |---|---|---|
-| `GET` | `/internal/scrape-jobs` | 최근 스크래핑 잡 상태 (로컬·내부망에서만 접근) |
+| `GET` | `/internal/scrape-jobs` | 최근 스크래핑 잡 상태. `?source=`, `?status=`, `?limit=` (1~200, default 50) |
+
+### Web ↔ API ISR 콘트랙트
+
+| Method | Path | 호스팅 | 설명 |
+|---|---|---|---|
+| `POST` | `/api/revalidate` | Web(Next.js route handler) | API의 `WebRevalidatorService`가 신규 patch/hero sync 종료 후 호출. `x-revalidate-secret` 헤더 검증 + `{ paths: string[] }` body. timing-safe compare로 200/403/503 응답 |
 
 ---
 
@@ -157,16 +238,19 @@
 대상: `https://overwatch.blizzard.com/ko-kr/news/patch-notes/`
 
 ```
-ScrapePatchNotesUseCase (Cron, 6시간 주기)
+BlizzardPatchCron (6시간 주기, in-process 동시 실행 가드)
   ├─ 한국어 인덱스 페이지 fetch (BlizzardPatchScraper)
   │    └─ 신규 version 감지 (DB와 diff)
   │         └─ 각 신규 패치 본문 fetch + 파싱
-  │              ├─ 영웅 섹션 매핑 성공 → PatchNoteEntry 생성 (status=PUBLISHED)
-  │              │     └─ HeroStatRevision 자동 생성
+  │              ├─ 영웅 섹션 매핑 성공 → PatchNote(status=PUBLISHED) + PatchNoteEntry 생성
+  │              │     └─ HeroChangeLog audit + (TODO) HeroStatRevision 생성
   │              └─ 매핑 실패 → status=PENDING_REVIEW
+  │         └─ affectedVersions 모아 WebRevalidatorService 호출
+  │         └─ affectedHeroIds는 백그라운드로 BlizzardHeroKoScraper + HeroIconMatcher 자동 재동기화
   └─ 영문 인덱스 페이지 fetch (BlizzardPatchEnScraper)
-       └─ 기존 PatchNote(version)에 영문 title/summary translations 병합
-            └─ 영웅 entry는 hero.nameTranslations.en으로 매칭해 영문 body 병합
+       └─ 기존 PatchNote(version)에 영문 title/summary translations mergeTranslation 병합
+            └─ 영웅 entry는 hero.nameTranslations.en 매칭으로 영문 body 병합
+            └─ affectedVersions로 WebRevalidator 호출
 ```
 
 - HTTP fetch는 우선 `undici` + `cheerio`로 처리. 동적 렌더링이 필요해지면 `playwright` fallback.

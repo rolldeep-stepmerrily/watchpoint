@@ -5,29 +5,36 @@ import { notFound } from 'next/navigation';
 import { JsonLd } from '@/components/json-ld';
 import { ApiError, getPatchNote } from '@/lib/api';
 import { CATEGORY_ORDER, categoryColorVar } from '@/lib/format';
-import { getLocale } from '@/lib/i18n';
+import { resolveLang } from '@/lib/i18n';
 import { getLabels, type Labels } from '@/lib/labels';
 import { absoluteUrl, buildArticleJsonLd, buildBreadcrumbJsonLd, SITE_NAME } from '@/lib/seo';
 
 export const revalidate = 600;
 
 interface Props {
-  params: Promise<{ version: string }>;
+  params: Promise<{ lang: string; version: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { version } = await params;
-  const lang = await getLocale();
+  const { version, lang: rawLang } = await params;
+  const lang = resolveLang(rawLang);
   const t = getLabels(lang);
   try {
     const patch = await getPatchNote(version, lang);
     const title = `${patch.version} · ${patch.title}`;
     const description = patch.summary ?? t.patchNotes.descriptionFallback(patch.version, patch.title);
-    const url = absoluteUrl(`/patch-notes/${patch.version}`);
+    const url = absoluteUrl(`/${lang}/patch-notes/${patch.version}`);
     return {
       title,
       description,
-      alternates: { canonical: url },
+      alternates: {
+        canonical: url,
+        languages: {
+          ko: `/ko/patch-notes/${patch.version}`,
+          en: `/en/patch-notes/${patch.version}`,
+          'x-default': `/ko/patch-notes/${patch.version}`,
+        },
+      },
       openGraph: {
         type: 'article',
         title,
@@ -50,8 +57,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PatchNoteDetailPage({ params }: Props) {
-  const { version } = await params;
-  const lang = await getLocale();
+  const { version, lang: rawLang } = await params;
+  const lang = resolveLang(rawLang);
   const t = getLabels(lang);
 
   let patch: PatchNoteDetailDto;
@@ -67,7 +74,7 @@ export default async function PatchNoteDetailPage({ params }: Props) {
   const grouped = groupByCategory(patch.entries);
   const totalEntries = patch.entries.length;
 
-  const patchUrl = absoluteUrl(`/patch-notes/${patch.version}`);
+  const patchUrl = absoluteUrl(`/${lang}/patch-notes/${patch.version}`);
   const patchDescription = patch.summary ?? t.patchNotes.descriptionFallback(patch.version, patch.title);
   const articleJsonLd = buildArticleJsonLd({
     headline: `${patch.version} · ${patch.title}`,
@@ -76,8 +83,8 @@ export default async function PatchNoteDetailPage({ params }: Props) {
     datePublished: patch.releasedAt,
   });
   const breadcrumb = buildBreadcrumbJsonLd([
-    { name: SITE_NAME, url: absoluteUrl('/') },
-    { name: t.patchNotes.title, url: absoluteUrl('/patch-notes') },
+    { name: SITE_NAME, url: absoluteUrl(`/${lang}`) },
+    { name: t.patchNotes.title, url: absoluteUrl(`/${lang}/patch-notes`) },
     { name: patch.version, url: patchUrl },
   ]);
 

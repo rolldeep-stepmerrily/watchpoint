@@ -6,7 +6,7 @@ import { HeroPortrait } from '@/components/hero-portrait';
 import { JsonLd } from '@/components/json-ld';
 import { ApiError, getHero, getHeroPatchHistory } from '@/lib/api';
 import { roleColorVar } from '@/lib/format';
-import { getLocale } from '@/lib/i18n';
+import { resolveLang } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 import { absoluteUrl, buildBreadcrumbJsonLd, buildHeroPageJsonLd, SITE_NAME } from '@/lib/seo';
 
@@ -15,22 +15,29 @@ import { HeroDetailTabs } from './hero-detail-tabs';
 export const revalidate = 300;
 
 interface Props {
-  params: Promise<{ codename: string }>;
+  params: Promise<{ lang: string; codename: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { codename } = await params;
-  const lang = await getLocale();
+  const { codename, lang: rawLang } = await params;
+  const lang = resolveLang(rawLang);
   const t = getLabels(lang);
   try {
     const hero = await getHero(codename, lang);
     const title = `${hero.name} · ${t.role(hero.role)}`;
     const description = hero.description ?? t.hero.descriptionFallback(hero.name);
-    const url = absoluteUrl(`/heroes/${hero.codename}`);
+    const url = absoluteUrl(`/${lang}/heroes/${hero.codename}`);
     return {
       title,
       description,
-      alternates: { canonical: url },
+      alternates: {
+        canonical: url,
+        languages: {
+          ko: `/ko/heroes/${hero.codename}`,
+          en: `/en/heroes/${hero.codename}`,
+          'x-default': `/ko/heroes/${hero.codename}`,
+        },
+      },
       openGraph: {
         type: 'article',
         title,
@@ -55,8 +62,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function HeroDetailPage({ params }: Props) {
-  const { codename } = await params;
-  const lang = await getLocale();
+  const { codename, lang: rawLang } = await params;
+  const lang = resolveLang(rawLang);
   const t = getLabels(lang);
 
   let hero: HeroDetailDto;
@@ -70,7 +77,7 @@ export default async function HeroDetailPage({ params }: Props) {
     throw error;
   }
 
-  const heroUrl = absoluteUrl(`/heroes/${hero.codename}`);
+  const heroUrl = absoluteUrl(`/${lang}/heroes/${hero.codename}`);
   const heroDescription = hero.description ?? t.hero.descriptionFallback(hero.name);
   const heroPageJsonLd = buildHeroPageJsonLd({
     name: hero.name,
@@ -79,8 +86,8 @@ export default async function HeroDetailPage({ params }: Props) {
     image: hero.portraitUrl ?? undefined,
   });
   const breadcrumb = buildBreadcrumbJsonLd([
-    { name: SITE_NAME, url: absoluteUrl('/') },
-    { name: t.heroes.title, url: absoluteUrl('/heroes') },
+    { name: SITE_NAME, url: absoluteUrl(`/${lang}`) },
+    { name: t.heroes.title, url: absoluteUrl(`/${lang}/heroes`) },
     { name: hero.name, url: heroUrl },
   ]);
 

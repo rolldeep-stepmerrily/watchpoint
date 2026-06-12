@@ -214,6 +214,23 @@ interface Copy {
     heroesBody: string;
     latestPatches: string;
     viewAll: string;
+    stats: {
+      heroesLabel: string;
+      patchesLabel: string;
+      cronLabel: string;
+      cronSub: string;
+      sourceLabel: string;
+      sourceSub: string;
+    };
+  };
+  footer: {
+    description: string;
+    navHeading: string;
+    sourcesHeading: string;
+    sourcePatchNotes: string;
+    sourceHeroes: string;
+    sourceGithub: string;
+    disclaimer: string;
   };
   heroes: {
     title: string;
@@ -331,6 +348,23 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       heroesBody: '전체 영웅의 스탯, 능력, 패치 이력.',
       latestPatches: '최신 패치',
       viewAll: '전체 보기 →',
+      stats: {
+        heroesLabel: '등록된 영웅',
+        patchesLabel: '공개 패치노트',
+        cronLabel: '자동 수집',
+        cronSub: 'cron 주기',
+        sourceLabel: '데이터',
+        sourceSub: '공식 출처',
+      },
+    },
+    footer: {
+      description: '오버워치 패치노트와 영웅 능력 수치를 한곳에서 추적하는 비공식 팬 사이트.',
+      navHeading: '탐색',
+      sourcesHeading: '데이터 출처',
+      sourcePatchNotes: 'Blizzard 공식 패치노트',
+      sourceHeroes: 'Blizzard 공식 영웅 정보',
+      sourceGithub: 'GitHub',
+      disclaimer: '본 사이트는 Blizzard Entertainment와 무관한 팬 프로젝트입니다.',
     },
     heroes: {
       title: '영웅',
@@ -446,6 +480,23 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       heroesBody: 'Stats, abilities, and patch history for every hero.',
       latestPatches: 'Latest patches',
       viewAll: 'View all →',
+      stats: {
+        heroesLabel: 'Registered heroes',
+        patchesLabel: 'Published patch notes',
+        cronLabel: 'Auto-sync',
+        cronSub: 'cron interval',
+        sourceLabel: 'Data',
+        sourceSub: 'official source',
+      },
+    },
+    footer: {
+      description: 'Unofficial fan site tracking Overwatch patch notes and hero ability stats in one place.',
+      navHeading: 'Navigate',
+      sourcesHeading: 'Data sources',
+      sourcePatchNotes: 'Blizzard official patch notes',
+      sourceHeroes: 'Blizzard official hero info',
+      sourceGithub: 'GitHub',
+      disclaimer: 'This site is not affiliated with Blizzard Entertainment.',
     },
     heroes: {
       title: 'Heroes',

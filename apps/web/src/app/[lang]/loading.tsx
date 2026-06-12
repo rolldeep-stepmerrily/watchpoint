@@ -1,9 +1,9 @@
+import { DEFAULT_LOCALE } from '@@shared';
 import { Skeleton } from '@/components/skeleton';
-import { getLocale } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 
-export default async function Loading() {
-  const t = getLabels(await getLocale());
+export default function Loading() {
+  const t = getLabels(DEFAULT_LOCALE);
   return (
     <div
       className="space-y-6"
