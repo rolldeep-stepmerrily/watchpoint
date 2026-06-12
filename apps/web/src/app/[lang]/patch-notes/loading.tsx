@@ -1,11 +1,11 @@
+import { DEFAULT_LOCALE } from '@@shared';
 import { Skeleton } from '@/components/skeleton';
-import { getLocale } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 
 const ROW_KEYS = Array.from({ length: 6 }, (_, i) => `row-${i}`);
 
-export default async function PatchNotesLoading() {
-  const t = getLabels(await getLocale());
+export default function PatchNotesLoading() {
+  const t = getLabels(DEFAULT_LOCALE);
   return (
     <div
       className="space-y-6"

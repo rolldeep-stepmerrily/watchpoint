@@ -19,7 +19,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: t.patchNotes.title,
     description: t.patchNotes.description,
-    alternates: { canonical: `/${lang}/patch-notes` },
+    alternates: {
+      canonical: `/${lang}/patch-notes`,
+      languages: { ko: '/ko/patch-notes', en: '/en/patch-notes', 'x-default': '/ko/patch-notes' },
+    },
     openGraph: { title: t.patchNotes.title, url: `/${lang}/patch-notes` },
   };
 }

@@ -1,19 +1,18 @@
+import { DEFAULT_LOCALE } from '@@shared';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-
-import { getLocale } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = getLabels(await getLocale());
+export function generateMetadata(): Metadata {
+  const t = getLabels(DEFAULT_LOCALE);
   return {
     title: t.patchNotes.notFound.title,
     robots: { index: false, follow: false },
   };
 }
 
-export default async function PatchNoteNotFound() {
-  const t = getLabels(await getLocale());
+export default function PatchNoteNotFound() {
+  const t = getLabels(DEFAULT_LOCALE);
   return (
     <div className="space-y-6">
       <header className="space-y-2">
