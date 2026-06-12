@@ -31,9 +31,6 @@
   - **#97 Next.js 16** (15.5.18 → 16.2.9): turbopack 변경, React 19 흐름. release note 검토 필요
   - **#98 @types/node 25** (22.19.19 → 25.9.2): Node 22 LTS 런타임과 type 버전 어긋남. 호환 검증 필요
   - **#100 undici 8** (6.25.0 → 8.4.1): scraper에서 사용 중. fetch API 호환 검증 필요
-- **GitHub PAT/PG superuser 비번 노출 후속 (user 직접)**:
-  - GitHub PAT revoke: https://github.com/settings/tokens
-  - PG superuser 비번 rotate: Railway dashboard (readonly role 비번은 이미 교체 완료)
 
 ### 3순위 (큰 작업, 보류): URL 기반 locale routing
 - 현재 cookie 기반 i18n → 페이지 전부 Dynamic Rendering, hreflang/alternates.languages 미설정
