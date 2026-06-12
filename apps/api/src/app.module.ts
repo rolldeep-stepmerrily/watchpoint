@@ -49,6 +49,8 @@ import { SeederModule } from './seeder';
         MINIO_BUCKET: Joi.string().default('watchpoint-icons'),
         MINIO_PUBLIC_URL: Joi.string().uri().optional(),
         SENTRY_DSN: Joi.string().uri().optional(),
+        WEB_REVALIDATE_URL: Joi.string().uri().optional(),
+        WEB_REVALIDATE_SECRET: Joi.string().min(16).optional(),
       }),
       isGlobal: true,
       envFilePath: ['.env', '../../.env'],

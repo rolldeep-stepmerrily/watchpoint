@@ -217,6 +217,8 @@ pnpm hero:edit <codename>             # 수치/능력 수동 보정
 | `INTERNAL_API_KEY` | `/internal/*` 보호 (옵션, 16자+) | — |
 | `MINIO_ENDPOINT` / `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` / `MINIO_BUCKET` / `MINIO_PUBLIC_URL` | MinIO | — |
 | `SENTRY_DSN` | Sentry API DSN (비어 있으면 silent) | — |
+| `WEB_REVALIDATE_URL` | API → Web ISR invalidate 대상 URL (예: `https://o-watchpoint.com`) | — |
+| `WEB_REVALIDATE_SECRET` | API ↔ Web 공유 시크릿 (`x-revalidate-secret`, 16자+) | — |
 | `WEB_API_BASE_URL` | Web → API base URL | `http://localhost:3000` |
 | `WEB_PUBLIC_URL` | Web canonical URL (sitemap/OG) | `http://localhost:3001` |
 | `NEXT_PUBLIC_SENTRY_DSN` | Sentry Web DSN (build-time inline) | — |
