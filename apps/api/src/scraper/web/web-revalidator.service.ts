@@ -51,6 +51,9 @@ export class WebRevalidatorService {
         bodyTimeout: REQUEST_TIMEOUT_MS,
       });
       if (response.statusCode >= 200 && response.statusCode < 300) {
+        // undici keepalive 소켓 재사용을 위해 응답 본문을 항상 drain. 안 하면 다음 요청에서
+        // 'other side closed' / 'socket reuse' 류 에러나 fd 누수가 생길 수 있다.
+        await response.body.dump();
         this.logger.log(
           `revalidate ok: ${paths.length} paths (${paths.slice(0, 3).join(', ')}${paths.length > 3 ? '…' : ''})`,
         );
