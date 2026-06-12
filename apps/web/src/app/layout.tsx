@@ -110,8 +110,11 @@ export const generateMetadata = async (): Promise<Metadata> => {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = await getLocale();
+  // labels는 ja → en으로 fallback해 본문이 영문으로 렌더링되므로 <html lang>도 'en'으로 맞춘다.
+  // 본문 언어와 lang 속성 불일치는 WCAG 3.1.1 위반(스크린리더 발음 오작동) — ja 번역 도입 시 lang도 같이 복귀.
+  const htmlLang = lang === 'ja' ? 'en' : lang;
   return (
-    <html lang={lang}>
+    <html lang={htmlLang}>
       <body className="min-h-screen flex flex-col">
         <LocaleProvider initialLocale={lang}>
           <SiteHeader />

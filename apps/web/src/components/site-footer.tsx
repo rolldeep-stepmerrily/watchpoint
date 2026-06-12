@@ -1,6 +1,25 @@
 import Link from 'next/link';
 
-export function SiteFooter() {
+import { getLocale } from '@/lib/i18n';
+import { getLabels } from '@/lib/labels';
+
+// 로케일별로 Blizzard 공식 페이지가 달라서 URL도 같이 전환.
+const BLIZZARD_PATCH_NOTES_URL = {
+  ko: 'https://overwatch.blizzard.com/ko-kr/news/patch-notes/',
+  en: 'https://overwatch.blizzard.com/en-us/news/patch-notes/',
+} as const;
+
+const BLIZZARD_HEROES_URL = {
+  ko: 'https://overwatch.blizzard.com/ko-kr/heroes/',
+  en: 'https://overwatch.blizzard.com/en-us/heroes/',
+} as const;
+
+export const SiteFooter = async (): Promise<React.JSX.Element> => {
+  const lang = await getLocale();
+  const t = getLabels(lang);
+  // labels는 'ja'를 'en'으로 fallback하므로 외부 URL도 en으로 맞춘다.
+  const externalLocale = lang === 'ko' ? 'ko' : 'en';
+
   return (
     <footer className="mt-16 border-t border-(--color-border) bg-(--color-surface)/40">
       <div className="max-w-6xl mx-auto px-6 py-10 grid gap-8 sm:grid-cols-3 text-sm">
@@ -11,23 +30,23 @@ export function SiteFooter() {
             </span>
             <span className="font-extrabold tracking-tight text-(--color-text-strong)">WATCHPOINT</span>
           </div>
-          <p className="text-(--color-text-muted) text-xs mt-3 leading-relaxed">
-            오버워치 패치노트와 영웅 능력 수치를 한곳에서 추적하는 비공식 팬 사이트.
-          </p>
+          <p className="text-(--color-text-muted) text-xs mt-3 leading-relaxed">{t.footer.description}</p>
           <p className="text-(--color-text-faint) text-[11px] mt-3 font-mono uppercase tracking-widest">
             quis custodiet ipsos custodes?
           </p>
         </div>
 
         <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-(--color-text-muted) mb-3">탐색</div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-(--color-text-muted) mb-3">
+            {t.footer.navHeading}
+          </div>
           <ul className="space-y-2">
             <li>
               <Link
                 href="/heroes"
                 className="hover:text-(--color-accent) transition-colors"
               >
-                영웅
+                {t.nav.heroes}
               </Link>
             </li>
             <li>
@@ -35,7 +54,7 @@ export function SiteFooter() {
                 href="/patch-notes"
                 className="hover:text-(--color-accent) transition-colors"
               >
-                패치노트
+                {t.nav.patchNotes}
               </Link>
             </li>
           </ul>
@@ -43,27 +62,27 @@ export function SiteFooter() {
 
         <div>
           <div className="text-xs font-semibold uppercase tracking-widest text-(--color-text-muted) mb-3">
-            데이터 출처
+            {t.footer.sourcesHeading}
           </div>
           <ul className="space-y-2 text-xs">
             <li>
               <a
-                href="https://overwatch.blizzard.com/ko-kr/news/patch-notes/"
+                href={BLIZZARD_PATCH_NOTES_URL[externalLocale]}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-(--color-accent) transition-colors"
               >
-                Blizzard 공식 패치노트 →
+                {t.footer.sourcePatchNotes} →
               </a>
             </li>
             <li>
               <a
-                href="https://overwatch.blizzard.com/ko-kr/heroes/"
+                href={BLIZZARD_HEROES_URL[externalLocale]}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-(--color-accent) transition-colors"
               >
-                Blizzard 공식 영웅 정보 →
+                {t.footer.sourceHeroes} →
               </a>
             </li>
             <li>
@@ -73,15 +92,13 @@ export function SiteFooter() {
                 rel="noopener noreferrer"
                 className="hover:text-(--color-accent) transition-colors"
               >
-                GitHub →
+                {t.footer.sourceGithub} →
               </a>
             </li>
           </ul>
-          <p className="text-(--color-text-faint) text-[10px] mt-4">
-            본 사이트는 Blizzard Entertainment와 무관한 팬 프로젝트입니다.
-          </p>
+          <p className="text-(--color-text-faint) text-[10px] mt-4">{t.footer.disclaimer}</p>
         </div>
       </div>
     </footer>
   );
-}
+};

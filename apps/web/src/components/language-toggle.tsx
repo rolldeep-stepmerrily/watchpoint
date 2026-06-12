@@ -5,10 +5,11 @@ import type { Locale } from '@@shared';
 import { useLocale, useSetLocale } from '@/hooks/use-locale';
 import { getLabels } from '@/lib/labels';
 
+// 'ja'는 라벨 번역이 준비되지 않은 상태에서 옵션으로 노출하면 사용자가 선택 시 영문이 떨어져 혼란.
+// 본격적인 일본어 번역이 들어올 때 다시 추가.
 const OPTIONS: Array<{ value: Locale; label: string; enabled: boolean }> = [
   { value: 'ko', label: '한국어', enabled: true },
   { value: 'en', label: 'English', enabled: true },
-  { value: 'ja', label: '日本語', enabled: false },
 ];
 
 export function LanguageToggle() {
