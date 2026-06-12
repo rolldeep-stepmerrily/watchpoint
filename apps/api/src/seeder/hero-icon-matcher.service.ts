@@ -183,7 +183,9 @@ export class HeroIconMatcher {
    * 페이지에서 추출한 perks 중 DB에 없는 항목을 자동 시드.
    * - tier + slot 키로 upsert: 같은 자리에 다른 이름이 있으면 update, 없으면 create.
    * - 자동 시드 후 모든 perks를 다시 반환 (downloadFor가 iconUrl 매핑에 사용).
+   * - 페이지 outage/마크업 변경으로 parsed가 비정상적으로 적으면 대량 삭제를 막는 가드 포함.
    */
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: upsert + 대량삭제 가드까지 한 함수에 두는 게 perk 라이프사이클을 한눈에 추적하기 좋아 분할 보류.
   private async ensurePerks(
     codename: string,
     heroId: number,
@@ -225,11 +227,20 @@ export class HeroIconMatcher {
       await this.diffLogger.perkAdded(codename, heroId, created);
     }
 
-    for (const existing of existingPerks) {
-      const stillPresent = parsedPerks.find((p) => p.tier === existing.tier && p.slot === existing.slot);
-      if (!stillPresent) {
-        await this.prisma.heroPerk.delete({ where: { id: existing.id } });
-        await this.diffLogger.perkRemoved(codename, heroId, existing);
+    // perk는 영웅당 항상 4개(MINOR 2 + MAJOR 2). parse가 2개 이하만 잡았다면 페이지 마크업 변경/일시 outage 가능성이
+    // 더 크므로 대량 삭제를 막는다. 정상 parse는 항상 4개여서 이 가드가 정상 흐름을 차단하지 않음.
+    const PerkDeleteMinParsed = 3;
+    if (existingPerks.length > 0 && parsedPerks.length < PerkDeleteMinParsed) {
+      this.logger.warn(
+        `perk delete skipped — parsed too few (codename=${codename}, parsed=${parsedPerks.length}, existing=${existingPerks.length})`,
+      );
+    } else {
+      for (const existing of existingPerks) {
+        const stillPresent = parsedPerks.find((p) => p.tier === existing.tier && p.slot === existing.slot);
+        if (!stillPresent) {
+          await this.prisma.heroPerk.delete({ where: { id: existing.id } });
+          await this.diffLogger.perkRemoved(codename, heroId, existing);
+        }
       }
     }
 

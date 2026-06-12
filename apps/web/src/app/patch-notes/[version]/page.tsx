@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { JsonLd } from '@/components/json-ld';
-import { getPatchNote } from '@/lib/api';
+import { ApiError, getPatchNote } from '@/lib/api';
 import { CATEGORY_ORDER, categoryColorVar } from '@/lib/format';
 import { getLocale } from '@/lib/i18n';
 import { getLabels, type Labels } from '@/lib/labels';
@@ -41,8 +41,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
       },
     };
-  } catch {
-    return { title: t.patchNotes.notFound.title };
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return { title: t.patchNotes.notFound.title };
+    }
+    throw error;
   }
 }
 
@@ -54,8 +57,11 @@ export default async function PatchNoteDetailPage({ params }: Props) {
   let patch: PatchNoteDetailDto;
   try {
     patch = await getPatchNote(version, lang);
-  } catch {
-    notFound();
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      notFound();
+    }
+    throw error;
   }
 
   const grouped = groupByCategory(patch.entries);

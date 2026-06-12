@@ -27,11 +27,14 @@ const config: NextConfig = {
     ],
   },
   async rewrites() {
+    // 명시적 public API 화이트리스트만 proxy. 와일드카드는 NestJS `/internal/*`를 함께 노출하므로 금지.
+    // 새 public endpoint 추가 시 여기 한 줄 추가.
     return [
-      {
-        source: '/api/:path*',
-        destination: `${API_BASE}/:path*`,
-      },
+      { source: '/api/heroes', destination: `${API_BASE}/heroes` },
+      { source: '/api/heroes/:path*', destination: `${API_BASE}/heroes/:path*` },
+      { source: '/api/patch-notes', destination: `${API_BASE}/patch-notes` },
+      { source: '/api/patch-notes/:path*', destination: `${API_BASE}/patch-notes/:path*` },
+      { source: '/api/search', destination: `${API_BASE}/search` },
     ];
   },
 };
