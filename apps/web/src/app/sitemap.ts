@@ -6,9 +6,12 @@ import { absoluteUrl } from '@/lib/seo';
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // pageSize는 API DTO의 `@Max(100)` 상한과 일치시킨다. 100을 초과하면 400 응답이 나면서
+  // .catch가 빈 array를 반환 → sitemap에서 patch URL 전부 누락. patch 누적이 100을 넘어가면
+  // 그때 페이지네이션 도입 필요.
   const [heroes, patchNotes] = await Promise.all([
     getHeroList({ pageSize: 100 }).catch(() => ({ items: [] })),
-    getPatchNoteList({ pageSize: 200 }).catch(() => ({ items: [] })),
+    getPatchNoteList({ pageSize: 100 }).catch(() => ({ items: [] })),
   ]);
 
   const now = new Date();
