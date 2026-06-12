@@ -1,36 +1,21 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-06-11 작업 종료 시점. main = `5a95e21` (PR #116 머지), develop = `06c4d1f` (PR #115 머지).
-> **운영 인프라 1차 완성 + 데이터 출처 이중화 + 자동화 강화 + 관측성 1단계 + Dependabot 첫 release + 영웅 페이지 리디자인 + 나무위키 재도입(비영리 운영 확정) + hero description seed 버그 수정** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 출처 재도입(CC BY-NC-SA → 비영리 운영 확정), patch cron이 한국어 + 영문 sync 둘 다 자동 실행, Sentry 에러 트래커 코드 도입, MCP 4종 등록 완료, Dependabot 안전한 5종 main release, 영웅 리스트/상세 포트레이트 카드 그리드 리디자인, 나무위키 한국어 ability 명칭 fallback sync, hero description seed 무한 덮어쓰기 버그 수정 + prod 51명 description 공식값 갱신 완료.
-> 이번 세션(2026-06-11): Dependabot 8개 PR 검토 후 안전한 5개 main release(PR #103), 영웅 리스트/상세 리디자인(PR #105/#106), 특전/능력 영문 sync(PR #108/#109), **나무위키 source 재도입 1단계 인프라(PR #110/#111), 2단계 한국어 ability 명칭 fallback sync(PR #112/#113), 5단계 hero description seed 버그 수정(PR #115/#116) + Railway CLI(SSH key + DB public proxy)로 prod 51명 description 일괄 갱신**. 3단계(아이콘 fallback)는 나무위키 SSR에 능력 아이콘이 노출되지 않아 스킵, 4단계(국적)도 스킵.
-> 직전 세션(2026-06-10): patch cron 영문 sync 자동화(PR #88/#89), Sentry 도입(API + Web, PR #90), Dependabot 설정(PR #91), Sentry + Dependabot main 릴리스(PR #92), README 포트폴리오 갱신(PR #101/#102). MCP 4종 등록: Railway HTTP / Vercel HTTP / GitHub Docker / Postgres-RO npm.
+> 2026-06-12 작업 종료 시점. main = `593ef5c` (PR #120 머지), develop = `4c10874` (PR #119 머지).
+> **운영 인프라 1차 완성 + 데이터 출처 이중화 + 자동화 강화 + 관측성 1단계 + Dependabot 첫 release + 영웅 페이지 리디자인 + 나무위키 재도입(비영리 운영 확정) + hero description seed 버그 수정 + 검색엔진 등록 + ISR revalidate + 한국어 SEO 별칭** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 출처 재도입(CC BY-NC-SA → 비영리 운영 확정), patch cron이 한국어 + 영문 sync 둘 다 자동 실행, Sentry 에러 트래커 코드 도입, MCP 4종 등록 완료, Dependabot 안전한 5종 main release, 영웅 리스트/상세 포트레이트 카드 그리드 리디자인, 나무위키 한국어 ability 명칭 fallback sync + prod 51명 적용, hero description seed 무한 덮어쓰기 버그 수정 + prod 51명 갱신, Google/Naver Search Console verification + sitemap 제출, web ISR revalidate 훅 + Railway/Vercel env 적용, 한국어 검색 노출용 '감시기지 Watchpoint' 별칭 추가.
+> 이번 세션(2026-06-12): **Google Search Console + Naver Search Advisor 등록 + sitemap 제출 완료, `INTERNAL_API_KEY` Railway 등록, web ISR `revalidatePath` 훅 도입(PR #118 → #120) + Railway/Vercel env 등록, 한국어 검색용 '감시기지' 별칭(PR #119 → #120) — 홈 `<title>`/keywords/JSON-LD `alternateName`에만 노출**. STATUS.md 보안 후속 항목 정리.
+> 직전 세션(2026-06-11): Dependabot safe 5종 main release(PR #103), 영웅 리스트/상세 리디자인(PR #105/#106), 특전/능력 영문 sync(PR #108/#109), 나무위키 1단계 인프라(PR #110/#111) + 2단계 한국어 ability 명칭 fallback(PR #112/#113), 5단계 hero description seed 버그 수정(PR #115/#116), Railway CLI(SSH key + DB public proxy)로 prod 51명 namu/description 적용. 3·4단계는 스킵.
 
 ## 0. 다음 작업
 
-### 1순위: 나무위키 재도입 후속 단계
-- **1단계 (완료)**: 인프라 + 라이선스 (PR #110/#111)
-- **2단계 (완료)**: 한국어 ability 명칭 fallback (PR #112/#113) + Railway CLI로 prod 51명 sync 완료 — 능력 갱신 3 (junker-queen 톱니칼 등). 매칭 실패 35는 namu가 추출한 PASSIVE/하위역할 항목이 DB slot에 없어서 무시된 정상 케이스
-- **3단계 (스킵 확정)**: 아이콘 fallback — 나무위키 SSR 페이지에 능력 아이콘이 노출되지 않음(SPA 동적 렌더). 자동 fallback 불가. 누락 5개(freja PRIMARY, mauga PRIMARY/SECONDARY, junker-queen SECONDARY, bastion SECONDARY)는 수작업 업로드로 처리 가능
-- **4단계 (스킵 확정)**: 영웅 국적 표기 — 블리자드 페이지에 `blz-list-item.location` 안 `p[slot=description]`로 활동 지역 일관 노출되지만 첫 토큰이 도시/기지인 케이스(zarya/winston/wuyang/anran/soldier-76 등) 정확도 ↓. 정적 매핑 51명 작성하는 게 정확하지만 ROI 낮아 보류
-- **5단계 (완료)**: hero description seed 버그 수정 + prod 51명 갱신 (PR #115/#116). 원인: `apps/api/prisma/seeds/hero-details.ts`의 `applyHeroMeta()`가 매 부팅 `seed.description`을 무조건 덮어씀. 수정: 기존 description 비어있을 때만 placeholder로 채움. prod 적용: Railway CLI(`railway ssh keys add` + Postgres `DATABASE_PUBLIC_URL` + Redis `REDIS_PUBLIC_URL`)로 로컬에서 `pnpm hero:sync:ko:all` 실행 → 51/51 영웅 갱신, 264 abilities upserted
+### 1순위: 운영 모니터링 (즉시 가능)
+- **첫 cron tick 모니터링** (6h 주기, `SCRAPER_PATCH_CRON='0 */6 * * *'`) — Railway logs에서 `revalidate ok: N paths` + `sync ok` / `sync:en ok` 로그 확인. 처음 한 번 정상이면 자동화 검증 완료
+- **Sentry dashboard** prod 이벤트 도착 여부 확인 (Railway/Vercel env 둘 다 등록 완료)
+- **검색엔진 인덱싱 추적** — Google Search Console / Naver Search Advisor에서 sitemap 처리 / 인덱싱 진행도 확인 (며칠~몇 주 단위)
 
-### 1순위: 검색엔진 등록 (대부분 user 수작업)
-- **Google Search Console** 도메인 등록 → DNS TXT 또는 HTML 메타 verification
-- **Naver Search Advisor** 도메인 등록 (한국 검색 트래픽)
-- **Bing Webmaster** 등록 (선택)
-- verification 토큰 받으면 Vercel env에 `WEB_GOOGLE_SITE_VERIFICATION` / `WEB_NAVER_SITE_VERIFICATION` 추가 → Vercel Redeploy → `<meta name="...-site-verification">` 자동 노출 → Console에서 verify 클릭 → sitemap 제출
-- env 주입 구조는 `apps/web/src/app/layout.tsx`의 `buildVerification()`에 마련됨. 토큰만 채우면 됨
-
-### 2순위: 운영 데이터 보강 + 모니터링
-- **`INTERNAL_API_KEY`** Railway 등록 완료 (2026-06-12, 32자 base64url). watchpoint 서비스에 set 후 `IsLocalhostGuard`가 헤더 매칭 모드로 전환됨
-- 첫 cron tick 모니터링 (6h 주기, `SCRAPER_PATCH_CRON='0 */6 * * *'`) — 이제 tick당 한국어+영문 sync 둘 다 실행. `hero_change_logs` audit + 영문 translations 채워지는지 확인
-
-### Sentry / Dependabot / MCP 활성화 후속
-- **Sentry env**: Railway `SENTRY_DSN`, Vercel `NEXT_PUBLIC_SENTRY_DSN` 모두 등록 완료. Vercel은 PR #103 main 배포로 build inline 재반영됨. Sentry dashboard에 prod 이벤트 도착 여부만 확인 남음.
-- **Dependabot 보류 PR (major 3개, 사용자 결정 필요)**:
-  - **#97 Next.js 16** (15.5.18 → 16.2.9): turbopack 변경, React 19 흐름. release note 검토 필요
-  - **#98 @types/node 25** (22.19.19 → 25.9.2): Node 22 LTS 런타임과 type 버전 어긋남. 호환 검증 필요
-  - **#100 undici 8** (6.25.0 → 8.4.1): scraper에서 사용 중. fetch API 호환 검증 필요
+### 2순위: Dependabot major PR 검토 (사용자 결정 필요)
+- **#97 Next.js 16** (15.5.18 → 16.2.9): turbopack 변경, React 19 흐름. release note 검토 필요
+- **#98 @types/node 25** (22.19.19 → 25.9.2): Node 22 LTS 런타임과 type 버전 어긋남. 호환 검증 필요
+- **#100 undici 8** (6.25.0 → 8.4.1): scraper에서 사용 중. fetch API 호환 검증 필요
 
 ### 3순위 (큰 작업, 보류): URL 기반 locale routing
 - 현재 cookie 기반 i18n → 페이지 전부 Dynamic Rendering, hreflang/alternates.languages 미설정
@@ -45,7 +30,14 @@
 
 ### 기타 미진행
 - 홈 페이지 디자인 (현재 placeholder)
-- web의 `revalidatePath` ISR 무효화 훅 — API/Web 코드 완료 + Railway env 등록 완료. **Vercel `WEB_REVALIDATE_SECRET` 등록만 남음** (user 수작업, dashboard)
+- RSS feed (패치노트 적재 시 푸시 — 현재 트래픽 수준에선 ROI 낮음)
+
+### 최근 종료된 항목 (참고)
+- **나무위키 재도입 1·2·5단계 + prod 적용** (2026-06-11 PR #110~#116). 3·4단계는 스킵 확정 — 사유는 `memory/watchpoint_pending_review.md`
+- **검색엔진 등록** (2026-06-12): Google Search Console + Naver Search Advisor verification + sitemap.xml 제출 완료
+- **`INTERNAL_API_KEY` Railway 등록** (2026-06-12, 32자 base64url)
+- **web ISR revalidate 훅** (PR #118 → #120): API/Web 코드 + Railway/Vercel env 모두 적용. 다음 cron tick에서 `revalidate ok` 로그 발생 예정
+- **한국어 SEO 별칭** (PR #119 → #120): 홈 `<title>` / keywords / JSON-LD `alternateName`에 '감시기지 Watchpoint' 노출. 본문/Header/Footer/OG는 `Watchpoint` 그대로
 
 ---
 
@@ -78,18 +70,74 @@
 | **Sentry 에러 트래커 (API + Web)** | 🟡 env 등록 완료 | PR #90/#92. Railway/Vercel env 등록 완료, dashboard 이벤트 도착 확인만 남음 |
 | **Dependabot** | ✅ | PR #91/#92 설정, PR #103로 첫 release 5종 적용 |
 | **MCP (Railway/Vercel/GitHub/Postgres-RO)** | ✅ | user scope 등록 완료. 4종 정상 동작 (GitHub은 공식 Docker 이미지) |
-| **Google/Naver Search Console 등록** | 🔲 | verification env 채우기 후 |
+| **Google/Naver Search Console 등록** | ✅ | 2026-06-12, verification + sitemap 제출 완료. 인덱싱은 며칠~몇 주 |
 | **`INTERNAL_API_KEY`** | ✅ | Railway env 설정 완료 (2026-06-12, 32자 base64url) |
 | **prod 영문 패치노트 보강** | 🔲 | 다음 cron tick에 자동 처리 |
 | **첫 cron tick 모니터링** | 🔲 | 6h 주기 |
 | **URL 기반 locale routing** | 🔲 | hreflang/generateStaticParams 위한 선행 작업 |
 | **테스트 (jest/e2e)** | 🔲 | 미작성 |
 | **홈 페이지 디자인** | 🟡 placeholder | |
-| **`revalidatePath` (web ISR 무효화)** | 🟡 | API/Web 구현 + Railway env 완료. Vercel `WEB_REVALIDATE_SECRET` 등록 남음 |
+| **`revalidatePath` (web ISR 무효화)** | ✅ | PR #118 → #120, Railway + Vercel env 양쪽 적용 완료 |
+| **한국어 SEO 별칭 ('감시기지')** | ✅ | PR #119 → #120, 메타에만 노출 (홈 title / keywords / JSON-LD alternateName) |
 
 ---
 
-## 2. 이번 세션 주요 작업 (2026-06-11)
+## 2. 이번 세션 주요 작업 (2026-06-12)
+
+### 검색엔진 등록 — Google + Naver
+**Why**: 사이트 검색 노출의 1순위 외부 단계. 인덱싱 시작은 며칠~몇 주지만 등록 자체는 1회성 작업이라 미루지 않는 게 효율적.
+
+**진행 결과**:
+- **Google Search Console**: URL 접두어(`https://o-watchpoint.com`) 방식 + HTML 메타 verification → Vercel Production env `WEB_GOOGLE_SITE_VERIFICATION` 등록 → 자동 redeploy → verify 클릭 성공 → sitemap `sitemap.xml` 제출 완료
+- **Naver Search Advisor**: 동일 패턴 — `WEB_NAVER_SITE_VERIFICATION` env 등록 + 소유확인 + sitemap 제출 완료
+- **Bing**: 사용자 선택으로 스킵
+- `apps/web/src/app/layout.tsx`의 `buildVerification()` 구조가 이미 마련돼 있어서 env 채우기만으로 메타 자동 노출
+
+### `INTERNAL_API_KEY` Railway 등록
+**Why**: `/internal/*` 가드(`IsLocalhostGuard`)가 prod 환경에서 reverse proxy 뒤라 loopback 매칭 불가 → env 미설정 시 항상 차단되던 상태.
+
+**진행**: `node -e "crypto.randomBytes(24).toString('base64url')"`로 32자 키 생성 → `railway variables --service watchpoint --set "INTERNAL_API_KEY=<값>"`. `IsLocalhostGuard`가 `x-internal-key` 헤더 매칭 모드로 자동 전환.
+
+### web ISR `revalidatePath` 무효화 훅 도입 (PR #118 → #120)
+**Why**: web ISR `revalidate=300`(영웅) / `600`(패치) / `3600`(목록)로 캐시. cron이 새 patch 적재해도 web은 최대 1h 동안 옛 캐시 노출. CLAUDE.md "캐시 전략"에 명시돼 있었지만 호출 코드 없었음.
+
+**구조**:
+- **web** `apps/web/src/app/api/revalidate/route.ts` — POST endpoint
+  - `x-revalidate-secret` 헤더 timing-safe 비교 (`crypto.timingSafeEqual`)
+  - body `{ paths: string[] }` sanitize (`/`로 시작 필수, 개행 차단, MAX 200개)
+  - 통과한 경로마다 `revalidatePath(path)` 호출
+- **api** `apps/api/src/scraper/web/web-revalidator.service.ts` — undici로 web 호출
+  - `WEB_REVALIDATE_URL` + `WEB_REVALIDATE_SECRET` 둘 다 set일 때만 호출 (없으면 silent skip — 로컬 개발 영향 없음)
+  - 네트워크 실패는 warn 로그만 — sync 자체는 이미 성공한 후 호출되니 무효화 실패가 데이터 무결성과 무관
+- **`BlizzardPatchScraper`**
+  - `SyncSummary`에 `affectedVersions` 추가 (created + non-PUBLISHED updated 패치 version 집계)
+  - sync 직후 patch path(`/patch-notes`, `/patch-notes/<version>`, 홈) 즉시 revalidate
+  - 백그라운드 `syncAffectedHeroes` 끝에 hero path(`/heroes/<codename>`, `/heroes`, 홈) revalidate
+- `app.module.ts` Joi 스키마에 `WEB_REVALIDATE_URL` / `WEB_REVALIDATE_SECRET` 등록
+
+**env 적용**: Railway watchpoint 서비스 `WEB_REVALIDATE_URL=https://o-watchpoint.com` + `WEB_REVALIDATE_SECRET` (24자 base64url), Vercel watchpoint-web Production `WEB_REVALIDATE_SECRET` 동일 값.
+
+### 한국어 SEO 별칭 — '감시기지 Watchpoint' (PR #119 → #120)
+**Why**: 사이트 공식 명칭은 `Watchpoint` 유지하되, 한국어 사용자가 '감시기지' / '감시기지 Watchpoint' / '오버워치 감시기지'로 검색해도 인덱싱되도록 메타에만 별칭 추가. UI / 본문 / Header 로고 / Footer / OG/Twitter 카드는 깨끗하게 유지(사용자 명시 요구).
+
+**변경 표면 (ko만 적용, en/ja는 `Watchpoint` 그대로)**:
+- `apps/web/src/app/page.tsx` 홈 `<title>`: `Watchpoint — ...` → `감시기지 Watchpoint — ...`
+- `apps/web/src/app/layout.tsx` default title fallback (404 등 자체 title 미지정 페이지): `Watchpoint` → `감시기지 Watchpoint`
+- `KEYWORDS_BY_LOCALE.ko`에 `감시기지`, `감시기지 Watchpoint`, `오버워치 감시기지` 추가
+- `apps/web/src/lib/seo.ts` `buildWebSiteJsonLd`에 `alternateName: ['감시기지', '감시기지 Watchpoint', '오버워치 감시기지']` 추가 (전역)
+
+**손 안 댄 표면**: description / 본문 콘텐츠 / Header 로고 / Footer / OG title / Twitter title — 모두 `Watchpoint` 그대로 유지.
+
+검색 엔진이 사이트 식별자로 '감시기지'를 인식하기까지 며칠~몇 주 걸림. 즉시 효과 X.
+
+### STATUS.md 보안 후속 항목 정리 (PR #118 포함)
+**Why**: STATUS.md는 git 공개 리포에 올라가는 문서. 노출 위험이 있는 보안 후속 항목(특정 토큰 revoke 안내 등)이 평문으로 들어있어 공격 단서가 될 수 있음.
+
+**조치**: STATUS.md에서 해당 텍스트 제거. 사용자 본인 참고용 내용은 메모리(`watchpoint_pending_review.md`)에만 유지.
+
+---
+
+## 3. 직전 세션 주요 작업 (2026-06-11)
 
 ### 나무위키 source 재도입 — 비영리 운영 확정 (PR #110/#111, #112/#113)
 **Why**: 블리자드 공식 페이지에 없는 한국어 ability 명칭(예: 정커퀸 톱니칼 ← 'jagged-blade'), 누락 아이콘 5개(freja PRIMARY / mauga PRIMARY+SECONDARY / junker-queen SECONDARY / bastion SECONDARY), 영웅 국적 등 메타 데이터가 나무위키에만 존재. 비영리 운영으로 영구 확정하면 CC BY-NC-SA 2.0 KR 만족 가능.
@@ -150,7 +198,7 @@
 
 ---
 
-## 3. 직전 세션 주요 작업 (2026-06-10)
+## 4. 이전 세션 작업 (2026-06-10)
 
 ### 영문 patch cron 자동화 (PR #88 → develop, PR #89 → main)
 - `BlizzardPatchCron.run()`에서 한국어 sync 다음에 `BlizzardPatchEnScraper.sync()`도 자동 호출. tick(6h)마다 ko + en 둘 다 실행.
@@ -179,7 +227,7 @@
 
 ---
 
-## 4. 직전 세션 작업 (2026-06-08)
+## 5. 이전 세션 작업 (2026-06-08)
 
 ### 나무위키 데이터 출처 제거 (PR #84 → develop, PR #85 → main)
 **Why**: 나무위키 콘텐츠는 CC BY-NC-SA 2.0 KR — NC(비영리) 조건 명시. 광고/수익화 시 명백한 라이선스 위반. Blizzard 공식만 쓰면 NC 제약 사라짐 (단 Blizzard Fan Content Policy상 영리 운영은 여전히 회색지대).
@@ -207,7 +255,7 @@
 
 ---
 
-## 5. 2026-06-07 세션
+## 6. 2026-06-07 세션
 
 ### 도메인 연결 (`o-watchpoint.com`)
 1. **apex Vercel 연결**: 가비아 DNS A 레코드 `@ → 216.198.79.1`
@@ -244,7 +292,7 @@
 
 ---
 
-## 6. 인프라 현황
+## 7. 인프라 현황
 
 ### 배포
 | 컴포넌트 | 호스팅 | 도메인 |
@@ -276,7 +324,7 @@
 
 ---
 
-## 7. 자동화 시스템 요약
+## 8. 자동화 시스템 요약
 
 ### 부트 자동 시더 (`AUTO_SEED_ON_BOOT=true`)
 - `OnApplicationBootstrap` → perks 부족 OR `abilities.blizzardId` 비율 < 80% 감지 시 백그라운드 4-phase 시드
@@ -296,7 +344,7 @@
 
 ---
 
-## 8. 알려진 이슈
+## 9. 알려진 이슈
 
 ### 8.1 데이터
 - PASSIVE 아이콘 대부분 영문 페이지에 카드 없음 (역할군 패시브). 8명만 추가 다운로드됨
@@ -315,7 +363,7 @@
 
 ---
 
-## 9. 최근 머지
+## 10. 최근 머지
 
 | PR | 내용 |
 |---|---|
@@ -356,10 +404,14 @@
 | #113 | release: 나무위키 한국어 ability 명칭 fallback (2단계) |
 | #115 | fix(api): hero description seed가 ko sync 결과를 덮어쓰던 버그 수정 (5단계) |
 | #116 | release: hero description seed 버그 수정 (5단계) |
+| #117 | docs(status): 5단계 완료 + 3·4단계 스킵 반영 |
+| #118 | feat: web ISR revalidate 훅 도입 (+ STATUS 보안 후속 항목 정리) |
+| #119 | feat(web): 한국어 검색 노출용 '감시기지' 별칭 추가 |
+| #120 | release: web ISR revalidate 훅 + 한국어 SEO 별칭 (감시기지) |
 
 ---
 
-## 10. 메모리 / 참고
+## 11. 메모리 / 참고
 
 - 메모리 인덱스: `~/.claude/projects/.../memory/MEMORY.md`
 - 운영 인프라 컨텍스트: `~/.claude/projects/.../memory/watchpoint_post_deploy.md`
@@ -367,7 +419,7 @@
 - 설치/운영: `README.md`
 - 개발 컨벤션: `CLAUDE.md`
 
-## 11. MinIO 운영 메모
+## 12. MinIO 운영 메모
 
 ### bucket 정책 설정 (mc CLI)
 ```bash
