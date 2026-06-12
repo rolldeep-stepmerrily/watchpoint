@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 import { getPatchNote } from '@/lib/api';
-import { getLocale } from '@/lib/i18n';
+import { resolveLang } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 import { loadPretendardBold, OG_ACCENT, OG_BACKGROUND, OG_CONTENT_TYPE, OG_MUTED, OG_SIZE, OG_TEXT } from '@/lib/og';
 
@@ -12,12 +12,12 @@ export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
 interface Props {
-  params: Promise<{ version: string }>;
+  params: Promise<{ lang: string; version: string }>;
 }
 
 export default async function PatchNoteOgImage({ params }: Props) {
-  const { version } = await params;
-  const lang = await getLocale();
+  const { version, lang: rawLang } = await params;
+  const lang = resolveLang(rawLang);
   const t = getLabels(lang);
   const fontData = await loadPretendardBold();
 

@@ -27,7 +27,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title,
       description,
-      alternates: { canonical: url },
+      alternates: {
+        canonical: url,
+        languages: {
+          ko: `/ko/patch-notes/${patch.version}`,
+          en: `/en/patch-notes/${patch.version}`,
+          'x-default': `/ko/patch-notes/${patch.version}`,
+        },
+      },
       openGraph: {
         type: 'article',
         title,

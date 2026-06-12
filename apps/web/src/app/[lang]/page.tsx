@@ -29,7 +29,14 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
   return {
     title: { absolute: `${titleSite} — ${t.site.description}` },
     description: t.home.description,
-    alternates: { canonical: `/${lang}` },
+    alternates: {
+      canonical: `/${lang}`,
+      languages: {
+        ko: '/ko',
+        en: '/en',
+        'x-default': '/ko',
+      },
+    },
     openGraph: {
       title: SITE_NAME,
       description: t.home.description,
@@ -48,7 +55,7 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <div className="space-y-16">
-      <JsonLd data={buildWebSiteJsonLd(t.site.description)} />
+      <JsonLd data={buildWebSiteJsonLd(t.site.description, lang === 'ja' ? 'en' : lang)} />
       {/* Hero section */}
       <section
         className="relative overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface-elevated) px-8 py-14 sm:px-12 sm:py-20"
