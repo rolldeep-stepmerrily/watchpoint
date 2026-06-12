@@ -20,6 +20,9 @@ const KEYWORDS_BY_LOCALE: Record<'ko' | 'en' | 'ja', string[]> = {
     '영웅 스탯',
     '패치 이력',
     'Watchpoint',
+    '감시기지',
+    '감시기지 Watchpoint',
+    '오버워치 감시기지',
   ],
   en: [
     'Overwatch',
@@ -68,10 +71,13 @@ export const generateMetadata = async (): Promise<Metadata> => {
   const lang = await getLocale();
   const t = getLabels(lang);
   const verification = buildVerification();
+  // ko fallback title(자체 title 미지정 페이지 — 404 등)에만 '감시기지 Watchpoint' 별칭 prefix.
+  // template은 그대로 두어 영웅/패치 상세는 `<이름> · Watchpoint` 유지.
+  const defaultTitle = lang === 'ko' ? `감시기지 ${SITE_NAME}` : SITE_NAME;
 
   return {
     metadataBase: new URL(SITE_URL),
-    title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
+    title: { default: defaultTitle, template: `%s · ${SITE_NAME}` },
     description: t.site.description,
     applicationName: SITE_NAME,
     keywords: KEYWORDS_BY_LOCALE[lang],
