@@ -1,22 +1,18 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-06-11 작업 종료 시점. main = `41cc5c0` (PR #113 머지), develop = `f99ef7c` (PR #112 머지).
-> **운영 인프라 1차 완성 + 데이터 출처 이중화 + 자동화 강화 + 관측성 1단계 + Dependabot 첫 release + 영웅 페이지 리디자인 + 나무위키 재도입(비영리 운영 확정)** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 출처 재도입(CC BY-NC-SA → 비영리 운영 확정), patch cron이 한국어 + 영문 sync 둘 다 자동 실행, Sentry 에러 트래커 코드 도입, MCP 4종 등록 완료, Dependabot 안전한 5종 main release, 영웅 리스트/상세 포트레이트 카드 그리드 리디자인, 나무위키 한국어 ability 명칭 fallback sync.
-> 이번 세션(2026-06-11): Dependabot 8개 PR 검토 후 안전한 5개 main release(PR #103), 영웅 리스트/상세 리디자인(PR #105/#106), 특전/능력 영문 sync(PR #108/#109), **나무위키 source 재도입 1단계 인프라(PR #110/#111), 2단계 한국어 ability 명칭 fallback sync(PR #112/#113)**. 3단계(아이콘 fallback)는 나무위키 SSR에 능력 아이콘이 노출되지 않아 스킵, 4단계(국적)/5단계(description sync 버그)로 진행 예정.
+> 2026-06-11 작업 종료 시점. main = `5a95e21` (PR #116 머지), develop = `06c4d1f` (PR #115 머지).
+> **운영 인프라 1차 완성 + 데이터 출처 이중화 + 자동화 강화 + 관측성 1단계 + Dependabot 첫 release + 영웅 페이지 리디자인 + 나무위키 재도입(비영리 운영 확정) + hero description seed 버그 수정** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 출처 재도입(CC BY-NC-SA → 비영리 운영 확정), patch cron이 한국어 + 영문 sync 둘 다 자동 실행, Sentry 에러 트래커 코드 도입, MCP 4종 등록 완료, Dependabot 안전한 5종 main release, 영웅 리스트/상세 포트레이트 카드 그리드 리디자인, 나무위키 한국어 ability 명칭 fallback sync, hero description seed 무한 덮어쓰기 버그 수정 + prod 51명 description 공식값 갱신 완료.
+> 이번 세션(2026-06-11): Dependabot 8개 PR 검토 후 안전한 5개 main release(PR #103), 영웅 리스트/상세 리디자인(PR #105/#106), 특전/능력 영문 sync(PR #108/#109), **나무위키 source 재도입 1단계 인프라(PR #110/#111), 2단계 한국어 ability 명칭 fallback sync(PR #112/#113), 5단계 hero description seed 버그 수정(PR #115/#116) + Railway CLI(SSH key + DB public proxy)로 prod 51명 description 일괄 갱신**. 3단계(아이콘 fallback)는 나무위키 SSR에 능력 아이콘이 노출되지 않아 스킵, 4단계(국적)도 스킵.
 > 직전 세션(2026-06-10): patch cron 영문 sync 자동화(PR #88/#89), Sentry 도입(API + Web, PR #90), Dependabot 설정(PR #91), Sentry + Dependabot main 릴리스(PR #92), README 포트폴리오 갱신(PR #101/#102). MCP 4종 등록: Railway HTTP / Vercel HTTP / GitHub Docker / Postgres-RO npm.
 
 ## 0. 다음 작업
 
 ### 1순위: 나무위키 재도입 후속 단계
-- **2단계 prod 적용 (사용자 직접)**: Railway shell에서 단일 시험 후 일괄
-  ```
-  pnpm --filter @watchpoint/api hero:sync:namu junker-queen
-  # prod /heroes/junker-queen?lang=ko → SECONDARY name '톱니칼' 확인
-  pnpm --filter @watchpoint/api hero:sync:namu:all   # 51명 일괄 (~2분)
-  ```
-- **3단계 (스킵)**: 아이콘 fallback — 나무위키 SSR 페이지에 능력 아이콘이 노출되지 않음(SPA 동적 렌더). 자동 fallback 불가. 누락 5개(freja PRIMARY, mauga PRIMARY/SECONDARY, junker-queen SECONDARY, bastion SECONDARY)는 수작업 업로드로 처리 가능
-- **4단계**: 영웅 국적 표기 — 나무위키 정보 카드에 명시적 국적 행 없음, 본문 키워드 추출 또는 정적 매핑 검토
-- **5단계**: hero description 블리자드 공식 sync 버그 진단 — prod에 seed 데이터 그대로 남아있음(라인하르트 prod="거대 방벽과 로켓 해머로..." vs 공식 "라인하르트 빌헬름은 용맹...")
+- **1단계 (완료)**: 인프라 + 라이선스 (PR #110/#111)
+- **2단계 (완료)**: 한국어 ability 명칭 fallback (PR #112/#113) + Railway CLI로 prod 51명 sync 완료 — 능력 갱신 3 (junker-queen 톱니칼 등). 매칭 실패 35는 namu가 추출한 PASSIVE/하위역할 항목이 DB slot에 없어서 무시된 정상 케이스
+- **3단계 (스킵 확정)**: 아이콘 fallback — 나무위키 SSR 페이지에 능력 아이콘이 노출되지 않음(SPA 동적 렌더). 자동 fallback 불가. 누락 5개(freja PRIMARY, mauga PRIMARY/SECONDARY, junker-queen SECONDARY, bastion SECONDARY)는 수작업 업로드로 처리 가능
+- **4단계 (스킵 확정)**: 영웅 국적 표기 — 블리자드 페이지에 `blz-list-item.location` 안 `p[slot=description]`로 활동 지역 일관 노출되지만 첫 토큰이 도시/기지인 케이스(zarya/winston/wuyang/anran/soldier-76 등) 정확도 ↓. 정적 매핑 51명 작성하는 게 정확하지만 ROI 낮아 보류
+- **5단계 (완료)**: hero description seed 버그 수정 + prod 51명 갱신 (PR #115/#116). 원인: `apps/api/prisma/seeds/hero-details.ts`의 `applyHeroMeta()`가 매 부팅 `seed.description`을 무조건 덮어씀. 수정: 기존 description 비어있을 때만 placeholder로 채움. prod 적용: Railway CLI(`railway ssh keys add` + Postgres `DATABASE_PUBLIC_URL` + Redis `REDIS_PUBLIC_URL`)로 로컬에서 `pnpm hero:sync:ko:all` 실행 → 51/51 영웅 갱신, 264 abilities upserted
 
 ### 1순위: 검색엔진 등록 (대부분 user 수작업)
 - **Google Search Console** 도메인 등록 → DNS TXT 또는 HTML 메타 verification
@@ -26,7 +22,7 @@
 - env 주입 구조는 `apps/web/src/app/layout.tsx`의 `buildVerification()`에 마련됨. 토큰만 채우면 됨
 
 ### 2순위: 운영 데이터 보강 + 모니터링
-- **`INTERNAL_API_KEY`** Railway env 설정 (16자 이상 랜덤) → `/internal/*` 엔드포인트 회복
+- **`INTERNAL_API_KEY`** Railway 등록 완료 (2026-06-12, 32자 base64url). watchpoint 서비스에 set 후 `IsLocalhostGuard`가 헤더 매칭 모드로 전환됨
 - 첫 cron tick 모니터링 (6h 주기, `SCRAPER_PATCH_CRON='0 */6 * * *'`) — 이제 tick당 한국어+영문 sync 둘 다 실행. `hero_change_logs` audit + 영문 translations 채워지는지 확인
 
 ### Sentry / Dependabot / MCP 활성화 후속
@@ -35,9 +31,6 @@
   - **#97 Next.js 16** (15.5.18 → 16.2.9): turbopack 변경, React 19 흐름. release note 검토 필요
   - **#98 @types/node 25** (22.19.19 → 25.9.2): Node 22 LTS 런타임과 type 버전 어긋남. 호환 검증 필요
   - **#100 undici 8** (6.25.0 → 8.4.1): scraper에서 사용 중. fetch API 호환 검증 필요
-- **GitHub PAT/PG superuser 비번 노출 후속 (user 직접)**:
-  - GitHub PAT revoke: https://github.com/settings/tokens
-  - PG superuser 비번 rotate: Railway dashboard (readonly role 비번은 이미 교체 완료)
 
 ### 3순위 (큰 작업, 보류): URL 기반 locale routing
 - 현재 cookie 기반 i18n → 페이지 전부 Dynamic Rendering, hreflang/alternates.languages 미설정
@@ -52,7 +45,7 @@
 
 ### 기타 미진행
 - 홈 페이지 디자인 (현재 placeholder)
-- web의 `revalidatePath` ISR 무효화 훅 (cron이 새 패치 적재 후 호출)
+- web의 `revalidatePath` ISR 무효화 훅 — API/Web 코드 완료 + Railway env 등록 완료. **Vercel `WEB_REVALIDATE_SECRET` 등록만 남음** (user 수작업, dashboard)
 
 ---
 
@@ -77,22 +70,22 @@
 | **검색엔진 verification 메타 구조** | ✅ | PR #81, env 미설정 시 메타 생략 |
 | **나무위키 출처 제거 (Blizzard 일원화)** | ↩ 되돌림 | PR #84/#85 → PR #110/#111로 재도입 |
 | **나무위키 source 재도입 (1단계 인프라)** | ✅ | PR #110/#111, footer/SPEC/README/CLAUDE 라이선스 명시 + 비영리 운영 확정 |
-| **나무위키 한국어 ability 명칭 fallback (2단계)** | ✅ 코드만 | PR #112/#113, Railway shell `hero:sync:namu:all` 실행 필요 |
+| **나무위키 한국어 ability 명칭 fallback (2단계)** | ✅ | PR #112/#113 + Railway CLI로 prod 51명 sync 완료 (능력 갱신 3, 톱니칼 등 적용) |
 | **나무위키 아이콘 fallback (3단계)** | ⏭ 스킵 | namuwiki SSR에 능력 아이콘 미노출, 수작업 업로드만 가능 |
-| **영웅 국적 표기 (4단계)** | 🔲 | 나무위키 정보 카드 + 본문 분석 |
-| **hero description sync 버그 (5단계)** | 🔲 | prod에 seed 데이터 잔존 |
+| **영웅 국적 표기 (4단계)** | ⏭ 스킵 | 블리자드 location 첫 토큰이 도시/기지인 케이스 多, 정적 매핑 ROI ↓ |
+| **hero description sync 버그 (5단계)** | ✅ | PR #115/#116 + Railway CLI로 prod 51명 description 공식값 갱신 완료 |
 | **영문 patch cron 자동화** | ✅ | PR #88/#89, tick당 ko + en sync 둘 다 실행 |
 | **Sentry 에러 트래커 (API + Web)** | 🟡 env 등록 완료 | PR #90/#92. Railway/Vercel env 등록 완료, dashboard 이벤트 도착 확인만 남음 |
 | **Dependabot** | ✅ | PR #91/#92 설정, PR #103로 첫 release 5종 적용 |
 | **MCP (Railway/Vercel/GitHub/Postgres-RO)** | ✅ | user scope 등록 완료. 4종 정상 동작 (GitHub은 공식 Docker 이미지) |
 | **Google/Naver Search Console 등록** | 🔲 | verification env 채우기 후 |
-| **`INTERNAL_API_KEY`** | 🔲 | Railway env 설정 |
+| **`INTERNAL_API_KEY`** | ✅ | Railway env 설정 완료 (2026-06-12, 32자 base64url) |
 | **prod 영문 패치노트 보강** | 🔲 | 다음 cron tick에 자동 처리 |
 | **첫 cron tick 모니터링** | 🔲 | 6h 주기 |
 | **URL 기반 locale routing** | 🔲 | hreflang/generateStaticParams 위한 선행 작업 |
 | **테스트 (jest/e2e)** | 🔲 | 미작성 |
 | **홈 페이지 디자인** | 🟡 placeholder | |
-| **`revalidatePath` (web ISR 무효화)** | 🔲 | 미구현 |
+| **`revalidatePath` (web ISR 무효화)** | 🟡 | API/Web 구현 + Railway env 완료. Vercel `WEB_REVALIDATE_SECRET` 등록 남음 |
 
 ---
 
@@ -361,6 +354,8 @@
 | #111 | release: 나무위키 source 재도입 (1단계 — 인프라 + 라이선스) |
 | #112 | feat(api): 나무위키 한국어 ability 명칭 fallback sync (2단계) |
 | #113 | release: 나무위키 한국어 ability 명칭 fallback (2단계) |
+| #115 | fix(api): hero description seed가 ko sync 결과를 덮어쓰던 버그 수정 (5단계) |
+| #116 | release: hero description seed 버그 수정 (5단계) |
 
 ---
 

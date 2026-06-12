@@ -14,6 +14,7 @@ import {
 import { ScrapeJobRecorder, ScraperHttpClient } from './common';
 import { MinioUploader } from './minio';
 import { NamuwikiHeroParser, NamuwikiHeroScraper } from './namuwiki';
+import { WebRevalidatorService } from './web';
 
 @Module({
   imports: [forwardRef(() => SeederModule)],
@@ -38,6 +39,9 @@ import { NamuwikiHeroParser, NamuwikiHeroScraper } from './namuwiki';
 
     /** minio */
     MinioUploader,
+
+    /** web ISR revalidate */
+    WebRevalidatorService,
   ],
   exports: [
     BlizzardPatchScraper,

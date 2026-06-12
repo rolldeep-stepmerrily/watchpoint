@@ -19,6 +19,12 @@ export const absoluteUrl = (path: string): string => {
 };
 
 /**
+ * 한국어 별칭. UI/본문에는 노출하지 않고 schema.org alternateName에만 등록 —
+ * 검색 엔진이 "감시기지" 키워드를 사이트 식별자로 인식하게 유도.
+ */
+const SITE_ALTERNATE_NAMES_KO = ['감시기지', '감시기지 Watchpoint', '오버워치 감시기지'];
+
+/**
  * 사이트 루트용 WebSite + SearchAction JSON-LD 빌더 — 구글 사이트링크 검색박스 후보
  *
  * @param {string} description 사이트 짧은 설명 (메타 description과 동일하게 권장)
@@ -28,6 +34,7 @@ export const buildWebSiteJsonLd = (description: string): JsonLdValue => ({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: SITE_NAME,
+  alternateName: SITE_ALTERNATE_NAMES_KO,
   url: SITE_URL,
   description,
   potentialAction: {
