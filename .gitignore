@@ -78,3 +78,6 @@ out/
 data/raw/
 
 .claude/settings.local.json
+
+# 로컬 운영 노트 — 진행 현황/우선순위/세션 로그. 외부 공개 가치 ↓ + git history 잡음 ↑
+STATUS.md
