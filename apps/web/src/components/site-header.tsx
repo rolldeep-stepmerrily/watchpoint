@@ -10,20 +10,21 @@ import { getLabels } from '@/lib/labels';
 import { LanguageToggle } from './language-toggle';
 import { SearchBar } from './search-bar';
 
-const NAV_LINKS = [
-  { href: '/heroes', match: /^\/heroes/ },
-  { href: '/patch-notes', match: /^\/patch-notes/ },
-] as const;
+// pathname의 첫 segment가 locale이면 그 다음 segment를 검사하도록 match 패턴을 어디서나 동작하게 설계.
+// `/ko/heroes` `/en/heroes/...` 모두 매치.
+const HERO_ROUTE = /^\/(?:ko|en|ja)\/heroes(?:\/|$)/;
+const PATCH_ROUTE = /^\/(?:ko|en|ja)\/patch-notes(?:\/|$)/;
 
 export function SiteHeader() {
-  const t = getLabels(useLocale());
+  const locale = useLocale();
+  const t = getLabels(locale);
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
-  const navLinks = NAV_LINKS.map((link) => ({
-    ...link,
-    label: link.href === '/heroes' ? t.nav.heroes : t.nav.patchNotes,
-  }));
+  const navLinks = [
+    { href: `/${locale}/heroes` as const, match: HERO_ROUTE, label: t.nav.heroes },
+    { href: `/${locale}/patch-notes` as const, match: PATCH_ROUTE, label: t.nav.patchNotes },
+  ];
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the trigger to close menu on navigation
   useEffect(() => {
@@ -39,7 +40,7 @@ export function SiteHeader() {
     >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center gap-8">
         <Link
-          href="/"
+          href={`/${locale}` as never}
           className="flex items-center gap-2 group"
         >
           <span className="h-7 w-7 rounded-md bg-(--color-accent) text-(--color-bg) flex items-center justify-center font-black text-sm tracking-tight group-hover:bg-(--color-accent-hover) transition-colors">
@@ -53,7 +54,7 @@ export function SiteHeader() {
             return (
               <Link
                 key={link.href}
-                href={link.href}
+                href={link.href as never}
                 className={`px-3 py-2 rounded-md transition-colors ${
                   active
                     ? 'text-(--color-accent) bg-(--color-accent-faint)'
@@ -93,7 +94,7 @@ export function SiteHeader() {
                 return (
                   <Link
                     key={link.href}
-                    href={link.href}
+                    href={link.href as never}
                     className={`px-3 py-2 rounded-md ${
                       active ? 'text-(--color-accent) bg-(--color-accent-faint)' : 'hover:bg-(--color-surface-hover)'
                     }`}
