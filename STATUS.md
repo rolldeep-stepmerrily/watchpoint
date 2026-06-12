@@ -22,7 +22,7 @@
 - env 주입 구조는 `apps/web/src/app/layout.tsx`의 `buildVerification()`에 마련됨. 토큰만 채우면 됨
 
 ### 2순위: 운영 데이터 보강 + 모니터링
-- **`INTERNAL_API_KEY`** Railway env 설정 (16자 이상 랜덤) → `/internal/*` 엔드포인트 회복
+- **`INTERNAL_API_KEY`** Railway 등록 완료 (2026-06-12, 32자 base64url). watchpoint 서비스에 set 후 `IsLocalhostGuard`가 헤더 매칭 모드로 전환됨
 - 첫 cron tick 모니터링 (6h 주기, `SCRAPER_PATCH_CRON='0 */6 * * *'`) — 이제 tick당 한국어+영문 sync 둘 다 실행. `hero_change_logs` audit + 영문 translations 채워지는지 확인
 
 ### Sentry / Dependabot / MCP 활성화 후속
@@ -48,7 +48,7 @@
 
 ### 기타 미진행
 - 홈 페이지 디자인 (현재 placeholder)
-- web의 `revalidatePath` ISR 무효화 훅 (cron이 새 패치 적재 후 호출)
+- web의 `revalidatePath` ISR 무효화 훅 — API/Web 코드 완료 + Railway env 등록 완료. **Vercel `WEB_REVALIDATE_SECRET` 등록만 남음** (user 수작업, dashboard)
 
 ---
 
@@ -82,13 +82,13 @@
 | **Dependabot** | ✅ | PR #91/#92 설정, PR #103로 첫 release 5종 적용 |
 | **MCP (Railway/Vercel/GitHub/Postgres-RO)** | ✅ | user scope 등록 완료. 4종 정상 동작 (GitHub은 공식 Docker 이미지) |
 | **Google/Naver Search Console 등록** | 🔲 | verification env 채우기 후 |
-| **`INTERNAL_API_KEY`** | 🔲 | Railway env 설정 |
+| **`INTERNAL_API_KEY`** | ✅ | Railway env 설정 완료 (2026-06-12, 32자 base64url) |
 | **prod 영문 패치노트 보강** | 🔲 | 다음 cron tick에 자동 처리 |
 | **첫 cron tick 모니터링** | 🔲 | 6h 주기 |
 | **URL 기반 locale routing** | 🔲 | hreflang/generateStaticParams 위한 선행 작업 |
 | **테스트 (jest/e2e)** | 🔲 | 미작성 |
 | **홈 페이지 디자인** | 🟡 placeholder | |
-| **`revalidatePath` (web ISR 무효화)** | 🔲 | 미구현 |
+| **`revalidatePath` (web ISR 무효화)** | 🟡 | API/Web 구현 + Railway env 완료. Vercel `WEB_REVALIDATE_SECRET` 등록 남음 |
 
 ---
 

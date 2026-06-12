@@ -6,6 +6,7 @@ import { isDefined } from 'class-validator';
 
 import { HeroIconMatcher } from '../../seeder';
 import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
+import { WebRevalidatorService } from '../web';
 import { BlizzardHeroKoScraper } from './blizzard-hero-ko.scraper';
 import { BlizzardPatchParser } from './blizzard-patch.parser';
 import type { ParsedPatchEntry, ParsedPatchNote } from './dto/parsed-patch-note.dto';
@@ -20,6 +21,8 @@ interface SyncSummary {
   skipped: number;
   /** 새로 created되거나 (PUBLISHED 아닌) updated된 patch의 entries에 등장한 unique hero ids */
   affectedHeroIds: number[];
+  /** 새로 created되거나 (PUBLISHED 아닌) updated된 patch의 version 목록 — ISR revalidate 대상 */
+  affectedVersions: string[];
 }
 
 interface BackfillOptions {
@@ -50,6 +53,7 @@ export class BlizzardPatchScraper {
     private readonly koScraper: BlizzardHeroKoScraper,
     @Inject(forwardRef(() => HeroIconMatcher))
     private readonly iconMatcher: HeroIconMatcher,
+    private readonly webRevalidator: WebRevalidatorService,
   ) {}
 
   async sync(): Promise<SyncSummary> {
@@ -65,6 +69,10 @@ export class BlizzardPatchScraper {
     });
     if (summary.created > 0 || summary.updated > 0) {
       await this.responseCache.invalidateAll();
+    }
+    // patch 자체 변경분은 즉시 web 캐시 무효화. hero 상세는 syncAffectedHeroes 끝에 별도 호출.
+    if (summary.affectedVersions.length > 0) {
+      await this.webRevalidator.revalidate({ patchVersions: summary.affectedVersions });
     }
     if (summary.affectedHeroIds.length > 0) {
       this.syncAffectedHeroes(summary.affectedHeroIds).catch((error: unknown) => {
@@ -107,6 +115,11 @@ export class BlizzardPatchScraper {
     }
 
     this.logger.log('patch-triggered hero auto-sync complete');
+
+    const codenames = heroes.map((h) => h.codename);
+    if (codenames.length > 0) {
+      await this.webRevalidator.revalidate({ heroCodenames: codenames });
+    }
   }
 
   /**
@@ -191,8 +204,10 @@ export class BlizzardPatchScraper {
       pendingReview: 0,
       skipped: 0,
       affectedHeroIds: [],
+      affectedVersions: [],
     };
     const affected = new Set<number>();
+    const versions = new Set<string>();
 
     for (const patch of patches) {
       try {
@@ -219,6 +234,7 @@ export class BlizzardPatchScraper {
           });
           summary.updated += 1;
           if (!isPublished) {
+            versions.add(patch.version);
             for (const entry of entries) {
               if (entry.heroId !== null) {
                 affected.add(entry.heroId);
@@ -238,6 +254,7 @@ export class BlizzardPatchScraper {
             },
           });
           summary.created += 1;
+          versions.add(patch.version);
           for (const entry of entries) {
             if (entry.heroId !== null) {
               affected.add(entry.heroId);
@@ -255,6 +272,7 @@ export class BlizzardPatchScraper {
     }
 
     summary.affectedHeroIds = Array.from(affected);
+    summary.affectedVersions = Array.from(versions);
 
     return summary;
   }
