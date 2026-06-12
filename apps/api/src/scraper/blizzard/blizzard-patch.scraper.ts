@@ -216,7 +216,7 @@ export class BlizzardPatchScraper {
         });
 
         const { entries, hasUnmappedHero } = await this.resolveEntries(patch.entries);
-        const status = hasUnmappedHero ? PatchNoteStatus.PENDING_REVIEW : PatchNoteStatus.DRAFT;
+        const status = hasUnmappedHero ? PatchNoteStatus.PENDING_REVIEW : PatchNoteStatus.PUBLISHED;
 
         if (existing) {
           // PUBLISHED 패치는 검수/번역 완료 상태로 간주 — 메타만 갱신하고 entries는 보존.
