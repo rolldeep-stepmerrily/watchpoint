@@ -1,35 +1,61 @@
 # Watchpoint — 진행 현황 / 남은 작업
 
-> 2026-06-12 작업 종료 시점. main = `593ef5c` (PR #120 머지), develop = `4c10874` (PR #119 머지).
+> 2026-06-12 작업 종료 시점. main = `549d178` (PR #123 머지), develop = `72ef65e` (PR #122 머지).
 > **운영 인프라 1차 완성 + 데이터 출처 이중화 + 자동화 강화 + 관측성 1단계 + Dependabot 첫 release + 영웅 페이지 리디자인 + 나무위키 재도입(비영리 운영 확정) + hero description seed 버그 수정 + 검색엔진 등록 + ISR revalidate + 한국어 SEO 별칭** — Railway API + Vercel Web + MinIO cdn + SEO + favicon + OG 모두 prod 반영, 나무위키 출처 재도입(CC BY-NC-SA → 비영리 운영 확정), patch cron이 한국어 + 영문 sync 둘 다 자동 실행, Sentry 에러 트래커 코드 도입, MCP 4종 등록 완료, Dependabot 안전한 5종 main release, 영웅 리스트/상세 포트레이트 카드 그리드 리디자인, 나무위키 한국어 ability 명칭 fallback sync + prod 51명 적용, hero description seed 무한 덮어쓰기 버그 수정 + prod 51명 갱신, Google/Naver Search Console verification + sitemap 제출, web ISR revalidate 훅 + Railway/Vercel env 적용, 한국어 검색 노출용 '감시기지 Watchpoint' 별칭 추가.
 > 이번 세션(2026-06-12): **Google Search Console + Naver Search Advisor 등록 + sitemap 제출 완료, `INTERNAL_API_KEY` Railway 등록, web ISR `revalidatePath` 훅 도입(PR #118 → #120) + Railway/Vercel env 등록, 한국어 검색용 '감시기지' 별칭(PR #119 → #120) — 홈 `<title>`/keywords/JSON-LD `alternateName`에만 노출**. STATUS.md 보안 후속 항목 정리.
 > 직전 세션(2026-06-11): Dependabot safe 5종 main release(PR #103), 영웅 리스트/상세 리디자인(PR #105/#106), 특전/능력 영문 sync(PR #108/#109), 나무위키 1단계 인프라(PR #110/#111) + 2단계 한국어 ability 명칭 fallback(PR #112/#113), 5단계 hero description seed 버그 수정(PR #115/#116), Railway CLI(SSH key + DB public proxy)로 prod 51명 namu/description 적용. 3·4단계는 스킵.
 
 ## 0. 다음 작업
 
-### 1순위: 운영 모니터링 (즉시 가능)
+### 1순위: 운영 모니터링 + 검증 (즉시 가능, 5분~)
 - **첫 cron tick 모니터링** (6h 주기, `SCRAPER_PATCH_CRON='0 */6 * * *'`) — Railway logs에서 `revalidate ok: N paths` + `sync ok` / `sync:en ok` 로그 확인. 처음 한 번 정상이면 자동화 검증 완료
 - **Sentry dashboard** prod 이벤트 도착 여부 확인 (Railway/Vercel env 둘 다 등록 완료)
 - **검색엔진 인덱싱 추적** — Google Search Console / Naver Search Advisor에서 sitemap 처리 / 인덱싱 진행도 확인 (며칠~몇 주 단위)
+- **PR #122/#123 prod 반영 확인** — `/sitemap.xml` 정상 응답 + Railway logs에서 `/patch-notes?pageSize=200` 400 사라지는지 확인
 
-### 2순위: Dependabot major PR 검토 (사용자 결정 필요)
+### 2순위 (큰 작업): URL 기반 locale routing
+- 현재 cookie 기반 i18n → 페이지 전부 Dynamic Rendering, hreflang/alternates.languages 미설정
+- `/ko/...`, `/en/...` URL 라우팅으로 옮기면:
+  - `generateStaticParams` 가능 → 정적 프리렌더로 SEO/속도 향상
+  - `hreflang` + `alternates.languages` 가능 → 다국어 검색 인덱싱 (영문/일문 트래픽 가능)
+- 라우팅/링크/lang-toggle/middleware 전체 리팩토링 필요. 예상 1~3일.
+
+### 3순위 (큰 작업): 홈 페이지 디자인
+- 현재 placeholder 수준. 영웅 페이지 리디자인 톤(`HeroCard` portrait 그리드, 옅은 그라데이션, role 색상)으로 통일 가능
+- 검색엔진 인덱싱 시작되면 첫인상 페이지가 중요. 예상 1~2일.
+
+### 4순위 (큰 작업): 영웅 portrait 재다운로드 — 그라데이션 없는 이미지 확보
+**문제**: 현재 CDN에 저장된 모든 영웅 portrait(`cdn.o-watchpoint.com/watchpoint-icons/heroes/<codename>/portrait.<ext>`) 하단에 그라데이션이 들어있음. UI 상에서 카드용 그라데이션을 한 번 더 입히는데 이중 처리가 되는 셈이라 디자인 통제 어려움.
+
+**현재 다운로드 흐름 (`HeroIconMatcher.downloadPortraitFor`)**:
+- `https://overwatch.blizzard.com/ko-kr/heroes/<slug>/`에서 `PORTRAIT_SRC_REGEX = /\/960_[^"]+\.(?:jpg|png|webp)/` 매칭한 첫 src를 bytes 그대로 `writeFile` → MinIO 업로드
+- API 코드엔 이미지 가공 라이브러리(sharp/jimp/canvas) 없음 — 그라데이션은 **블리자드 원본 이미지에 처음부터 들어있음**
+
+**해결 옵션 (조사 + 결정 필요)**:
+1. **다른 사이즈/패턴 확인** — Blizzard 페이지 HTML에 `1600_*` / `2600_*` / `hero-portrait-large-*` 등 다른 src 패턴이 있는지 → 그라데이션 없는 원본 후보 검색
+2. **다른 페이지에서 받기** — `overwatchleague.com` 또는 Blizzard press kit 등에서 clean portrait 발견하면 우선 적용
+3. **인게임 스크린샷 수작업** — 누락 ability 아이콘 5개와 같은 패턴. 51명 작업량은 큼
+4. **sharp 도입 + 하단 crop** — 일정 비율 (~15~20%) 잘라내기. 일관성 ↑, 원본 비율 변형됨
+
+**작업 단계**:
+1. `https://overwatch.blizzard.com/ko-kr/heroes/reinhardt/` 등 페이지에서 모든 `img src` / `srcset` 추출하여 그라데이션 여부 비교
+2. clean 후보 발견 시 `PORTRAIT_SRC_REGEX` 수정 (또는 추가 fallback 패턴 추가)
+3. `pnpm hero:portrait:download:all` CLI로 51명 일괄 재다운로드 + MinIO 업로드 (`assets:upload`)
+4. 검증 — 51명 카드/상세 화면에서 디자인 점검
+5. 그라데이션 없는 후보를 못 찾으면 sharp 도입 + crop 검토
+
+**예상**: 옵션 1·2 발견되면 0.5일, sharp 도입 + crop이면 1~2일.
+
+### 5순위 (필요 시): Dependabot major PR 검토
 - **#97 Next.js 16** (15.5.18 → 16.2.9): turbopack 변경, React 19 흐름. release note 검토 필요
 - **#98 @types/node 25** (22.19.19 → 25.9.2): Node 22 LTS 런타임과 type 버전 어긋남. 호환 검증 필요
 - **#100 undici 8** (6.25.0 → 8.4.1): scraper에서 사용 중. fetch API 호환 검증 필요
 
-### 3순위 (큰 작업, 보류): URL 기반 locale routing
-- 현재 cookie 기반 i18n → 페이지 전부 Dynamic Rendering, hreflang/alternates.languages 미설정
-- `/ko/...`, `/en/...` URL 라우팅으로 옮기면:
-  - `generateStaticParams` 가능 → 정적 프리렌더로 SEO/속도 향상
-  - `hreflang` + `alternates.languages` 가능 → 다국어 검색 인덱싱
-- 라우팅/링크/lang-toggle/middleware 전체 리팩토링 필요
-
-### 4순위 (큰 작업, 보류): 테스트 작성
+### 6순위 (큰 작업, 보류): 테스트 작성
 - API: 핸들러 단위 + e2e 통합 테스트
 - Web: RSC 페이지 스냅샷 + 핵심 인터랙션 e2e
 
 ### 기타 미진행
-- 홈 페이지 디자인 (현재 placeholder)
 - RSS feed (패치노트 적재 시 푸시 — 현재 트래픽 수준에선 ROI 낮음)
 
 ### 최근 종료된 항목 (참고)
@@ -38,6 +64,7 @@
 - **`INTERNAL_API_KEY` Railway 등록** (2026-06-12, 32자 base64url)
 - **web ISR revalidate 훅** (PR #118 → #120): API/Web 코드 + Railway/Vercel env 모두 적용. 다음 cron tick에서 `revalidate ok` 로그 발생 예정
 - **한국어 SEO 별칭** (PR #119 → #120): 홈 `<title>` / keywords / JSON-LD `alternateName`에 '감시기지 Watchpoint' 노출. 본문/Header/Footer/OG는 `Watchpoint` 그대로
+- **sitemap pageSize 버그 수정** (PR #122 → #123): `pageSize: 200`이 API `@Max(100)` 위반으로 patch URL이 sitemap에서 전부 누락되던 버그 수정. 100으로 정렬
 
 ---
 
@@ -79,6 +106,8 @@
 | **홈 페이지 디자인** | 🟡 placeholder | |
 | **`revalidatePath` (web ISR 무효화)** | ✅ | PR #118 → #120, Railway + Vercel env 양쪽 적용 완료 |
 | **한국어 SEO 별칭 ('감시기지')** | ✅ | PR #119 → #120, 메타에만 노출 (홈 title / keywords / JSON-LD alternateName) |
+| **sitemap pageSize 버그 수정** | ✅ | PR #122 → #123, `pageSize: 200` → `100` (API `@Max(100)` 정렬) |
+| **영웅 portrait 그라데이션 제거** | 🔲 | 4순위, Blizzard 페이지에서 clean 이미지 후보 조사 후 재다운로드 |
 
 ---
 
@@ -408,6 +437,9 @@
 | #118 | feat: web ISR revalidate 훅 도입 (+ STATUS 보안 후속 항목 정리) |
 | #119 | feat(web): 한국어 검색 노출용 '감시기지' 별칭 추가 |
 | #120 | release: web ISR revalidate 훅 + 한국어 SEO 별칭 (감시기지) |
+| #121 | docs(status): 2026-06-12 세션 정리 |
+| #122 | fix(web): sitemap pageSize 100으로 정렬 — patch URL 누락 버그 |
+| #123 | release: sitemap pageSize 버그 수정 |
 
 ---
 
