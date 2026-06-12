@@ -3,36 +3,41 @@ import Link from 'next/link';
 
 import { JsonLd } from '@/components/json-ld';
 import { getPatchNoteList } from '@/lib/api';
-import { getLocale } from '@/lib/i18n';
+import { resolveLang } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 import { absoluteUrl, buildBreadcrumbJsonLd, buildItemListJsonLd, SITE_NAME } from '@/lib/seo';
 
 export const revalidate = 60;
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = getLabels(await getLocale());
+interface Props {
+  params: Promise<{ lang: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const lang = resolveLang((await params).lang);
+  const t = getLabels(lang);
   return {
     title: t.patchNotes.title,
     description: t.patchNotes.description,
-    alternates: { canonical: '/patch-notes' },
-    openGraph: { title: t.patchNotes.title, url: '/patch-notes' },
+    alternates: { canonical: `/${lang}/patch-notes` },
+    openGraph: { title: t.patchNotes.title, url: `/${lang}/patch-notes` },
   };
 }
 
-export default async function PatchNotesPage() {
-  const lang = await getLocale();
+export default async function PatchNotesPage({ params }: Props) {
+  const lang = resolveLang((await params).lang);
   const t = getLabels(lang);
   const { items, total } = await getPatchNoteList({ pageSize: 50, lang });
 
   const itemList = buildItemListJsonLd(
     items.map((patch) => ({
       name: `${patch.version} · ${patch.title}`,
-      url: absoluteUrl(`/patch-notes/${patch.version}`),
+      url: absoluteUrl(`/${lang}/patch-notes/${patch.version}`),
     })),
   );
   const breadcrumb = buildBreadcrumbJsonLd([
-    { name: SITE_NAME, url: absoluteUrl('/') },
-    { name: t.patchNotes.title, url: absoluteUrl('/patch-notes') },
+    { name: SITE_NAME, url: absoluteUrl(`/${lang}`) },
+    { name: t.patchNotes.title, url: absoluteUrl(`/${lang}/patch-notes`) },
   ]);
 
   return (
@@ -67,7 +72,7 @@ export default async function PatchNotesPage() {
                 >
                   <td className="px-3 py-3 whitespace-nowrap">
                     <Link
-                      href={`/patch-notes/${patch.version}`}
+                      href={`/${lang}/patch-notes/${patch.version}` as never}
                       className="text-(--color-accent) font-mono text-sm font-bold hover:text-(--color-accent-hover)"
                     >
                       {patch.version}
@@ -78,7 +83,7 @@ export default async function PatchNotesPage() {
                   </td>
                   <td className="px-3 py-3">
                     <Link
-                      href={`/patch-notes/${patch.version}`}
+                      href={`/${lang}/patch-notes/${patch.version}` as never}
                       className="block -mx-3 -my-3 px-3 py-3"
                     >
                       <div className="font-bold text-(--color-text-strong) group-hover:text-(--color-accent) transition-colors">

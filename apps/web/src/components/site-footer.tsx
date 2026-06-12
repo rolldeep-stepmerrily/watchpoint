@@ -1,6 +1,6 @@
+import type { Locale } from '@@shared';
 import Link from 'next/link';
 
-import { getLocale } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 
 // 로케일별로 Blizzard 공식 페이지가 달라서 URL도 같이 전환.
@@ -14,8 +14,11 @@ const BLIZZARD_HEROES_URL = {
   en: 'https://overwatch.blizzard.com/en-us/heroes/',
 } as const;
 
-export const SiteFooter = async (): Promise<React.JSX.Element> => {
-  const lang = await getLocale();
+interface Props {
+  lang: Locale;
+}
+
+export const SiteFooter = ({ lang }: Props): React.JSX.Element => {
   const t = getLabels(lang);
   // labels는 'ja'를 'en'으로 fallback하므로 외부 URL도 en으로 맞춘다.
   const externalLocale = lang === 'ko' ? 'ko' : 'en';
@@ -43,7 +46,7 @@ export const SiteFooter = async (): Promise<React.JSX.Element> => {
           <ul className="space-y-2">
             <li>
               <Link
-                href="/heroes"
+                href={`/${lang}/heroes` as never}
                 className="hover:text-(--color-accent) transition-colors"
               >
                 {t.nav.heroes}
@@ -51,7 +54,7 @@ export const SiteFooter = async (): Promise<React.JSX.Element> => {
             </li>
             <li>
               <Link
-                href="/patch-notes"
+                href={`/${lang}/patch-notes` as never}
                 className="hover:text-(--color-accent) transition-colors"
               >
                 {t.nav.patchNotes}

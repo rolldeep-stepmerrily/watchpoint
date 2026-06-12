@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 import { JsonLd } from '@/components/json-ld';
 import { getHeroList } from '@/lib/api';
-import { getLocale } from '@/lib/i18n';
+import { resolveLang } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 import { absoluteUrl, buildBreadcrumbJsonLd, buildItemListJsonLd, SITE_NAME } from '@/lib/seo';
 
@@ -11,21 +11,23 @@ import { HeroGrid } from './hero-grid';
 export const revalidate = 300;
 
 interface Props {
+  params: Promise<{ lang: string }>;
   searchParams: Promise<{ q?: string }>;
 }
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = getLabels(await getLocale());
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const lang = resolveLang((await params).lang);
+  const t = getLabels(lang);
   return {
     title: t.heroes.title,
     description: t.heroes.description,
-    alternates: { canonical: '/heroes' },
-    openGraph: { title: t.heroes.title, url: '/heroes' },
+    alternates: { canonical: `/${lang}/heroes` },
+    openGraph: { title: t.heroes.title, url: `/${lang}/heroes` },
   };
 }
 
-export default async function HeroesPage({ searchParams }: Props) {
-  const lang = await getLocale();
+export default async function HeroesPage({ params, searchParams }: Props) {
+  const lang = resolveLang((await params).lang);
   const t = getLabels(lang);
   // sitelinks searchbox(JSON-LD)에서 `/heroes?q={검색어}`로 진입한 사용자를 위한 q 필터.
   // 트림 + 1자 이상만 API에 전달. 빈 q는 전체 목록.
