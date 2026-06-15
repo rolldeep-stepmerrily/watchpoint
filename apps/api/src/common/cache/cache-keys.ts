@@ -3,6 +3,7 @@ import type { Locale } from '@watchpoint/shared';
 /**
  * 응답 캐시 TTL (초). SPEC.md 기준:
  * - 영웅 5분 / 패치노트 목록 1분 / 패치노트 상세 10분
+ * - 전적조회(베타): summary 10분 / search 5분 — OverFast 공개 인스턴스 rate limit 보호
  * 동일 카테고리의 추가 엔드포인트는 가장 가까운 TTL을 따른다.
  */
 export const CACHE_TTL = {
@@ -14,6 +15,8 @@ export const CACHE_TTL = {
   PATCH_LATEST: 60,
   PATCH_DETAIL: 600,
   PATCH_ENTRIES: 600,
+  CAREER_SUMMARY: 600,
+  CAREER_SEARCH: 300,
 } as const;
 
 const safe = (v: string | undefined): string => (v === undefined || v === '' ? '_' : encodeURIComponent(v));
@@ -29,6 +32,9 @@ export const CACHE_KEYS = {
   patchDetail: (version: string, lang: Locale): string => `patch:detail:${version}:${lang}`,
   patchEntries: (version: string, category: string | undefined, lang: Locale): string =>
     `patch:entries:${version}:${safe(category)}:${lang}`,
+  careerSummary: (playerId: string): string => `career:summary:${safe(playerId)}`,
+  careerSearch: (q: string, page: number, pageSize: number): string =>
+    `career:search:q:${safe(q)}:p:${page}:s:${pageSize}`,
 } as const;
 
 /**

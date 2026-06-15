@@ -4,7 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import Joi from 'joi';
-
+import { CareerModule } from './career/career.module';
 import { ResponseCacheModule } from './common/cache';
 import { GlobalCqrsModule } from './common/cqrs';
 import { HttpLoggerMiddleware } from './common/middlewares';
@@ -51,6 +51,7 @@ import { SeederModule } from './seeder';
         SENTRY_DSN: Joi.string().uri().optional(),
         WEB_REVALIDATE_URL: Joi.string().uri().optional(),
         WEB_REVALIDATE_SECRET: Joi.string().min(16).optional(),
+        OVERFAST_API_BASE_URL: Joi.string().uri().default('https://overfast-api.tekrop.fr'),
       }),
       isGlobal: true,
       envFilePath: ['.env', '../../.env'],
@@ -59,6 +60,7 @@ import { SeederModule } from './seeder';
     GlobalCqrsModule,
     PrismaModule,
     ResponseCacheModule,
+    CareerModule,
     HeroModule,
     InternalModule,
     PatchNoteModule,
