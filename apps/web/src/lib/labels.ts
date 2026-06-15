@@ -183,6 +183,7 @@ interface Copy {
   nav: {
     heroes: string;
     patchNotes: string;
+    career: string;
     menuOpen: string;
     menuClose: string;
   };
@@ -323,6 +324,7 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
     nav: {
       heroes: '영웅',
       patchNotes: '패치노트',
+      career: '전적',
       menuOpen: '메뉴 열기',
       menuClose: '메뉴 닫기',
     },
@@ -463,6 +465,7 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
     nav: {
       heroes: 'Heroes',
       patchNotes: 'Patch Notes',
+      career: 'Career',
       menuOpen: 'Open menu',
       menuClose: 'Close menu',
     },
