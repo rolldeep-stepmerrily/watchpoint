@@ -287,11 +287,7 @@ function RoleGrid({
   );
 }
 
-const ROLE_DISPLAY_LIMIT = 8;
-
 function RoleRow({ role, heroes, lang, t }: { role: HeroRole; heroes: HeroSummaryDto[]; lang: Locale; t: Labels }) {
-  const visible = heroes.slice(0, ROLE_DISPLAY_LIMIT);
-  const overflow = Math.max(0, heroes.length - visible.length);
   const colorVar = `var(${roleColorVar(role)})`;
 
   return (
@@ -311,7 +307,7 @@ function RoleRow({ role, heroes, lang, t }: { role: HeroRole; heroes: HeroSummar
         <span className="text-xs text-(--color-text-faint)">({heroes.length})</span>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-        {visible.map((hero, i) => (
+        {heroes.map((hero, i) => (
           <HeroCard
             key={hero.id}
             hero={hero}
@@ -319,40 +315,8 @@ function RoleRow({ role, heroes, lang, t }: { role: HeroRole; heroes: HeroSummar
             priority={i < 3}
           />
         ))}
-        {overflow > 0 ? (
-          <MoreCard
-            role={role}
-            count={overflow}
-            lang={lang}
-            t={t}
-          />
-        ) : null}
       </div>
     </div>
-  );
-}
-
-function MoreCard({ role, count, lang, t }: { role: HeroRole; count: number; lang: Locale; t: Labels }) {
-  const colorVar = `var(${roleColorVar(role)})`;
-  const roleSlug = role.toLowerCase();
-
-  return (
-    <Link
-      href={`/${lang}/heroes?role=${roleSlug}` as never}
-      className="group relative flex aspect-[4/5] flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border border-dashed border-(--color-border-strong) bg-(--color-surface) text-center transition-all hover:-translate-y-1"
-      style={{ boxShadow: 'var(--shadow-card)' }}
-      aria-label={`${t.role(role)} +${count}`}
-    >
-      <span
-        className="font-mono text-4xl font-extrabold transition-transform group-hover:scale-110"
-        style={{ color: colorVar }}
-      >
-        +{count}
-      </span>
-      <span className="text-[11px] font-semibold uppercase tracking-widest text-(--color-text-muted)">
-        {t.role(role)}
-      </span>
-    </Link>
   );
 }
 
