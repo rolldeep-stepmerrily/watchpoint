@@ -1,4 +1,6 @@
 import type {
+  CareerSearchResultDto,
+  CareerSummaryDto,
   HeroDetailDto,
   HeroPatchHistoryDto,
   HeroRole,
@@ -149,4 +151,18 @@ export const getPatchNote = cache((version: string, lang?: Locale): Promise<Patc
     '/patch-notes/[version]',
     600,
   );
+});
+
+/**
+ * 전적 검색 (베타). API의 5분 캐시 + RSC 단 자체 캐시(60s)로 같은 검색어 반복 호출 최소화.
+ * upstream 장애(502/429)는 ApiError로 throw → 페이지가 error.tsx로 fallback.
+ */
+export const getCareerSearch = (q: string, page = 1, pageSize = 20): Promise<CareerSearchResultDto> => {
+  const search = new URLSearchParams({ q, page: String(page), pageSize: String(pageSize) });
+
+  return fetchJson<CareerSearchResultDto>(`/career?${search.toString()}`, '/career', 60);
+};
+
+export const getCareerSummary = cache((playerId: string): Promise<CareerSummaryDto> => {
+  return fetchJson<CareerSummaryDto>(`/career/${encodeURIComponent(playerId)}`, '/career/[playerId]', 60);
 });
