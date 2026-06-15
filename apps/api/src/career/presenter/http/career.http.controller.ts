@@ -1,13 +1,15 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { GetCareerSummaryUseCase } from '../../application/use-cases/get-career-summary.use-case';
 import { SearchCareerUseCase } from '../../application/use-cases/search-career.use-case';
+import { CareerLookupLogInterceptor } from '../../infrastructure/career-lookup-log.interceptor';
 import { CareerRouter } from './career.path.presenter';
 import { GetCareerSummaryResponseDto } from './dto/get-career-summary.dto';
 import { SearchCareerRequestDto, SearchCareerResponseDto } from './dto/search-career.dto';
 
 @ApiTags(CareerRouter.HttpApiTags)
+@UseInterceptors(CareerLookupLogInterceptor)
 @Controller(CareerRouter.Root)
 export class CareerHttpController {
   constructor(

@@ -272,3 +272,29 @@ enum ScrapeStatus {
   FAILED
   SKIPPED
 }
+
+/// 전적조회 베타 호출 audit log. 상세 수치는 저장하지 않고 요청 메타(IP/requestId/query/성공여부)만 기록.
+/// 운영적으로 OverFast 의존도/오남용을 추적하기 위한 용도.
+model CareerLookupLog {
+  id        BigInt              @id @default(autoincrement())
+  requestId String
+  eventType CareerLookupEvent
+  /// SEARCH: q 쿼리, SUMMARY: playerId (BattleTag 그대로 — `-`는 #로 치환 가능)
+  query     String
+  /// X-Forwarded-For 우선, 없으면 socket.remoteAddress. raw 그대로 저장.
+  ip        String
+  success   Boolean
+  /// 실패 시 AppException.errorCode (예: CAREER_NOT_FOUND, CAREER_UPSTREAM_UNAVAILABLE)
+  errorCode String?
+  createdAt DateTime            @default(now())
+
+  @@index([createdAt])
+  @@index([ip, createdAt])
+  @@index([eventType, createdAt])
+  @@map("career_lookup_logs")
+}
+
+enum CareerLookupEvent {
+  SEARCH
+  SUMMARY
+}
