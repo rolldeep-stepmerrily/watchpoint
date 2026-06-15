@@ -228,6 +228,8 @@
 - upstream 5xx/네트워크 에러는 `CAREER_UPSTREAM_UNAVAILABLE`(502)로 매핑되며 캐시되지 않음 (일시 장애가 캐싱돼 굳어버리는 것 방지).
 - UI에 **Beta 라벨 + 디스클레이머 필수**.
 
+**Audit log (`career_lookup_logs`)**: 두 엔드포인트 호출은 `requestId`, `eventType`(SEARCH|SUMMARY), `query`(q 또는 playerId), `ip`(raw, X-Forwarded-For 우선), `success`, `errorCode`, `createdAt`로 적재된다. 상세 수치/응답 본문은 저장하지 않음. 오남용 추적·OverFast 의존도 모니터링 용도.
+
 ### 헬스체크
 
 | Method | Path | 접근 | 설명 |
