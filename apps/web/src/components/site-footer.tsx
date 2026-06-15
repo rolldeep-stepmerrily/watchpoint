@@ -60,6 +60,17 @@ export const SiteFooter = ({ lang }: Props): React.JSX.Element => {
                 {t.nav.patchNotes}
               </Link>
             </li>
+            <li>
+              <Link
+                href={`/${lang}/career` as never}
+                className="hover:text-(--color-accent) transition-colors inline-flex items-center gap-1.5"
+              >
+                {t.nav.career}
+                <span className="rounded border border-(--color-accent) px-1 py-px text-[9px] font-bold uppercase tracking-widest text-(--color-accent)">
+                  Beta
+                </span>
+              </Link>
+            </li>
           </ul>
         </div>
 

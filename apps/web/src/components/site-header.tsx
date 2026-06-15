@@ -14,6 +14,7 @@ import { SearchBar } from './search-bar';
 // `/ko/heroes` `/en/heroes/...` 모두 매치.
 const HERO_ROUTE = /^\/(?:ko|en|ja)\/heroes(?:\/|$)/;
 const PATCH_ROUTE = /^\/(?:ko|en|ja)\/patch-notes(?:\/|$)/;
+const CAREER_ROUTE = /^\/(?:ko|en|ja)\/career(?:\/|$)/;
 
 export function SiteHeader() {
   const locale = useLocale();
@@ -22,8 +23,9 @@ export function SiteHeader() {
   const pathname = usePathname();
 
   const navLinks = [
-    { href: `/${locale}/heroes` as const, match: HERO_ROUTE, label: t.nav.heroes },
-    { href: `/${locale}/patch-notes` as const, match: PATCH_ROUTE, label: t.nav.patchNotes },
+    { href: `/${locale}/heroes` as const, match: HERO_ROUTE, label: t.nav.heroes, beta: false },
+    { href: `/${locale}/patch-notes` as const, match: PATCH_ROUTE, label: t.nav.patchNotes, beta: false },
+    { href: `/${locale}/career` as const, match: CAREER_ROUTE, label: t.nav.career, beta: true },
   ];
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the trigger to close menu on navigation
@@ -55,13 +57,14 @@ export function SiteHeader() {
               <Link
                 key={link.href}
                 href={link.href as never}
-                className={`px-3 py-2 rounded-md transition-colors ${
+                className={`px-3 py-2 rounded-md transition-colors flex items-center gap-1.5 ${
                   active
                     ? 'text-(--color-accent) bg-(--color-accent-faint)'
                     : 'text-(--color-text-muted) hover:text-(--color-text) hover:bg-(--color-surface-hover)'
                 }`}
               >
                 {link.label}
+                {link.beta ? <BetaChip /> : null}
               </Link>
             );
           })}
@@ -95,11 +98,12 @@ export function SiteHeader() {
                   <Link
                     key={link.href}
                     href={link.href as never}
-                    className={`px-3 py-2 rounded-md ${
+                    className={`px-3 py-2 rounded-md flex items-center gap-1.5 ${
                       active ? 'text-(--color-accent) bg-(--color-accent-faint)' : 'hover:bg-(--color-surface-hover)'
                     }`}
                   >
                     {link.label}
+                    {link.beta ? <BetaChip /> : null}
                   </Link>
                 );
               })}
@@ -111,6 +115,14 @@ export function SiteHeader() {
         </div>
       )}
     </header>
+  );
+}
+
+function BetaChip() {
+  return (
+    <span className="rounded border border-(--color-accent) px-1 py-px text-[9px] font-bold uppercase tracking-widest text-(--color-accent)">
+      Beta
+    </span>
   );
 }
 

@@ -208,6 +208,26 @@
 
 응답 shape: `{ heroes: HeroSummaryDto[], patchNotes: PatchNoteSummaryDto[] }`.
 
+### Career (Beta) — 전적조회
+
+[OverFast API](https://github.com/TeKrop/overfast-api)(MIT, 비공식 Overwatch API)를 우리 NestJS가 프록시. Blizzard 공식 OAuth API에는 Overwatch가 빠져있어 OverFast가 `overwatch.blizzard.com/career/...` 페이지를 스크래핑·JSON 변환해주는 형태.
+
+`OVERFAST_API_BASE_URL` env로 upstream을 지정. 기본값은 public 인스턴스(`https://overfast-api.tekrop.fr`), 트래픽 증가 시 Docker self-host URL로 교체.
+
+| Method | Path | 설명 |
+|---|---|---|
+| `GET` | `/career?q=` | 플레이어 이름/BattleTag 검색. `q` 1~40자, `page` 기본 1, `pageSize` 기본 20, max 50. 응답 5분 캐시 |
+| `GET` | `/career/:playerId` | 프로필 + 경쟁전 랭크 요약. `playerId`는 BattleTag의 `#`를 `-`로 치환 (예: `TeKrop-2217`). 응답 10분 캐시 |
+
+응답 shape는 `CareerSearchResultDto` / `CareerSummaryDto` (`packages/shared/src/dto/career.dto.ts`).
+
+**제약 / 베타 표시 사유**:
+- 플레이어가 게임 내에서 "경력 프로필 공개"를 **Public**으로 설정해야 데이터 노출. private 프로필은 404.
+- OverFast가 Blizzard 페이지 구조 변경에 의존 — 며칠~수주 단위 깨질 수 있음.
+- public 인스턴스 사용 시 30 req/s/IP rate limit을 우리 Railway IP가 전부 부담. 429 발생 시 `CAREER_UPSTREAM_RATE_LIMITED`(429) 반환.
+- upstream 5xx/네트워크 에러는 `CAREER_UPSTREAM_UNAVAILABLE`(502)로 매핑되며 캐시되지 않음 (일시 장애가 캐싱돼 굳어버리는 것 방지).
+- UI에 **Beta 라벨 + 디스클레이머 필수**.
+
 ### 헬스체크
 
 | Method | Path | 접근 | 설명 |

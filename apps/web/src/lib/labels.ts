@@ -1,4 +1,4 @@
-import type { AbilitySlot, EntryCategory, HeroRole, Locale, PerkTier, Subrole } from '@@shared';
+import type { AbilitySlot, CompetitiveTier, EntryCategory, HeroRole, Locale, PerkTier, Subrole } from '@@shared';
 
 /**
  * 실제 번역이 준비된 로케일. Locale 타입의 ja는 잠정적으로 en으로 fallback한다.
@@ -183,6 +183,7 @@ interface Copy {
   nav: {
     heroes: string;
     patchNotes: string;
+    career: string;
     menuOpen: string;
     menuClose: string;
   };
@@ -311,6 +312,58 @@ interface Copy {
     groupHeroes: string;
     groupPatchNotes: string;
   };
+  career: {
+    title: string;
+    description: string;
+    betaLabel: string;
+    betaTooltip: string;
+    searchPlaceholder: string;
+    searchHelp: string;
+    searchSubmit: string;
+    searchEmpty: string;
+    noResults: (q: string) => string;
+    resultsHeading: (count: number) => string;
+    privacyGuide: {
+      heading: string;
+      body: string;
+      steps: readonly string[];
+      blizzardLinkLabel: string;
+      blizzardLinkHref: string;
+    };
+    disclaimer: string;
+    tierLabels: Record<CompetitiveTier, string>;
+    division: (n: number) => string;
+    unranked: string;
+    platform: {
+      pc: string;
+      console: string;
+      noData: string;
+    };
+    detail: {
+      backToSearch: string;
+      endorsement: string;
+      battleTag: string;
+      competitiveHeading: string;
+      notFound: {
+        kicker: string;
+        heading: string;
+        body: string;
+        cta: string;
+      };
+      private: {
+        kicker: string;
+        heading: string;
+        body: string;
+        cta: string;
+      };
+    };
+    upstreamError: {
+      kicker: string;
+      heading: string;
+      body: string;
+      cta: string;
+    };
+  };
 }
 
 const UI_COPY: Record<SupportedLocale, Copy> = {
@@ -323,6 +376,7 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
     nav: {
       heroes: '영웅',
       patchNotes: '패치노트',
+      career: '전적',
       menuOpen: '메뉴 열기',
       menuClose: '메뉴 닫기',
     },
@@ -453,6 +507,74 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       groupHeroes: '영웅',
       groupPatchNotes: '패치노트',
     },
+    career: {
+      title: '전적 검색',
+      description: '오버워치 플레이어의 프로필과 경쟁전 랭크를 조회합니다.',
+      betaLabel: 'Beta',
+      betaTooltip:
+        '데이터 제공: OverFast API (비공식 Overwatch 데이터). 블리자드 페이지 구조 변경 시 일시적으로 깨질 수 있습니다.',
+      searchPlaceholder: 'BattleTag 또는 이름 (예: TeKrop)',
+      searchHelp: 'BattleTag 입력 시 # 대신 그대로 입력하세요. 예: TeKrop#2217',
+      searchSubmit: '검색',
+      searchEmpty: '검색어를 입력하면 결과가 표시됩니다.',
+      noResults: (q) => `"${q}"에 해당하는 플레이어를 찾을 수 없습니다.`,
+      resultsHeading: (count) => `검색 결과 (${count})`,
+      privacyGuide: {
+        heading: '내 전적이 안 보이나요?',
+        body: '오버워치는 기본적으로 프로필이 비공개입니다. 게임 내에서 다음 순서로 공개 설정을 변경해야 데이터를 조회할 수 있습니다.',
+        steps: [
+          '게임 클라이언트에서 메뉴 → 옵션 → 소셜로 이동',
+          '"경력 프로필 공개" 항목을 "공개"로 변경',
+          '저장 후 몇 분 뒤 이 페이지에서 다시 검색',
+        ],
+        blizzardLinkLabel: 'Blizzard 공식 안내 →',
+        blizzardLinkHref: 'https://us.support.blizzard.com/article/301983',
+      },
+      disclaimer:
+        '본 기능은 베타입니다. 데이터는 비공식 OverFast API를 통해 제공되며 Blizzard 페이지 구조 변경 시 일시적으로 응답하지 않을 수 있습니다.',
+      tierLabels: {
+        bronze: '브론즈',
+        silver: '실버',
+        gold: '골드',
+        platinum: '플래티넘',
+        diamond: '다이아몬드',
+        master: '마스터',
+        grandmaster: '그랜드마스터',
+        champion: '챔피언',
+        ultimate: '얼티밋',
+      },
+      division: (n) => `${n} 단계`,
+      unranked: '랭크 없음',
+      platform: {
+        pc: 'PC',
+        console: '콘솔',
+        noData: '랭크 데이터 없음',
+      },
+      detail: {
+        backToSearch: '← 다시 검색하기',
+        endorsement: '추천',
+        battleTag: 'BattleTag',
+        competitiveHeading: '경쟁전 랭크',
+        notFound: {
+          kicker: '404 · Career',
+          heading: '해당 플레이어를 찾을 수 없어요.',
+          body: 'playerId가 잘못됐거나, 프로필이 비공개 상태일 수 있어요. 게임 내에서 "경력 프로필 공개"를 "공개"로 설정해주세요.',
+          cta: '검색으로 돌아가기',
+        },
+        private: {
+          kicker: 'Private',
+          heading: '비공개 프로필입니다.',
+          body: '플레이어가 프로필을 비공개로 설정해 데이터를 조회할 수 없습니다.',
+          cta: '검색으로 돌아가기',
+        },
+      },
+      upstreamError: {
+        kicker: 'Upstream',
+        heading: '잠시 후 다시 시도해 주세요.',
+        body: '전적 조회 서비스(OverFast API)가 일시적으로 응답하지 않습니다. 베타 기능 특성상 발생할 수 있는 현상입니다.',
+        cta: '검색으로 돌아가기',
+      },
+    },
   },
   en: {
     site: {
@@ -463,6 +585,7 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
     nav: {
       heroes: 'Heroes',
       patchNotes: 'Patch Notes',
+      career: 'Career',
       menuOpen: 'Open menu',
       menuClose: 'Close menu',
     },
@@ -592,6 +715,74 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       empty: 'No results',
       groupHeroes: 'Heroes',
       groupPatchNotes: 'Patch Notes',
+    },
+    career: {
+      title: 'Career Lookup',
+      description: 'Look up Overwatch player profiles and competitive ranks.',
+      betaLabel: 'Beta',
+      betaTooltip:
+        'Powered by OverFast API (unofficial Overwatch data). May break temporarily when Blizzard updates pages.',
+      searchPlaceholder: 'BattleTag or name (e.g. TeKrop)',
+      searchHelp: 'For BattleTags, type as-is — replace # is not required. e.g. TeKrop#2217',
+      searchSubmit: 'Search',
+      searchEmpty: 'Enter a query to see results.',
+      noResults: (q) => `No players found for "${q}".`,
+      resultsHeading: (count) => `Results (${count})`,
+      privacyGuide: {
+        heading: "Can't find your career?",
+        body: 'Overwatch profiles are private by default. In-game, follow these steps to make your career visible:',
+        steps: [
+          'Open the in-game menu → Options → Social',
+          'Change "Career Profile Visibility" to "Public"',
+          'Save, then search again here in a few minutes',
+        ],
+        blizzardLinkLabel: 'Blizzard official guide →',
+        blizzardLinkHref: 'https://us.support.blizzard.com/article/301983',
+      },
+      disclaimer:
+        'This feature is in beta. Data is provided via the unofficial OverFast API and may be unavailable when Blizzard updates the source pages.',
+      tierLabels: {
+        bronze: 'Bronze',
+        silver: 'Silver',
+        gold: 'Gold',
+        platinum: 'Platinum',
+        diamond: 'Diamond',
+        master: 'Master',
+        grandmaster: 'Grandmaster',
+        champion: 'Champion',
+        ultimate: 'Ultimate',
+      },
+      division: (n) => `Div ${n}`,
+      unranked: 'Unranked',
+      platform: {
+        pc: 'PC',
+        console: 'Console',
+        noData: 'No rank data',
+      },
+      detail: {
+        backToSearch: '← Back to search',
+        endorsement: 'Endorsement',
+        battleTag: 'BattleTag',
+        competitiveHeading: 'Competitive Ranks',
+        notFound: {
+          kicker: '404 · Career',
+          heading: "We couldn't find that player.",
+          body: 'The playerId may be invalid, or the profile is private. In-game, set "Career Profile Visibility" to "Public".',
+          cta: 'Back to search',
+        },
+        private: {
+          kicker: 'Private',
+          heading: 'This profile is private.',
+          body: 'The player has set their profile to private, so we cannot show their data.',
+          cta: 'Back to search',
+        },
+      },
+      upstreamError: {
+        kicker: 'Upstream',
+        heading: 'Please try again shortly.',
+        body: 'The career lookup service (OverFast API) is temporarily unavailable. This can happen as the feature is in beta.',
+        cta: 'Back to search',
+      },
     },
   },
 };
