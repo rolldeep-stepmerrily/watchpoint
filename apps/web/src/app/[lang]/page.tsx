@@ -71,7 +71,6 @@ export default async function HomePage({ params }: Props) {
 
       <RoleGrid
         heroesByRole={heroesByRole}
-        totalHeroes={heroes.total}
         lang={lang}
         t={t}
       />
@@ -238,30 +237,20 @@ function HeroAvatar({ hero, lang }: { hero: HeroSummaryDto; lang: Locale }) {
 
 function RoleGrid({
   heroesByRole,
-  totalHeroes,
   lang,
   t,
 }: {
   heroesByRole: Record<HeroRole, HeroSummaryDto[]>;
-  totalHeroes: number;
   lang: Locale;
   t: Labels;
 }) {
   return (
     <section className="space-y-6">
-      <div className="flex items-baseline justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-(--color-text-muted)">
-            {t.home.rolesHeading}
-          </h2>
-          <p className="text-xs text-(--color-text-faint)">{t.home.rolesSubtitle}</p>
-        </div>
-        <Link
-          href={`/${lang}/heroes` as never}
-          className="text-xs text-(--color-text-muted) hover:text-(--color-accent-hover)"
-        >
-          {t.home.rolesViewAll(totalHeroes)}
-        </Link>
+      <div className="space-y-1">
+        <h2 className="text-sm font-semibold uppercase tracking-widest text-(--color-text-muted)">
+          {t.home.rolesHeading}
+        </h2>
+        <p className="text-xs text-(--color-text-faint)">{t.home.rolesSubtitle}</p>
       </div>
 
       <div className="space-y-8">

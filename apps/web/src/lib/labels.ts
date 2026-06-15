@@ -222,7 +222,6 @@ interface Copy {
     };
     rolesHeading: string;
     rolesSubtitle: string;
-    rolesViewAll: (count: number) => string;
     stats: {
       heroesLabel: string;
       patchesLabel: string;
@@ -365,7 +364,6 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       },
       rolesHeading: '역할별 영웅',
       rolesSubtitle: '돌격 · 공격 · 지원',
-      rolesViewAll: (count) => `전체 ${count}명 보기 →`,
       stats: {
         heroesLabel: '등록된 영웅',
         patchesLabel: '공개 패치노트',
@@ -506,7 +504,6 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       },
       rolesHeading: 'Heroes by role',
       rolesSubtitle: 'Tank · Damage · Support',
-      rolesViewAll: (count) => `View all ${count} →`,
       stats: {
         heroesLabel: 'Registered heroes',
         patchesLabel: 'Published patch notes',
