@@ -7,7 +7,7 @@ import Joi from 'joi';
 import { CareerModule } from './career/career.module';
 import { ResponseCacheModule } from './common/cache';
 import { GlobalCqrsModule } from './common/cqrs';
-import { HttpLoggerMiddleware } from './common/middlewares';
+import { HttpLoggerMiddleware, RequestIdMiddleware } from './common/middlewares';
 import { PrismaModule } from './common/prisma';
 import { RedisModule, RedisThrottlerStorage } from './common/redis';
 import { HeroModule } from './hero/hero.module';
@@ -72,6 +72,6 @@ import { SeederModule } from './seeder';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(HttpLoggerMiddleware).forRoutes('{*splat}');
+    consumer.apply(RequestIdMiddleware, HttpLoggerMiddleware).forRoutes('{*splat}');
   }
 }
