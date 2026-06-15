@@ -214,6 +214,15 @@ interface Copy {
     heroesBody: string;
     latestPatches: string;
     viewAll: string;
+    spotlight: {
+      kicker: string;
+      changedHeroes: string;
+      noChangedHeroes: string;
+      viewPatch: string;
+    };
+    rolesHeading: string;
+    rolesSubtitle: string;
+    rolesViewAll: (count: number) => string;
     stats: {
       heroesLabel: string;
       patchesLabel: string;
@@ -348,6 +357,15 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       heroesBody: '전체 영웅의 스탯, 능력, 패치 이력.',
       latestPatches: '최신 패치',
       viewAll: '전체 보기 →',
+      spotlight: {
+        kicker: '최신 패치',
+        changedHeroes: '이번 패치에서 변경된 영웅',
+        noChangedHeroes: '이번 패치에는 영웅 변경 사항이 없습니다.',
+        viewPatch: '패치 전체 보기 →',
+      },
+      rolesHeading: '역할별 영웅',
+      rolesSubtitle: '돌격 · 공격 · 지원',
+      rolesViewAll: (count) => `전체 ${count}명 보기 →`,
       stats: {
         heroesLabel: '등록된 영웅',
         patchesLabel: '공개 패치노트',
@@ -480,6 +498,15 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       heroesBody: 'Stats, abilities, and patch history for every hero.',
       latestPatches: 'Latest patches',
       viewAll: 'View all →',
+      spotlight: {
+        kicker: 'Latest patch',
+        changedHeroes: 'Heroes changed in this patch',
+        noChangedHeroes: 'No hero changes in this patch.',
+        viewPatch: 'View full patch →',
+      },
+      rolesHeading: 'Heroes by role',
+      rolesSubtitle: 'Tank · Damage · Support',
+      rolesViewAll: (count) => `View all ${count} →`,
       stats: {
         heroesLabel: 'Registered heroes',
         patchesLabel: 'Published patch notes',
