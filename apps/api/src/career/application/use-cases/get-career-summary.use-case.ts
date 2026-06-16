@@ -82,8 +82,8 @@ function toRank(raw: OverFastRank | null): CareerRankDto | null {
   }
 
   return {
-    tier: raw.tier as CareerRankDto['tier'],
-    division: raw.division,
+    tier: raw.division as CareerRankDto['tier'],
+    division: raw.tier,
     roleIcon: raw.role_icon,
     rankIcon: raw.rank_icon,
   };

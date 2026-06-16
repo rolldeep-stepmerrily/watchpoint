@@ -4,6 +4,7 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 
 declare global {
+  // biome-ignore lint/style/noNamespace: Express 타입 augmentation은 namespace 필수
   namespace Express {
     interface Request {
       requestId?: string;
