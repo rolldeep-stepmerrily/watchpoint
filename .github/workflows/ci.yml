@@ -1,4 +1,4 @@
-name: CI
+name: CI + Test
 
 on:
   pull_request:
@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   ci:
-    name: lint + typecheck + build
+    name: lint + typecheck + build + test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -49,3 +49,6 @@ jobs:
 
       - name: Build @watchpoint/api
         run: pnpm build:api
+
+      - name: Test @watchpoint/api
+        run: pnpm --filter @watchpoint/api test

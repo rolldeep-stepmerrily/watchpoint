@@ -96,7 +96,12 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "isolatedModules": true
+        }
+      ]
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
@@ -104,6 +109,7 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
+      "^@@cache$": "<rootDir>/common/cache/index",
       "^@@cqrs$": "<rootDir>/common/cqrs/index",
       "^@@db$": "<rootDir>/common/prisma/index",
       "^@@decorators$": "<rootDir>/common/decorators/index",
