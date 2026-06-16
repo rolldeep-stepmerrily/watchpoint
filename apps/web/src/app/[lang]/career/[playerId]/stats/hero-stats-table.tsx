@@ -7,15 +7,20 @@ import type { Labels } from '@/lib/labels';
 
 type SortKey = 'gamesPlayed' | 'winrate' | 'kda' | 'timePlayed';
 
+export interface HeroStatsRow extends CareerStatsHeroEntryDto {
+  /** localized 영웅 이름 — hero API에서 매칭. null이면 codename prettify로 표시 */
+  displayName: string | null;
+}
+
 interface Props {
-  heroes: CareerStatsHeroEntryDto[];
+  heroes: HeroStatsRow[];
   t: Labels;
 }
 
 interface Column {
   key: SortKey;
   label: string;
-  format: (h: CareerStatsHeroEntryDto, t: Labels) => string;
+  format: (h: HeroStatsRow, t: Labels) => string;
 }
 
 const COLUMNS = (t: Labels): Column[] => [
@@ -108,7 +113,9 @@ export function HeroStatsTable({ heroes, t }: Props) {
               key={hero.codename}
               className="border-b border-(--color-border) last:border-0 hover:bg-(--color-accent-faint)/40 transition-colors"
             >
-              <td className="px-3 py-2 font-semibold text-(--color-text-strong)">{prettifyCodename(hero.codename)}</td>
+              <td className="px-3 py-2 font-semibold text-(--color-text-strong)">
+                {hero.displayName ?? prettifyCodename(hero.codename)}
+              </td>
               {columns.map((col) => (
                 <td
                   key={col.key}

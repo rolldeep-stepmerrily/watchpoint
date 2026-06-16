@@ -9,7 +9,7 @@ import { CareerLookupLogInterceptor } from './career-lookup-log.interceptor';
 
 interface WriteEntry {
   requestId: string;
-  eventType: 'SEARCH' | 'SUMMARY';
+  eventType: 'SEARCH' | 'SUMMARY' | 'STATS';
   query: string;
   ip: string;
   success: boolean;
@@ -63,6 +63,20 @@ describe('CareerLookupLogInterceptor', () => {
       ip: '1.2.3.4',
       success: true,
       errorCode: null,
+    });
+  });
+
+  it('writes STATS entry when playerId present and path ends with /stats', async () => {
+    const { service, create } = buildPrisma();
+    const interceptor = new CareerLookupLogInterceptor(service);
+    const req = buildRequest({ params: { playerId: 'TeKrop-2217' }, path: '/career/TeKrop-2217/stats' });
+
+    await firstValueFrom(interceptor.intercept(buildContext(req), buildHandler(of({ ok: true }))));
+
+    expect(lastWriteEntry(create)).toMatchObject({
+      eventType: 'STATS',
+      query: 'TeKrop-2217',
+      success: true,
     });
   });
 
