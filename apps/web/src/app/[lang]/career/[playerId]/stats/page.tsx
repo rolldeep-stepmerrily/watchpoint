@@ -3,11 +3,21 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { ApiError, getCareerStats } from '@/lib/api';
+import { ApiError, getCareerStats, getHeroList } from '@/lib/api';
 import { resolveLang } from '@/lib/i18n';
 import { getLabels, type Labels } from '@/lib/labels';
 
 import { HeroStatsTable } from './hero-stats-table';
+
+async function loadHeroNameMap(lang: Locale): Promise<Map<string, string>> {
+  try {
+    const { items } = await getHeroList({ pageSize: 100, lang });
+    return new Map(items.map((hero) => [hero.codename, hero.name]));
+  } catch {
+    /** hero list 실패해도 stats 렌더는 계속 — codename prettify로 fallback */
+    return new Map();
+  }
+}
 
 export const revalidate = 600;
 
@@ -34,7 +44,7 @@ export default async function CareerStatsPage({ params }: Props) {
   const lang = resolveLang(rawLang);
   const t = getLabels(lang);
 
-  const stats = await fetchStats(playerId);
+  const [stats, heroNameMap] = await Promise.all([fetchStats(playerId), loadHeroNameMap(lang)]);
 
   if (stats === 'not-found') {
     notFound();
@@ -56,6 +66,7 @@ export default async function CareerStatsPage({ params }: Props) {
       lang={lang}
       playerId={playerId}
       t={t}
+      heroNameMap={heroNameMap}
     />
   );
 }
@@ -78,7 +89,23 @@ async function fetchStats(playerId: string): Promise<CareerStatsDto | 'not-found
   }
 }
 
-function StatsView({ stats, lang, playerId, t }: { stats: CareerStatsDto; lang: Locale; playerId: string; t: Labels }) {
+function StatsView({
+  stats,
+  lang,
+  playerId,
+  t,
+  heroNameMap,
+}: {
+  stats: CareerStatsDto;
+  lang: Locale;
+  playerId: string;
+  t: Labels;
+  heroNameMap: Map<string, string>;
+}) {
+  const heroesWithNames = stats.heroes.map((hero) => ({
+    ...hero,
+    displayName: heroNameMap.get(hero.codename) ?? null,
+  }));
   const battleTag = toBattleTag(playerId);
 
   return (
@@ -123,7 +150,7 @@ function StatsView({ stats, lang, playerId, t }: { stats: CareerStatsDto; lang: 
                 {t.career.stats.heroesHeading}
               </h2>
               <HeroStatsTable
-                heroes={stats.heroes}
+                heroes={heroesWithNames}
                 t={t}
               />
             </section>
