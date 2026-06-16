@@ -89,6 +89,7 @@ export function HeroDetailTabs({ hero, history, locale }: Props) {
         <HistoryPanel
           history={history}
           t={t}
+          locale={locale}
         />
       )}
     </section>
@@ -241,7 +242,7 @@ function PerksPanel({ hero, t }: { hero: HeroDetailDto; t: Labels }) {
   );
 }
 
-function HistoryPanel({ history, t }: { history: HeroPatchHistoryDto; t: Labels }) {
+function HistoryPanel({ history, t, locale }: { history: HeroPatchHistoryDto; t: Labels; locale: Locale }) {
   return (
     <div className="border border-(--color-border) rounded-lg overflow-hidden">
       <table className="w-full text-sm">
@@ -260,7 +261,7 @@ function HistoryPanel({ history, t }: { history: HeroPatchHistoryDto; t: Labels 
             >
               <td className="px-3 py-3 whitespace-nowrap">
                 <Link
-                  href={`/patch-notes/${patchNote.version}`}
+                  href={`/${locale}/patch-notes/${patchNote.version}` as never}
                   className="text-(--color-accent) font-mono text-sm font-bold hover:text-(--color-accent-hover)"
                 >
                   {patchNote.version}

@@ -97,10 +97,10 @@ export function SearchBar(): React.JSX.Element {
       return [] as string[];
     }
     return [
-      ...results.heroes.map((hero) => `/heroes/${hero.codename}`),
-      ...results.patchNotes.map((patch) => `/patch-notes/${patch.version}`),
+      ...results.heroes.map((hero) => `/${locale}/heroes/${hero.codename}`),
+      ...results.patchNotes.map((patch) => `/${locale}/patch-notes/${patch.version}`),
     ];
-  }, [results]);
+  }, [results, locale]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: results 변화가 reset 트리거
   useEffect(() => {
@@ -201,7 +201,7 @@ export function SearchBar(): React.JSX.Element {
                       <Link
                         id={`search-result-${index}`}
                         data-index={index}
-                        href={`/heroes/${hero.codename}`}
+                        href={`/${locale}/heroes/${hero.codename}` as never}
                         onClick={close}
                         onMouseEnter={() => setActiveIndex(index)}
                         className={`flex items-center gap-2 px-3 py-2 text-sm ${
@@ -242,7 +242,7 @@ export function SearchBar(): React.JSX.Element {
                       <Link
                         id={`search-result-${index}`}
                         data-index={index}
-                        href={`/patch-notes/${patch.version}`}
+                        href={`/${locale}/patch-notes/${patch.version}` as never}
                         onClick={close}
                         onMouseEnter={() => setActiveIndex(index)}
                         className={`block px-3 py-2 text-sm ${

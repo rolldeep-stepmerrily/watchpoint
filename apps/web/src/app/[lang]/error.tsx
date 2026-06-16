@@ -11,7 +11,8 @@ interface ErrorProps {
 }
 
 export default function GlobalError({ error, reset }: ErrorProps) {
-  const t = getLabels(useLocale());
+  const locale = useLocale();
+  const t = getLabels(locale);
 
   useEffect(() => {
     console.error('app error:', error);
@@ -36,7 +37,7 @@ export default function GlobalError({ error, reset }: ErrorProps) {
           {t.common.retry}
         </button>
         <a
-          href="/"
+          href={`/${locale}`}
           className="px-4 py-2 text-sm rounded-md border border-(--color-border) hover:bg-(--color-surface-hover)"
         >
           {t.common.home}
