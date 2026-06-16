@@ -48,7 +48,7 @@
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
     "@prisma/client-runtime-utils": "^7.8.0",
-    "@scalar/nestjs-api-reference": "^0.5.1",
+    "@scalar/nestjs-api-reference": "^1.2.3",
     "@sentry/nestjs": "^10.57.0",
     "@watchpoint/shared": "workspace:*",
     "cheerio": "^1.0.0",
