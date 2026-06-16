@@ -12,10 +12,13 @@ const BODY_TIMEOUT_MS = 12_000;
 /**
  * OverFast API 응답 — `player_id`는 battletag의 `#`를 `-`로 치환한 형태.
  * 우리 layer로 들어오기 전 raw shape이므로 use-case에서 camelCase DTO로 변환한다.
+ *
+ * 주의: OverFast의 `division`은 티어명 문자열(예: "silver"), `tier`는 티어 내 세부 단계 숫자(1~5).
+ * 우리 CareerRankDto는 반대로 `tier`(문자열) / `division`(숫자)이므로 use-case에서 swap.
  */
 export interface OverFastRank {
-  tier: string;
-  division: number | null;
+  division: string;
+  tier: number | null;
   role_icon: string | null;
   rank_icon: string | null;
 }
