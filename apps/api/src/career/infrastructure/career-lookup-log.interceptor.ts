@@ -35,14 +35,19 @@ export class CareerLookupLogInterceptor implements NestInterceptor {
   }
 
   /**
-   * 컨트롤러 핸들러 종류로 SEARCH/SUMMARY를 구분. 라우트 path/메서드 인자로 추정.
-   * search는 q 쿼리, summary는 playerId path param을 저장한다.
+   * 컨트롤러 핸들러 종류로 SEARCH/SUMMARY/STATS를 구분.
+   * - playerId 있고 URL에 `/stats`가 붙으면 STATS
+   * - playerId만 있으면 SUMMARY
+   * - 그 외엔 SEARCH(q 쿼리 저장)
    */
-  private resolveEvent(req: Request): { eventType: 'SEARCH' | 'SUMMARY'; query: string } {
+  private resolveEvent(req: Request): { eventType: 'SEARCH' | 'SUMMARY' | 'STATS'; query: string } {
     const playerId = typeof req.params?.playerId === 'string' ? req.params.playerId : null;
 
     if (playerId) {
-      return { eventType: 'SUMMARY', query: playerId };
+      const path = typeof req.path === 'string' ? req.path : (req.url ?? '');
+      const isStats = path.endsWith('/stats');
+
+      return { eventType: isStats ? 'STATS' : 'SUMMARY', query: playerId };
     }
 
     const q = typeof req.query?.q === 'string' ? req.query.q : '';
@@ -88,7 +93,7 @@ export class CareerLookupLogInterceptor implements NestInterceptor {
 
   private write(entry: {
     requestId: string;
-    eventType: 'SEARCH' | 'SUMMARY';
+    eventType: 'SEARCH' | 'SUMMARY' | 'STATS';
     query: string;
     ip: string;
     success: boolean;

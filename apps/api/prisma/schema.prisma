@@ -279,7 +279,7 @@ model CareerLookupLog {
   id        BigInt              @id @default(autoincrement())
   requestId String
   eventType CareerLookupEvent
-  /// SEARCH: q 쿼리, SUMMARY: playerId (BattleTag 그대로 — `-`는 #로 치환 가능)
+  /// SEARCH: q 쿼리, SUMMARY|STATS: playerId (BattleTag 그대로 — `-`는 #로 치환 가능)
   query     String
   /// X-Forwarded-For 우선, 없으면 socket.remoteAddress. raw 그대로 저장.
   ip        String
@@ -297,4 +297,5 @@ model CareerLookupLog {
 enum CareerLookupEvent {
   SEARCH
   SUMMARY
+  STATS
 }
