@@ -61,6 +61,41 @@ export interface OverFastSearchResult {
   results: OverFastSearchEntry[];
 }
 
+export interface OverFastStatsTotals {
+  eliminations: number;
+  assists: number;
+  deaths: number;
+  damage: number;
+  healing: number;
+}
+
+export interface OverFastStatsBlock {
+  games_played: number;
+  games_won: number;
+  games_lost: number;
+  time_played: number;
+  winrate: number;
+  kda: number;
+  total: OverFastStatsTotals;
+  average: OverFastStatsTotals;
+}
+
+export interface OverFastStatsRoles {
+  tank: OverFastStatsBlock | null;
+  damage: OverFastStatsBlock | null;
+  support: OverFastStatsBlock | null;
+}
+
+/**
+ * `/players/{id}/stats/summary` 응답. heroes는 codename → block의 object 형태.
+ * 모든 필드 부분/누락 가능하므로 use-case에서 기본값 0으로 normalise.
+ */
+export interface OverFastStatsSummary {
+  general: OverFastStatsBlock | null;
+  roles: OverFastStatsRoles | null;
+  heroes: Record<string, OverFastStatsBlock> | null;
+}
+
 /**
  * OverFast API 호출 wrapper. public 인스턴스(https://overfast-api.tekrop.fr) 또는 self-host URL을
  * env로 받아 baseUrl로 사용한다. JSON 전용이므로 cheerio 기반 ScraperHttpClient와 분리.
@@ -86,6 +121,10 @@ export class OverFastClient {
     const qs = new URLSearchParams({ name, limit: String(limit), offset: String(offset) });
 
     return await this.fetchJson<OverFastSearchResult>(`/players?${qs.toString()}`);
+  }
+
+  async getPlayerStats(playerId: string): Promise<OverFastStatsSummary> {
+    return await this.fetchJson<OverFastStatsSummary>(`/players/${encodeURIComponent(playerId)}/stats/summary`);
   }
 
   private async fetchJson<T>(path: string): Promise<T> {

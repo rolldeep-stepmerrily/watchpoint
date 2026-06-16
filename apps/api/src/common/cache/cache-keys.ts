@@ -17,6 +17,7 @@ export const CACHE_TTL = {
   PATCH_ENTRIES: 600,
   CAREER_SUMMARY: 600,
   CAREER_SEARCH: 300,
+  CAREER_STATS: 600,
 } as const;
 
 const safe = (v: string | undefined): string => (v === undefined || v === '' ? '_' : encodeURIComponent(v));
@@ -35,6 +36,7 @@ export const CACHE_KEYS = {
   careerSummary: (playerId: string): string => `career:summary:${safe(playerId)}`,
   careerSearch: (q: string, page: number, pageSize: number): string =>
     `career:search:q:${safe(q)}:p:${page}:s:${pageSize}`,
+  careerStats: (playerId: string): string => `career:stats:${safe(playerId)}`,
 } as const;
 
 /**

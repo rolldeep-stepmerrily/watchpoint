@@ -363,6 +363,28 @@ interface Copy {
       body: string;
       cta: string;
     };
+    stats: {
+      heading: string;
+      viewStats: string;
+      backToSummary: string;
+      noData: string;
+      generalHeading: string;
+      rolesHeading: string;
+      heroesHeading: string;
+      hoursPlayed: (h: number) => string;
+      gamesPlayed: string;
+      winrate: string;
+      kda: string;
+      hero: string;
+      timePlayed: string;
+      eliminations: string;
+      assists: string;
+      deaths: string;
+      damage: string;
+      healing: string;
+      sortAscAria: (col: string) => string;
+      sortDescAria: (col: string) => string;
+    };
   };
 }
 
@@ -574,6 +596,28 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
         body: '전적 조회 서비스(OverFast API)가 일시적으로 응답하지 않습니다. 베타 기능 특성상 발생할 수 있는 현상입니다.',
         cta: '검색으로 돌아가기',
       },
+      stats: {
+        heading: '통계',
+        viewStats: '통계 보기 →',
+        backToSummary: '← 프로필 요약으로',
+        noData: '통계 데이터가 없습니다.',
+        generalHeading: '전체',
+        rolesHeading: '역할별',
+        heroesHeading: '영웅별',
+        hoursPlayed: (h) => `${h.toFixed(1)}시간`,
+        gamesPlayed: '게임 수',
+        winrate: '승률',
+        kda: 'KDA',
+        hero: '영웅',
+        timePlayed: '플레이타임',
+        eliminations: '처치',
+        assists: '어시스트',
+        deaths: '죽음',
+        damage: '피해량',
+        healing: '치유량',
+        sortAscAria: (col) => `${col} 오름차순 정렬`,
+        sortDescAria: (col) => `${col} 내림차순 정렬`,
+      },
     },
   },
   en: {
@@ -782,6 +826,28 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
         heading: 'Please try again shortly.',
         body: 'The career lookup service (OverFast API) is temporarily unavailable. This can happen as the feature is in beta.',
         cta: 'Back to search',
+      },
+      stats: {
+        heading: 'Stats',
+        viewStats: 'View stats →',
+        backToSummary: '← Back to summary',
+        noData: 'No stats data available.',
+        generalHeading: 'All',
+        rolesHeading: 'By Role',
+        heroesHeading: 'By Hero',
+        hoursPlayed: (h) => `${h.toFixed(1)}h`,
+        gamesPlayed: 'Games',
+        winrate: 'Win %',
+        kda: 'KDA',
+        hero: 'Hero',
+        timePlayed: 'Time',
+        eliminations: 'Elims',
+        assists: 'Assists',
+        deaths: 'Deaths',
+        damage: 'Damage',
+        healing: 'Healing',
+        sortAscAria: (col) => `Sort ${col} ascending`,
+        sortDescAria: (col) => `Sort ${col} descending`,
       },
     },
   },
