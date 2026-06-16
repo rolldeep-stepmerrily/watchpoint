@@ -18,7 +18,7 @@ export function HeroCard({ hero, locale, priority = false }: HeroCardProps) {
 
   return (
     <Link
-      href={`/heroes/${hero.codename}`}
+      href={`/${locale}/heroes/${hero.codename}` as never}
       className="group relative block aspect-[4/5] overflow-hidden rounded-xl border border-(--color-border) bg-(--color-surface) transition-all duration-200 hover:-translate-y-1 hover:border-(--color-text-strong)"
       style={
         {
