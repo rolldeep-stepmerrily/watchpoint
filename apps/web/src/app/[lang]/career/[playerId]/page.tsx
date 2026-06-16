@@ -89,12 +89,20 @@ async function fetchSummary(playerId: string): Promise<CareerSummaryDto | 'not-f
 function CareerView({ summary, lang, t }: { summary: CareerSummaryDto; lang: Locale; t: Labels }) {
   return (
     <div className="space-y-8">
-      <Link
-        href={`/${lang}/career` as never}
-        className="text-xs font-semibold text-(--color-text-muted) hover:text-(--color-accent-hover)"
-      >
-        {t.career.detail.backToSearch}
-      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          href={`/${lang}/career` as never}
+          className="text-xs font-semibold text-(--color-text-muted) hover:text-(--color-accent-hover)"
+        >
+          {t.career.detail.backToSearch}
+        </Link>
+        <Link
+          href={`/${lang}/career/${summary.playerId}/stats` as never}
+          className="text-xs font-semibold text-(--color-accent) hover:text-(--color-accent-hover)"
+        >
+          {t.career.stats.viewStats}
+        </Link>
+      </div>
 
       <ProfileHeader
         summary={summary}

@@ -4,5 +4,6 @@ export const CareerRouter = {
   Http: {
     Search: '',
     GetSummary: ':playerId',
+    GetStats: ':playerId/stats',
   },
 } as const;

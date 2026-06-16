@@ -5,6 +5,12 @@ export type {
   CareerRankDto,
   CareerSearchEntryDto,
   CareerSearchResultDto,
+  CareerStatsBlockDto,
+  CareerStatsDto,
+  CareerStatsHeroEntryDto,
+  CareerStatsRole,
+  CareerStatsRolesDto,
+  CareerStatsTotalsDto,
   CareerSummaryDto,
   CompetitiveTier,
 } from './career.dto';

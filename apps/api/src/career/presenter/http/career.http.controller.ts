@@ -1,10 +1,12 @@
 import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+import { GetCareerStatsUseCase } from '../../application/use-cases/get-career-stats.use-case';
 import { GetCareerSummaryUseCase } from '../../application/use-cases/get-career-summary.use-case';
 import { SearchCareerUseCase } from '../../application/use-cases/search-career.use-case';
 import { CareerLookupLogInterceptor } from '../../infrastructure/career-lookup-log.interceptor';
 import { CareerRouter } from './career.path.presenter';
+import { GetCareerStatsResponseDto } from './dto/get-career-stats.dto';
 import { GetCareerSummaryResponseDto } from './dto/get-career-summary.dto';
 import { SearchCareerRequestDto, SearchCareerResponseDto } from './dto/search-career.dto';
 
@@ -15,6 +17,7 @@ export class CareerHttpController {
   constructor(
     private readonly searchCareerUseCase: SearchCareerUseCase,
     private readonly getCareerSummaryUseCase: GetCareerSummaryUseCase,
+    private readonly getCareerStatsUseCase: GetCareerStatsUseCase,
   ) {}
 
   @ApiOperation({
@@ -37,5 +40,16 @@ export class CareerHttpController {
   @Get(CareerRouter.Http.GetSummary)
   async getSummary(@Param('playerId') playerId: string): Promise<GetCareerSummaryResponseDto> {
     return await this.getCareerSummaryUseCase.execute({ playerId });
+  }
+
+  @ApiOperation({
+    summary: '[Beta] 전적 통계 — general / 역할별 / 영웅별',
+    description:
+      'playerId는 BattleTag의 `#`를 `-`로 치환한 형태. heroes는 games_played 내림차순. ' +
+      '응답은 10분 캐시. 비공개 프로필은 404.',
+  })
+  @Get(CareerRouter.Http.GetStats)
+  async getStats(@Param('playerId') playerId: string): Promise<GetCareerStatsResponseDto> {
+    return await this.getCareerStatsUseCase.execute({ playerId });
   }
 }

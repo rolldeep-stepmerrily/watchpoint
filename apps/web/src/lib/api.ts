@@ -1,5 +1,6 @@
 import type {
   CareerSearchResultDto,
+  CareerStatsDto,
   CareerSummaryDto,
   HeroDetailDto,
   HeroPatchHistoryDto,
@@ -165,4 +166,8 @@ export const getCareerSearch = (q: string, page = 1, pageSize = 20): Promise<Car
 
 export const getCareerSummary = cache((playerId: string): Promise<CareerSummaryDto> => {
   return fetchJson<CareerSummaryDto>(`/career/${encodeURIComponent(playerId)}`, '/career/[playerId]', 60);
+});
+
+export const getCareerStats = cache((playerId: string): Promise<CareerStatsDto> => {
+  return fetchJson<CareerStatsDto>(`/career/${encodeURIComponent(playerId)}/stats`, '/career/[playerId]/stats', 60);
 });
