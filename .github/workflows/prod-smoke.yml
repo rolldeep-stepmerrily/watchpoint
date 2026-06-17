@@ -1,9 +1,8 @@
-name: Prod smoke (daily)
+name: Prod smoke (Claude orchestrated)
 
+# Claude /schedule가 매일 KST 01시에 깨어나서 gh CLI로 trigger.
+# cron 스케줄은 의도적으로 제외 — Claude가 트리거 + 결과 분석 + fix PR을 한 번에 수행.
 on:
-  schedule:
-    # 매일 한국 시간 01:00 (UTC 16:00 = 다음날 01:00 KST)
-    - cron: '0 16 * * *'
   workflow_dispatch:
 
 jobs:
