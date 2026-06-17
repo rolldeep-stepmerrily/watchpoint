@@ -299,3 +299,26 @@ enum CareerLookupEvent {
   SUMMARY
   STATS
 }
+
+/// 외부 모니터링 routine (예: Claude /schedule prod-smoke) 결과 적재용.
+/// 운영자가 장기 trend 분석(월별 fail 횟수, transient 비율 등)에 활용한다.
+/// 호출은 /internal/monitoring-log endpoint에 scoped token (MONITORING_INGEST_KEY)으로 인증.
+model MonitoringLog {
+  id         Int      @id @default(autoincrement())
+  runAt      DateTime @default(now())
+  /// "prod-smoke" 등. 추후 다른 monitoring 타입 확장 대비.
+  kind       String
+  /// "pass" | "fail" | "transient"
+  status     String
+  total      Int
+  passed     Int
+  failed     Int
+  durationMs Int?
+  /// fix PR을 만들었으면 URL. 없으면 null.
+  fixPrUrl   String?
+  /// 짧은 요약 (실패 원인, transient 사유 등). 본문 trace는 저장하지 않음.
+  notes      String?
+
+  @@index([kind, runAt(sort: Desc)])
+  @@map("monitoring_logs")
+}
