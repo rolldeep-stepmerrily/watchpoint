@@ -12,6 +12,7 @@ import { PrismaModule } from './common/prisma';
 import { RedisModule, RedisThrottlerStorage } from './common/redis';
 import { HeroModule } from './hero/hero.module';
 import { InternalModule } from './internal/internal.module';
+import { MonitoringModule } from './monitoring/monitoring.module';
 import { PatchNoteModule } from './patch-note/patch-note.module';
 import { ScraperModule } from './scraper/scraper.module';
 import { SearchModule } from './search/search.module';
@@ -42,6 +43,7 @@ import { SeederModule } from './seeder';
         SCRAPER_REQUEST_DELAY_MS: Joi.number().default(2000),
         SCRAPER_CRON_ENABLED: Joi.boolean().default(false),
         INTERNAL_API_KEY: Joi.string().min(16).optional(),
+        MONITORING_INGEST_KEY: Joi.string().min(16).optional(),
         AUTO_SEED_ON_BOOT: Joi.string().valid('true', 'false').default('false'),
         MINIO_ENDPOINT: Joi.string().uri().optional(),
         MINIO_ACCESS_KEY: Joi.string().optional(),
@@ -63,6 +65,7 @@ import { SeederModule } from './seeder';
     CareerModule,
     HeroModule,
     InternalModule,
+    MonitoringModule,
     PatchNoteModule,
     ScraperModule,
     SearchModule,
