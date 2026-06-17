@@ -291,7 +291,9 @@ function collectConsoleErrors(page: Page): string[] {
   page.on('console', (msg) => {
     if (msg.type() === 'error') {
       const text = msg.text();
-      if (text.includes('Failed to load resource')) return;
+      if (text.includes('Failed to load resource')) {
+        return;
+      }
       errors.push(text);
     }
   });
