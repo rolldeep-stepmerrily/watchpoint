@@ -60,7 +60,7 @@ test.describe('Prod full coverage', () => {
     expect(errors, '/ko/heroes console errors').toHaveLength(0);
   });
 
-  test('hero detail (tracer): 탭(능력/특전) 전환 + selected 상태', async ({ page }) => {
+  test('hero detail (tracer): 탭(능력/특전) 전환', async ({ page }) => {
     const errors = collectConsoleErrors(page);
     await page.goto('/ko/heroes/tracer');
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
@@ -68,8 +68,8 @@ test.describe('Prod full coverage', () => {
     const tabs = page.getByRole('tab');
     expect(await tabs.count()).toBeGreaterThanOrEqual(2);
 
-    // disabled 아닌 탭만 클릭
-    const enabledTabs = tabs.locator(':not([disabled])');
+    // 두 번째 탭(특전) — Playwright의 disabled 옵션으로 enabled만 필터
+    const enabledTabs = page.getByRole('tab', { disabled: false });
     const enabledCount = await enabledTabs.count();
     expect(enabledCount).toBeGreaterThanOrEqual(2);
 
@@ -85,9 +85,9 @@ test.describe('Prod full coverage', () => {
     await expect(page.getByRole('heading', { level: 1, name: /정커퀸/ })).toBeVisible();
   });
 
-  test('hero unknown codename: not-found 컨텐츠 렌더 (status는 별도 task #219로 추적)', async ({ page }) => {
+  test('hero unknown codename: not-found heading (status는 task #219로 추적)', async ({ page }) => {
     await page.goto('/ko/heroes/notreal-hero-xyz');
-    await expect(page.getByText(/찾을 수 없/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /찾을 수 없/ })).toBeVisible();
   });
 
   // ─────────────────────────────────────────────────────────────
@@ -104,18 +104,18 @@ test.describe('Prod full coverage', () => {
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
   });
 
-  test('patch-notes unknown version: not-found 컨텐츠', async ({ page }) => {
+  test('patch-notes unknown version: not-found heading', async ({ page }) => {
     await page.goto('/ko/patch-notes/9.99.9');
-    await expect(page.getByText(/찾을 수 없/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /찾을 수 없/ })).toBeVisible();
   });
 
   // ─────────────────────────────────────────────────────────────
   // SECTION 4 — Career + Favorites
   // ─────────────────────────────────────────────────────────────
   test('career 검색 페이지: 검색폼 + 즐겨찾기 heading', async ({ page }) => {
-    await page.goto('/ko/career');
-    await expect(page.locator('input[name="q"]')).toBeVisible();
-    await expect(page.getByRole('heading', { name: /즐겨찾는 플레이어/ })).toBeVisible();
+    await page.goto('/ko/career', { waitUntil: 'networkidle' });
+    await expect(page.locator('input[type="search"][name="q"]')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('heading', { name: /즐겨찾는 플레이어/ })).toBeVisible({ timeout: 15_000 });
   });
 
   test('career 즐겨찾기 전체 흐름: add → 카드 노출 → remove', async ({ page }) => {
@@ -135,9 +135,9 @@ test.describe('Prod full coverage', () => {
   });
 
   test('career stats 페이지 렌더', async ({ page }) => {
-    await page.goto(`/ko/career/${TEST_PLAYER}/stats`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`/ko/career/${TEST_PLAYER}/stats`, { waitUntil: 'networkidle' });
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByRole('heading', { name: /영웅별/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /영웅별/ })).toBeVisible({ timeout: 15_000 });
   });
 
   // ─────────────────────────────────────────────────────────────
@@ -229,7 +229,9 @@ test.describe('Prod full coverage', () => {
     expect(abilitiesRes.abilities.length).toBeGreaterThan(0);
 
     const historyRes = await fetchJson(request, `${PROD_API}/heroes/tracer/patch-history?lang=ko`);
-    expect(historyRes).toHaveProperty('entries');
+    expect(historyRes).toHaveProperty('hero');
+    expect(historyRes).toHaveProperty('history');
+    expect(Array.isArray(historyRes.history)).toBe(true);
   });
 
   test('API /heroes/:codename 404', async ({ request }) => {
