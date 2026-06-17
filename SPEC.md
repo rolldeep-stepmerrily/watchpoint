@@ -244,6 +244,8 @@
 | Method | Path | 설명 |
 |---|---|---|
 | `GET` | `/internal/scrape-jobs` | 최근 스크래핑 잡 상태. `?source=`, `?status=`, `?limit=` (1~200, default 50) |
+| `POST` | `/internal/monitoring-log` | 외부 routine 결과 적재. `x-monitoring-key` 헤더 + `MONITORING_INGEST_KEY` env 매칭 (timing-safe). body: `{ kind, status: 'pass'\|'fail'\|'transient', total, passed, failed, durationMs?, fixPrUrl?, notes? }`. **kind별 10분 1회 rate limit** (Redis SET NX EX). |
+| `GET` | `/internal/monitoring-log` | 적재된 모니터링 로그 조회. `?kind=`, `?status=`, `?limit=` (1~200, default 30). 동일 token 인증. |
 
 ### Web ↔ API ISR 콘트랙트
 
