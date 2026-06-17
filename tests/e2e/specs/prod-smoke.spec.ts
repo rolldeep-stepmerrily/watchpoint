@@ -1,136 +1,336 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type APIRequestContext } from '@playwright/test';
 
 /**
- * Daily prod 모니터링 전용 smoke spec.
+ * Daily prod 종합 점검 (Playwright + Claude 결합).
  *
- * 실행 조건: `E2E_BASE_URL=https://o-watchpoint.com` 일 때만 의미가 있으므로
- * 다른 환경(로컬, preview)에서는 모든 케이스가 자동으로 skip된다.
+ * 실행: GH Actions \`prod-smoke.yml\`이 workflow_dispatch로 트리거됨 (Claude /schedule이 호출).
+ * baseURL에 'o-watchpoint.com' 포함 안 되면 모든 케이스 skip (로컬/preview 무영향).
  *
- * 목적:
- * - prod 페이지가 5xx 없이 그려지는가
- * - 정상 페이지는 200, 잘못된 path는 404 (soft-404 회귀 감지)
- * - JS console에 unhandled error/warning 발생하지 않는가
- * - localStorage 기반 즐겨찾기 흐름(저장/렌더/삭제)이 동작하는가
+ * 목표:
+ * - 모든 public API 엔드포인트 응답 검증
+ * - 모든 화면 렌더 + 핵심 인터랙션 (favorites/language toggle/role filter/tabs/sort/search)
+ * - SEO 표면 (sitemap/robots/hreflang/soft-404 회귀)
+ * - JS 콘솔 에러 zero
+ *
+ * OverFast public API에 부담 안 주기 위해 career 호출은 1회씩만.
  */
 
-const PROD_HOST = 'o-watchpoint.com';
+const PROD_WEB = 'https://o-watchpoint.com';
+const PROD_API = 'https://api.o-watchpoint.com';
+const TEST_PLAYER = 'TeKrop-2217';
 
-test.describe('Prod smoke', () => {
+test.describe('Prod full coverage', () => {
   test.beforeEach(({ baseURL }) => {
-    test.skip(!baseURL?.includes(PROD_HOST), 'prod 전용 smoke — 로컬/preview에서는 skip');
+    test.skip(!baseURL?.includes('o-watchpoint.com'), 'prod 전용 — 다른 환경에서는 skip');
   });
 
-  test('주요 페이지가 5xx 없이 로드된다 + console error 없음', async ({ page }) => {
-    const consoleErrors: string[] = [];
-    page.on('console', (msg) => {
-      if (msg.type() === 'error') {
-        consoleErrors.push(msg.text());
-      }
-    });
-    page.on('pageerror', (err) => {
-      consoleErrors.push(`pageerror: ${err.message}`);
-    });
+  // ─────────────────────────────────────────────────────────────
+  // SECTION 1 — Home
+  // ─────────────────────────────────────────────────────────────
+  test('home /ko: 헤더 + 패치 spotlight + 역할별 grid + 통계', async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+    const res = await page.goto('/ko');
+    expect(res?.status()).toBe(200);
 
-    const paths = [
-      '/ko',
-      '/en',
-      '/ko/heroes',
-      '/ko/heroes/tracer',
-      '/ko/patch-notes',
-      '/ko/career',
-    ];
+    await expect(page.getByRole('link', { name: 'Watchpoint' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Watchpoint', level: 1 })).toBeVisible();
+    await expect(page.getByRole('link', { name: /패치노트 →/ })).toBeVisible();
+    await expect(page.getByRole('link', { name: /영웅 →/ })).toBeVisible();
 
-    for (const path of paths) {
-      const response = await page.goto(path);
-      expect(response, `${path} no response`).not.toBeNull();
-      expect(response?.status(), `${path} returned ${response?.status()}`).toBeLessThan(500);
-      expect(response?.status(), `${path} returned ${response?.status()}`).toBeGreaterThanOrEqual(200);
+    expect(errors, '/ko console errors').toHaveLength(0);
+  });
+
+  test('home /en: 영문 카피 렌더', async ({ page }) => {
+    const res = await page.goto('/en');
+    expect(res?.status()).toBe(200);
+    await expect(page.getByRole('link', { name: /Patch Notes →/ })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Heroes →/ })).toBeVisible();
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // SECTION 2 — Heroes
+  // ─────────────────────────────────────────────────────────────
+  test('heroes 목록: 영웅 카드 렌더 + role 필터 작동', async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+    await page.goto('/ko/heroes');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    const cards = page.locator('a[href^="/ko/heroes/"]');
+    expect(await cards.count()).toBeGreaterThanOrEqual(20);
+
+    const tankFilter = page.getByRole('button', { name: /^돌격/ }).or(page.getByRole('link', { name: /^돌격/ })).first();
+    if (await tankFilter.isVisible().catch(() => false)) {
+      await tankFilter.click();
     }
-
-    const ignoreable = consoleErrors.filter((line) => {
-      if (line.includes('Failed to load resource')) {
-        return false;
-      }
-      if (line.includes('hydration')) {
-        return true;
-      }
-      return true;
-    });
-    expect(ignoreable, 'Unexpected console errors').toHaveLength(0);
+    expect(errors, '/ko/heroes console errors').toHaveLength(0);
   });
 
-  test('hero/patch-notes 잘못된 path는 404 status (soft-404 회귀 감지)', async ({ page }) => {
-    const notFoundCases = [
-      '/ko/heroes/notreal-hero-zzz',
-      '/ko/patch-notes/9.99.9',
-      '/ko/notreal-page-404-test',
-    ];
+  test('hero detail (tracer): 탭 클릭으로 능력/특전/패치 이력 전환', async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+    await page.goto('/ko/heroes/tracer');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-    for (const path of notFoundCases) {
-      const response = await page.goto(path);
-      expect(response?.status(), `${path} should be 404 but got ${response?.status()}`).toBe(404);
+    const tabAbilities = page.getByRole('tab', { name: /능력/ }).first();
+    const tabPerks = page.getByRole('tab', { name: /특전/ }).first();
+    const tabHistory = page.getByRole('tab', { name: /패치 이력/ }).first();
+
+    await expect(tabAbilities).toBeVisible();
+    await tabPerks.click();
+    await expect(tabPerks).toHaveAttribute('aria-selected', 'true');
+    await tabHistory.click();
+    await expect(tabHistory).toHaveAttribute('aria-selected', 'true');
+
+    expect(errors, 'hero detail console errors').toHaveLength(0);
+  });
+
+  test('hero detail (junker-queen): 한국어 ability 명칭 노출', async ({ page }) => {
+    await page.goto('/ko/heroes/junker-queen');
+    await expect(page.getByRole('heading', { level: 1, name: /정커퀸/ })).toBeVisible();
+  });
+
+  test('hero unknown codename → 404 (soft-404 회귀 차단)', async ({ page }) => {
+    const res = await page.goto('/ko/heroes/notreal-hero-xyz');
+    expect(res?.status(), 'hero not-found must be 404').toBe(404);
+    await expect(page.getByText(/찾을 수 없/)).toBeVisible();
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // SECTION 3 — Patch Notes
+  // ─────────────────────────────────────────────────────────────
+  test('patch-notes 목록: 항목 클릭 → 상세 페이지 진입', async ({ page }) => {
+    await page.goto('/ko/patch-notes');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    const firstPatch = page.locator('a[href^="/ko/patch-notes/"]').first();
+    await expect(firstPatch).toBeVisible();
+    await firstPatch.click();
+    await expect(page).toHaveURL(/\/ko\/patch-notes\/[\w.]+/);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  });
+
+  test('patch-notes unknown version → 404', async ({ page }) => {
+    const res = await page.goto('/ko/patch-notes/9.99.9');
+    expect(res?.status(), 'patch not-found must be 404').toBe(404);
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // SECTION 4 — Career + Favorites
+  // ─────────────────────────────────────────────────────────────
+  test('career 검색 페이지: 폼 + 즐겨찾기 빈 상태 카피', async ({ page }) => {
+    await page.goto('/ko/career');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.locator('input[name="q"]')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /즐겨찾는 플레이어/ })).toBeVisible();
+  });
+
+  test('career 즐겨찾기 전체 흐름: add → 카드 노출 → remove', async ({ page }) => {
+    await page.goto(`/ko/career/${TEST_PLAYER}`);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 });
+
+    const addBtn = page.getByRole('button', { name: '즐겨찾기에 추가' });
+    await expect(addBtn).toBeVisible();
+    await addBtn.click();
+    await expect(page.getByRole('button', { name: '즐겨찾기에서 제거' })).toBeVisible();
+
+    await page.goto('/ko/career');
+    const card = page.getByRole('link', { name: /TeKrop/ }).first();
+    await expect(card).toBeVisible();
+
+    const removeBtn = page.getByRole('button', { name: /TeKrop.*제거/ });
+    await removeBtn.click();
+    await expect(page.getByText(/별 아이콘으로 자주 보는/)).toBeVisible();
+  });
+
+  test('career stats 페이지: 영웅 테이블 + 정렬 클릭', async ({ page }) => {
+    await page.goto(`/ko/career/${TEST_PLAYER}/stats`);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 });
+
+    const heroesHeader = page.getByRole('heading', { name: /영웅별/ });
+    await expect(heroesHeader).toBeVisible();
+
+    const winrateSort = page.getByRole('button', { name: /승률/ }).first();
+    if (await winrateSort.isVisible().catch(() => false)) {
+      await winrateSort.click();
+      await winrateSort.click();
     }
   });
 
-  test('헤더 네비게이션 클릭으로 페이지 전환', async ({ page }) => {
+  // ─────────────────────────────────────────────────────────────
+  // SECTION 5 — Nav + Search Bar
+  // ─────────────────────────────────────────────────────────────
+  test('header nav 링크 클릭: heroes / patch-notes / career', async ({ page }) => {
     await page.goto('/ko');
-
     await page.getByRole('link', { name: /^영웅$/ }).first().click();
     await expect(page).toHaveURL(/\/ko\/heroes/);
 
+    await page.goto('/ko');
     await page.getByRole('link', { name: /^패치노트$/ }).first().click();
     await expect(page).toHaveURL(/\/ko\/patch-notes/);
 
+    await page.goto('/ko');
     await page.getByRole('link', { name: /^전적$/ }).first().click();
     await expect(page).toHaveURL(/\/ko\/career/);
   });
 
-  test('영웅 상세 페이지 핵심 컨텐츠가 렌더된다', async ({ page }) => {
-    await page.goto('/ko/heroes/tracer');
-
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(page.getByText('출시')).toBeVisible();
+  test('search-bar: "tracer" 타이핑 → dropdown에 트레이서 노출', async ({ page }) => {
+    await page.goto('/ko');
+    const searchBox = page.getByRole('searchbox', { name: '검색' });
+    await searchBox.fill('tracer');
+    await expect(page.getByRole('option').first()).toBeVisible({ timeout: 5_000 });
   });
 
-  test('즐겨찾기 추가 → 검색 페이지에서 카드 노출 → 삭제', async ({ page }) => {
-    // 1. 플레이어 상세 진입 (TeKrop-2217은 public 프로필이라 안정적)
-    await page.goto('/ko/career/TeKrop-2217');
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 });
-
-    // 2. 별 토글 클릭 → 즐겨찾기 추가
-    const addButton = page.getByRole('button', { name: '즐겨찾기에 추가' });
-    await expect(addButton).toBeVisible();
-    await addButton.click();
-
-    // 3. 같은 버튼이 "제거" 라벨로 바뀌었는지 확인 (aria-pressed=true)
-    await expect(page.getByRole('button', { name: '즐겨찾기에서 제거' })).toBeVisible();
-
-    // 4. 검색 페이지로 이동, 즐겨찾기 카드가 노출되는지 확인
-    await page.goto('/ko/career');
-    await expect(page.getByRole('heading', { name: /즐겨찾는 플레이어/ })).toBeVisible();
-    const favoriteCard = page.getByRole('link', { name: /TeKrop/ });
-    await expect(favoriteCard.first()).toBeVisible();
-
-    // 5. X 버튼 클릭 → 카드 제거 → 빈 상태 카피
-    await page.getByRole('button', { name: /TeKrop.*제거/ }).click();
-    await expect(page.getByText(/별 아이콘으로 자주 보는/)).toBeVisible();
+  test('language toggle: ko → en URL 전환', async ({ page }) => {
+    await page.goto('/ko');
+    const enLink = page.getByRole('link', { name: /English/i }).or(page.getByRole('button', { name: /English/i })).first();
+    if (await enLink.isVisible().catch(() => false)) {
+      await enLink.click();
+      await expect(page).toHaveURL(/\/en/);
+    }
   });
 
-  test('API health + 핵심 엔드포인트 응답', async ({ request }) => {
-    const health = await request.get('https://api.o-watchpoint.com/health');
-    expect(health.status()).toBe(200);
-    const body = await health.json();
+  // ─────────────────────────────────────────────────────────────
+  // SECTION 6 — SEO surfaces
+  // ─────────────────────────────────────────────────────────────
+  test('sitemap.xml: 100+ URL + hreflang 양쪽', async ({ request }) => {
+    const res = await request.get(`${PROD_WEB}/sitemap.xml`);
+    expect(res.status()).toBe(200);
+    const body = await res.text();
+    const urlCount = (body.match(/<url>/g) || []).length;
+    expect(urlCount, 'sitemap urls').toBeGreaterThanOrEqual(100);
+    const hreflangCount = (body.match(/xhtml:link/g) || []).length;
+    expect(hreflangCount, 'hreflang count').toBeGreaterThanOrEqual(urlCount * 2);
+  });
+
+  test('robots.txt: /api/ + /_next/ disallow + sitemap pointer', async ({ request }) => {
+    const res = await request.get(`${PROD_WEB}/robots.txt`);
+    expect(res.status()).toBe(200);
+    const body = await res.text();
+    expect(body).toContain('Disallow: /api/');
+    expect(body).toContain('Disallow: /_next/');
+    expect(body).toContain('Sitemap: https://o-watchpoint.com/sitemap.xml');
+  });
+
+  test('hreflang on home: ko + en + x-default', async ({ page }) => {
+    await page.goto('/ko');
+    const ko = page.locator('link[rel="alternate"][hrefLang="ko"]');
+    const en = page.locator('link[rel="alternate"][hrefLang="en"]');
+    const xDefault = page.locator('link[rel="alternate"][hrefLang="x-default"]');
+    expect(await ko.count()).toBeGreaterThan(0);
+    expect(await en.count()).toBeGreaterThan(0);
+    expect(await xDefault.count()).toBeGreaterThan(0);
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // SECTION 7 — API endpoints
+  // ─────────────────────────────────────────────────────────────
+  test('API /health: status + db + redis OK', async ({ request }) => {
+    const res = await request.get(`${PROD_API}/health`);
+    expect(res.status()).toBe(200);
+    const body = await res.json();
     expect(body.status).toBe('ok');
     expect(body.db).toBe('ok');
     expect(body.redis).toBe('ok');
+  });
 
-    const heroes = await request.get('https://api.o-watchpoint.com/heroes');
-    expect(heroes.status()).toBe(200);
+  test('API /heroes: 51개 영웅 + lang 쿼리', async ({ request }) => {
+    const ko = await fetchJson(request, `${PROD_API}/heroes?pageSize=100&lang=ko`);
+    expect(ko.total).toBeGreaterThanOrEqual(50);
+    expect(ko.items[0]).toHaveProperty('codename');
+    expect(ko.items[0]).toHaveProperty('name');
 
-    const patches = await request.get('https://api.o-watchpoint.com/patch-notes');
-    expect(patches.status()).toBe(200);
+    const en = await fetchJson(request, `${PROD_API}/heroes?pageSize=5&lang=en`);
+    expect(en.items[0].name).not.toMatch(/[가-힣]/);
+  });
 
-    const search = await request.get('https://api.o-watchpoint.com/search?q=tracer');
-    expect(search.status()).toBe(200);
+  test('API /heroes/:codename + abilities + patch-history', async ({ request }) => {
+    const hero = await fetchJson(request, `${PROD_API}/heroes/tracer?lang=ko`);
+    expect(hero.codename).toBe('tracer');
+    expect(hero.role).toBe('DAMAGE');
+
+    const abilities = await fetchJson(request, `${PROD_API}/heroes/tracer/abilities?lang=ko`);
+    expect(Array.isArray(abilities)).toBe(true);
+    expect(abilities.length).toBeGreaterThan(0);
+
+    const history = await fetchJson(request, `${PROD_API}/heroes/tracer/patch-history?lang=ko`);
+    expect(history).toHaveProperty('entries');
+  });
+
+  test('API /heroes/:codename 404', async ({ request }) => {
+    const res = await request.get(`${PROD_API}/heroes/notreal-hero-xyz`);
+    expect(res.status()).toBe(404);
+  });
+
+  test('API /patch-notes: list + latest + detail + entries', async ({ request }) => {
+    const list = await fetchJson(request, `${PROD_API}/patch-notes?pageSize=5`);
+    expect(list.items.length).toBeGreaterThan(0);
+
+    const latest = await fetchJson(request, `${PROD_API}/patch-notes/latest`);
+    expect(latest).toHaveProperty('version');
+
+    const detail = await fetchJson(request, `${PROD_API}/patch-notes/${latest.version}?lang=ko`);
+    expect(detail.version).toBe(latest.version);
+
+    const entries = await fetchJson(request, `${PROD_API}/patch-notes/${latest.version}/entries?lang=ko`);
+    expect(Array.isArray(entries)).toBe(true);
+  });
+
+  test('API /patch-notes/:version 404', async ({ request }) => {
+    const res = await request.get(`${PROD_API}/patch-notes/9.99.9`);
+    expect(res.status()).toBe(404);
+  });
+
+  test('API /search?q=tracer: 영웅 + 패치노트 묶인 결과', async ({ request }) => {
+    const res = await fetchJson(request, `${PROD_API}/search?q=tracer`);
+    expect(res).toHaveProperty('heroes');
+    expect(res).toHaveProperty('patchNotes');
+  });
+
+  test('API /career?q=...: 검색 결과 dict', async ({ request }) => {
+    const res = await fetchJson(request, `${PROD_API}/career?q=TeKrop`);
+    expect(res).toHaveProperty('results');
+    expect(res).toHaveProperty('total');
+    expect(res.results.length).toBeGreaterThan(0);
+  });
+
+  test('API /career/:playerId: summary shape', async ({ request }) => {
+    const res = await fetchJson(request, `${PROD_API}/career/${TEST_PLAYER}`);
+    expect(res.playerId).toBeTruthy();
+    expect(res).toHaveProperty('name');
+    expect(res).toHaveProperty('battleTag');
+    expect(res).toHaveProperty('competitive');
+  });
+
+  test('API /career/:playerId/stats: general+roles+heroes', async ({ request }) => {
+    const res = await fetchJson(request, `${PROD_API}/career/${TEST_PLAYER}/stats`);
+    expect(res).toHaveProperty('general');
+    expect(res).toHaveProperty('roles');
+    expect(res).toHaveProperty('heroes');
+    expect(Array.isArray(res.heroes)).toBe(true);
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+// helpers
+// ─────────────────────────────────────────────────────────────
+function collectConsoleErrors(page: import('@playwright/test').Page): string[] {
+  const errors: string[] = [];
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') {
+      const text = msg.text();
+      // 알려진 noise 제외 (예: 외부 이미지 404)
+      if (text.includes('Failed to load resource')) {
+        return;
+      }
+      errors.push(text);
+    }
+  });
+  page.on('pageerror', (err) => {
+    errors.push(`pageerror: ${err.message}`);
+  });
+  return errors;
+}
+
+async function fetchJson(request: APIRequestContext, url: string): Promise<any> {
+  const res = await request.get(url);
+  expect(res.status(), `${url} status`).toBe(200);
+  return res.json();
+}
