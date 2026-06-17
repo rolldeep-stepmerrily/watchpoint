@@ -49,8 +49,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch (error) {
+    // generateMetadata에서 notFound()를 호출해야 Next.js가 status 404로 응답한다.
+    // page body에서만 호출하면 status 200 + not-found content가 함께 가는 soft-404가 된다.
     if (error instanceof ApiError && error.status === 404) {
-      return { title: t.patchNotes.notFound.title };
+      notFound();
     }
     throw error;
   }

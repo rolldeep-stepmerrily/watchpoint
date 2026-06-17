@@ -53,9 +53,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch (error) {
-    // 진짜 404일 때만 not-found title을 ISR에 캐싱. 5xx/네트워크 에러는 rethrow해서 캐시 오염을 막는다.
+    // 진짜 404는 generateMetadata에서 notFound() — Next.js가 not-found.tsx 렌더 + status 404 반환.
+    // page body에서만 notFound()를 호출하면 status 200 + not-found content가 함께 가는 soft-404가 된다.
+    // 5xx/네트워크 에러는 rethrow해서 ISR 캐시 오염을 막는다.
     if (error instanceof ApiError && error.status === 404) {
-      return { title: t.heroes.notFound.title };
+      notFound();
     }
     throw error;
   }
