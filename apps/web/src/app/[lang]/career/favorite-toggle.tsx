@@ -1,19 +1,20 @@
 'use client';
 
+import type { Locale } from '@@shared';
 import { useCallback, useId, useState } from 'react';
 
+import { getLabels } from '@/lib/labels';
 import { useFavorites } from '@/lib/use-favorites';
-
-import type { Labels } from '@/lib/labels';
 
 interface Props {
   playerId: string;
   name: string;
   avatar: string | null;
-  t: Labels;
+  lang: Locale;
 }
 
-export function FavoriteToggle({ playerId, name, avatar, t }: Props) {
+export function FavoriteToggle({ playerId, name, avatar, lang }: Props) {
+  const t = getLabels(lang);
   const { hydrated, isFavorite, add, remove, limit } = useFavorites();
   const [announce, setAnnounce] = useState('');
   const [warning, setWarning] = useState('');

@@ -3,17 +3,16 @@
 import type { Locale } from '@@shared';
 import Link from 'next/link';
 
+import { getLabels } from '@/lib/labels';
 import { useFavorites } from '@/lib/use-favorites';
-
-import type { Labels } from '@/lib/labels';
 
 interface Props {
   lang: Locale;
-  t: Labels;
   fallbackHint: string;
 }
 
-export function FavoritesList({ lang, t, fallbackHint }: Props) {
+export function FavoritesList({ lang, fallbackHint }: Props) {
+  const t = getLabels(lang);
   const { hydrated, favorites, remove } = useFavorites();
 
   return (
