@@ -6,6 +6,7 @@ import { resolveLang } from '@/lib/i18n';
 import { getLabels, type Labels } from '@/lib/labels';
 
 import { CareerSearchForm } from './career-search-form';
+import { FavoritesList } from './favorites-list';
 import { PlayerSearchCard } from './player-search-card';
 
 export const dynamic = 'force-dynamic';
@@ -61,7 +62,11 @@ export default async function CareerSearchPage({ params, searchParams }: Props) 
           t={t}
         />
       ) : (
-        <EmptyState t={t} />
+        <FavoritesList
+          lang={lang}
+          t={t}
+          fallbackHint={t.career.searchEmpty}
+        />
       )}
 
       <PrivacyGuide t={t} />
@@ -118,14 +123,6 @@ async function SearchResults({ q, lang, t }: { q: string; lang: import('@@shared
 
     throw error;
   }
-}
-
-function EmptyState({ t }: { t: Labels }) {
-  return (
-    <section className="rounded-lg border border-dashed border-(--color-border) bg-(--color-surface) p-6 text-center">
-      <p className="text-sm text-(--color-text-muted)">{t.career.searchEmpty}</p>
-    </section>
-  );
 }
 
 function UpstreamError({ t }: { t: Labels }) {

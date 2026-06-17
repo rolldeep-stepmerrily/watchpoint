@@ -7,6 +7,8 @@ import { ApiError, getCareerSummary } from '@/lib/api';
 import { resolveLang } from '@/lib/i18n';
 import { getLabels, type Labels } from '@/lib/labels';
 
+import { FavoriteToggle } from '../favorite-toggle';
+
 // API의 10분 캐시와 동일 — 사용자별 페이지라 dynamicParams=true(기본). 동일 playerId 반복 호출은 ISR로 흡수.
 export const revalidate = 600;
 
@@ -150,6 +152,12 @@ function ProfileHeader({ summary, t }: { summary: CareerSummaryDto; t: Labels })
             </p>
           ) : null}
         </div>
+        <FavoriteToggle
+          playerId={summary.playerId}
+          name={summary.name}
+          avatar={summary.avatar}
+          t={t}
+        />
       </div>
     </section>
   );
