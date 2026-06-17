@@ -108,6 +108,7 @@ function CareerView({ summary, lang, t }: { summary: CareerSummaryDto; lang: Loc
 
       <ProfileHeader
         summary={summary}
+        lang={lang}
         t={t}
       />
       <CompetitiveSection
@@ -118,7 +119,7 @@ function CareerView({ summary, lang, t }: { summary: CareerSummaryDto; lang: Loc
   );
 }
 
-function ProfileHeader({ summary, t }: { summary: CareerSummaryDto; t: Labels }) {
+function ProfileHeader({ summary, lang, t }: { summary: CareerSummaryDto; lang: Locale; t: Labels }) {
   return (
     <section
       className="relative overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface-elevated)"
@@ -156,7 +157,7 @@ function ProfileHeader({ summary, t }: { summary: CareerSummaryDto; t: Labels })
           playerId={summary.playerId}
           name={summary.name}
           avatar={summary.avatar}
-          t={t}
+          lang={lang}
         />
       </div>
     </section>

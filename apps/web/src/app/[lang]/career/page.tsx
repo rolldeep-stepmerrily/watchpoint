@@ -64,7 +64,6 @@ export default async function CareerSearchPage({ params, searchParams }: Props) 
       ) : (
         <FavoritesList
           lang={lang}
-          t={t}
           fallbackHint={t.career.searchEmpty}
         />
       )}

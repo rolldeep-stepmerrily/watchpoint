@@ -151,7 +151,7 @@ function StatsView({
               </h2>
               <HeroStatsTable
                 heroes={heroesWithNames}
-                t={t}
+                lang={lang}
               />
             </section>
           ) : null}

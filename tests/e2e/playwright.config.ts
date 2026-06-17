@@ -17,6 +17,8 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     viewport: { width: 1280, height: 800 },
     locale: 'ko-KR',
+    // Anthropic remote sandbox intercepts TLS with its own CA; Chromium rejects it
+    ignoreHTTPSErrors: true,
   },
   projects: [
     {

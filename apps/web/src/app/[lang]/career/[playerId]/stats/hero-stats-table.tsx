@@ -1,9 +1,9 @@
 'use client';
 
-import type { CareerStatsHeroEntryDto } from '@@shared';
+import type { CareerStatsHeroEntryDto, Locale } from '@@shared';
 import { useMemo, useState } from 'react';
 
-import type { Labels } from '@/lib/labels';
+import { getLabels, type Labels } from '@/lib/labels';
 
 type SortKey = 'gamesPlayed' | 'winrate' | 'kda' | 'timePlayed';
 
@@ -14,7 +14,7 @@ export interface HeroStatsRow extends CareerStatsHeroEntryDto {
 
 interface Props {
   heroes: HeroStatsRow[];
-  t: Labels;
+  lang: Locale;
 }
 
 interface Column {
@@ -45,7 +45,8 @@ function prettifyCodename(codename: string): string {
     .join(' ');
 }
 
-export function HeroStatsTable({ heroes, t }: Props) {
+export function HeroStatsTable({ heroes, lang }: Props) {
+  const t = getLabels(lang);
   const [sortKey, setSortKey] = useState<SortKey>('gamesPlayed');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
