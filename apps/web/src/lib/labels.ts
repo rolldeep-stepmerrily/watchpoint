@@ -385,6 +385,16 @@ interface Copy {
       sortAscAria: (col: string) => string;
       sortDescAria: (col: string) => string;
     };
+    favorites: {
+      heading: string;
+      empty: string;
+      addLabel: string;
+      removeLabel: string;
+      addedAria: (name: string) => string;
+      removedAria: (name: string) => string;
+      removeEntryAria: (name: string) => string;
+      limitReached: (n: number) => string;
+    };
   };
 }
 
@@ -618,6 +628,16 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
         sortAscAria: (col) => `${col} 오름차순 정렬`,
         sortDescAria: (col) => `${col} 내림차순 정렬`,
       },
+      favorites: {
+        heading: '즐겨찾는 플레이어',
+        empty: '검색 후 별 아이콘으로 자주 보는 플레이어를 저장해 보세요.',
+        addLabel: '즐겨찾기에 추가',
+        removeLabel: '즐겨찾기에서 제거',
+        addedAria: (name) => `${name}을(를) 즐겨찾기에 추가했습니다.`,
+        removedAria: (name) => `${name}을(를) 즐겨찾기에서 제거했습니다.`,
+        removeEntryAria: (name) => `${name} 제거`,
+        limitReached: (n) => `즐겨찾기는 최대 ${n}명까지 저장할 수 있습니다.`,
+      },
     },
   },
   en: {
@@ -848,6 +868,16 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
         healing: 'Healing',
         sortAscAria: (col) => `Sort ${col} ascending`,
         sortDescAria: (col) => `Sort ${col} descending`,
+      },
+      favorites: {
+        heading: 'Favorite players',
+        empty: 'Search for a player and tap the star to save them here.',
+        addLabel: 'Add to favorites',
+        removeLabel: 'Remove from favorites',
+        addedAria: (name) => `${name} added to favorites.`,
+        removedAria: (name) => `${name} removed from favorites.`,
+        removeEntryAria: (name) => `Remove ${name}`,
+        limitReached: (n) => `You can save up to ${n} favorite players.`,
       },
     },
   },
