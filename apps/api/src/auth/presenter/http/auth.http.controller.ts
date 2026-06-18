@@ -63,7 +63,8 @@ export class AuthHttpController {
 
     const webPublicUrl = this.configService.getOrThrow<string>('WEB_PUBLIC_URL');
 
-    res.redirect(`${webPublicUrl}/auth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`);
+    // Next.js route handler (BFF)에 토큰 전달 → 거기서 httpOnly cookie로 옮기고 query 없는 URL로 redirect.
+    res.redirect(`${webPublicUrl}/api/auth/github-callback?accessToken=${accessToken}&refreshToken=${refreshToken}`);
   }
 
   @ApiOperation({ summary: 'Access token 갱신' })

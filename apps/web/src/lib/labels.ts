@@ -241,6 +241,33 @@ interface Copy {
     sourceGithub: string;
     disclaimer: string;
   };
+  auth: {
+    login: string;
+    signup: string;
+    logout: string;
+    profile: string;
+    email: string;
+    password: string;
+    name: string;
+    nameOptional: string;
+    passwordHint: string;
+    submitLogin: string;
+    submitSignup: string;
+    noAccount: string;
+    haveAccount: string;
+    githubLogin: string;
+    or: string;
+    loginTitle: string;
+    signupTitle: string;
+    loading: string;
+    errors: {
+      emailInUse: string;
+      invalidCredentials: string;
+      validation: string;
+      network: string;
+      generic: string;
+    };
+  };
   heroes: {
     title: string;
     titleWithCount: (n: number) => string;
@@ -467,6 +494,33 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       sourceHeroes: 'Blizzard 공식 영웅 정보',
       sourceGithub: 'GitHub',
       disclaimer: '본 사이트는 Blizzard Entertainment와 무관한 팬 프로젝트입니다.',
+    },
+    auth: {
+      login: '로그인',
+      signup: '회원가입',
+      logout: '로그아웃',
+      profile: '내 프로필',
+      email: '이메일',
+      password: '비밀번호',
+      name: '이름',
+      nameOptional: '이름 (선택)',
+      passwordHint: '영문/숫자/특수문자 포함 8자 이상',
+      submitLogin: '로그인',
+      submitSignup: '계정 만들기',
+      noAccount: '계정이 없으신가요?',
+      haveAccount: '이미 계정이 있으신가요?',
+      githubLogin: 'GitHub로 계속하기',
+      or: '또는',
+      loginTitle: '로그인',
+      signupTitle: '회원가입',
+      loading: '처리 중…',
+      errors: {
+        emailInUse: '이미 사용 중인 이메일입니다.',
+        invalidCredentials: '이메일 또는 비밀번호가 올바르지 않습니다.',
+        validation: '입력값을 확인해주세요.',
+        network: '네트워크 오류가 발생했습니다.',
+        generic: '문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+      },
     },
     heroes: {
       title: '영웅',
@@ -708,6 +762,33 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       sourceHeroes: 'Blizzard official hero info',
       sourceGithub: 'GitHub',
       disclaimer: 'This site is not affiliated with Blizzard Entertainment.',
+    },
+    auth: {
+      login: 'Sign in',
+      signup: 'Sign up',
+      logout: 'Sign out',
+      profile: 'My profile',
+      email: 'Email',
+      password: 'Password',
+      name: 'Name',
+      nameOptional: 'Name (optional)',
+      passwordHint: 'At least 8 chars, with letter, number, and symbol',
+      submitLogin: 'Sign in',
+      submitSignup: 'Create account',
+      noAccount: "Don't have an account?",
+      haveAccount: 'Already have an account?',
+      githubLogin: 'Continue with GitHub',
+      or: 'or',
+      loginTitle: 'Sign in',
+      signupTitle: 'Sign up',
+      loading: 'Working…',
+      errors: {
+        emailInUse: 'That email is already in use.',
+        invalidCredentials: 'Email or password is incorrect.',
+        validation: 'Please check your input.',
+        network: 'Network error.',
+        generic: 'Something went wrong. Please try again.',
+      },
     },
     heroes: {
       title: 'Heroes',

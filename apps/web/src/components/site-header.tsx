@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useLocale } from '@/hooks/use-locale';
 import { getLabels } from '@/lib/labels';
 
+import { AuthMenu } from './auth-menu';
 import { LanguageToggle } from './language-toggle';
 import { SearchBar } from './search-bar';
 
@@ -72,6 +73,7 @@ export function SiteHeader() {
         <div className="ml-auto hidden md:flex flex-1 max-w-md justify-end items-center gap-3">
           <SearchBar />
           <LanguageToggle />
+          <AuthMenu />
         </div>
         <button
           type="button"
@@ -108,8 +110,9 @@ export function SiteHeader() {
                 );
               })}
             </nav>
-            <div className="pt-2 border-t border-(--color-border)">
+            <div className="pt-2 border-t border-(--color-border) flex items-center justify-between gap-3">
               <LanguageToggle />
+              <AuthMenu />
             </div>
           </div>
         </div>
