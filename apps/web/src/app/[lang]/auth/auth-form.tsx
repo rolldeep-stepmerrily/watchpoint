@@ -3,9 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
-import type { Labels } from '@/lib/labels';
+import { getLabels, type Labels } from '@/lib/labels';
 
 type AuthErrors = Labels['auth']['errors'];
+type Locale = 'ko' | 'en' | 'ja';
 
 const PASSWORD_PATTERN = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
@@ -25,11 +26,13 @@ const mapErrorCode = (status: number, errorCode: string | undefined, t: AuthErro
 
 interface Props {
   mode: 'login' | 'signup';
-  lang: 'ko' | 'en' | 'ja';
-  t: Labels;
+  lang: Locale;
 }
 
-export function AuthForm({ mode, lang, t }: Props): React.JSX.Element {
+export function AuthForm({ mode, lang }: Props): React.JSX.Element {
+  // server page에서 t: Labels prop을 넘기면 함수가 포함되어 RSC 직렬화 실패 (digest 2301771644).
+  // 클라이언트에서 lang으로 직접 라벨 빌드.
+  const t = getLabels(lang);
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
