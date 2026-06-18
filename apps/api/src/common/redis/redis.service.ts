@@ -88,4 +88,30 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       await this.client.del(...(keys as string[]));
     }
   }
+
+  /**
+   * Access token을 로그아웃 블랙리스트에 추가 (토큰 잔여 TTL 만큼만)
+   *
+   * @param {string} token Access token
+   * @param {number} ttlSeconds 만료까지 남은 초
+   */
+  async addToBlacklist(token: string, ttlSeconds: number): Promise<void> {
+    if (ttlSeconds <= 0) {
+      return;
+    }
+
+    await this.client.set(`blacklist:${token}`, '1', 'EX', ttlSeconds);
+  }
+
+  /**
+   * Access token이 블랙리스트에 있는지 확인
+   *
+   * @param {string} token Access token
+   * @returns {Promise<boolean>} 블랙리스트 여부
+   */
+  async isBlacklisted(token: string): Promise<boolean> {
+    const result = await this.client.exists(`blacklist:${token}`);
+
+    return result === 1;
+  }
 }

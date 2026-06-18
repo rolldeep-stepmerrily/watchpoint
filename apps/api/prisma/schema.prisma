@@ -273,6 +273,61 @@ enum ScrapeStatus {
   SKIPPED
 }
 
+/// 회원 계정. 이메일/비밀번호 로그인 + GitHub OAuth 모두 동일 User 행을 공유.
+/// password가 null이면 OAuth 전용 계정 (이메일/비번 로그인 불가).
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String?
+  name      String?
+  avatarUrl String?
+  role      UserRole  @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  oauthAccounts OAuthAccount[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+/// 외부 OAuth provider 연동 정보. 같은 provider+providerAccountId 조합은 1행.
+/// accessToken은 GitHub API 호출용 (현재는 저장만, 미사용).
+model OAuthAccount {
+  id                Int       @id @default(autoincrement())
+  userId            Int
+  provider          String
+  providerAccountId String
+  accessToken       String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime? @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("oauth_accounts")
+}
+
+/// 발급된 refresh token 화이트리스트. logout 시 삭제 → 재사용 차단.
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
 /// 전적조회 베타 호출 audit log. 상세 수치는 저장하지 않고 요청 메타(IP/requestId/query/성공여부)만 기록.
 /// 운영적으로 OverFast 의존도/오남용을 추적하기 위한 용도.
 model CareerLookupLog {
