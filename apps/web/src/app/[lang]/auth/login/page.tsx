@@ -23,13 +23,11 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
 
 export default async function LoginPage({ params }: Props): Promise<React.JSX.Element> {
   const lang = resolveLang((await params).lang);
-  const t = getLabels(lang);
 
   return (
     <AuthForm
       mode="login"
       lang={lang}
-      t={t}
     />
   );
 }
