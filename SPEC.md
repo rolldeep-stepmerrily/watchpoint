@@ -247,6 +247,31 @@
 | `POST` | `/internal/monitoring-log` | 외부 routine 결과 적재. `x-monitoring-key` 헤더 + `MONITORING_INGEST_KEY` env 매칭 (timing-safe). body: `{ kind, status: 'pass'\|'fail'\|'transient', total, passed, failed, durationMs?, fixPrUrl?, notes? }`. **kind별 10분 1회 rate limit** (Redis SET NX EX). |
 | `GET` | `/internal/monitoring-log` | 적재된 모니터링 로그 조회. `?kind=`, `?status=`, `?limit=` (1~200, default 30). 동일 token 인증. |
 
+### 인증 (Auth)
+
+회원 가입/로그인. 비밀번호 hash는 bcrypt cost 10. JWT access (15분) + refresh (7일, DB whitelist).
+
+| Method | Path | 인증 | 설명 |
+|---|---|---|---|
+| `POST` | `/auth/sign-up` | 공개 | 이메일/비밀번호 회원가입. body: `{ email, password, name? }`. password는 영문/숫자/특수문자 포함 8자 이상. 응답: `{ accessToken, refreshToken }` |
+| `POST` | `/auth/login` | 공개 | 이메일/비밀번호 로그인. body: `{ email, password }`. 응답: `{ accessToken, refreshToken }` |
+| `GET` | `/auth/github` | 공개 | GitHub OAuth 시작 — passport-github2가 GitHub authorize URL로 302 redirect |
+| `GET` | `/auth/github/callback` | 공개 (GitHub callback) | OAuth 콜백. 성공 시 `${WEB_PUBLIC_URL}/auth/callback?accessToken=...&refreshToken=...`로 redirect |
+| `POST` | `/auth/refresh` | `Bearer <refreshToken>` | refresh token 회전 — 새 access + refresh 쌍 발급, 기존 refresh는 폐기 |
+| `POST` | `/auth/logout` | `Bearer <accessToken>` + body `{ refreshToken }` | refresh token 폐기 + access token Redis 블랙리스트 등록 (잔여 TTL만큼) |
+
+### 사용자 (Users)
+
+모두 `Bearer <accessToken>` (JwtAuthGuard) 필수.
+
+| Method | Path | 설명 |
+|---|---|---|
+| `GET` | `/users/me` | 내 프로필. 응답: `{ id, email, name, avatarUrl, role, hasPassword, createdAt }` |
+| `PATCH` | `/users/me` | 프로필 수정. body: `{ name?, avatarUrl? }` |
+| `POST` | `/users/me/password` | 비밀번호 변경. body: `{ currentPassword, newPassword }` |
+
+**권한 모델**: `User.role` = `USER` | `ADMIN`. 관리자 전용 라우트는 `@UseGuards(JwtAuthGuard, AdminGuard)`로 강제.
+
 ### Web ↔ API ISR 콘트랙트
 
 | Method | Path | 호스팅 | 설명 |

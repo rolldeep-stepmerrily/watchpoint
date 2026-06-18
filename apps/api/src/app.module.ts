@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import Joi from 'joi';
+import { AuthModule } from './auth/auth.module';
 import { CareerModule } from './career/career.module';
 import { ResponseCacheModule } from './common/cache';
 import { GlobalCqrsModule } from './common/cqrs';
@@ -17,6 +18,7 @@ import { PatchNoteModule } from './patch-note/patch-note.module';
 import { ScraperModule } from './scraper/scraper.module';
 import { SearchModule } from './search/search.module';
 import { SeederModule } from './seeder';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -44,6 +46,17 @@ import { SeederModule } from './seeder';
         SCRAPER_CRON_ENABLED: Joi.boolean().default(false),
         INTERNAL_API_KEY: Joi.string().min(16).optional(),
         MONITORING_INGEST_KEY: Joi.string().min(16).optional(),
+        JWT_ACCESS_SECRET: Joi.string().min(32).required(),
+        JWT_ACCESS_EXPIRES_IN: Joi.string().default('15m'),
+        JWT_REFRESH_SECRET: Joi.string().min(32).required(),
+        JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
+        REFRESH_TOKEN_TTL_DAYS: Joi.number().default(7),
+        GITHUB_CLIENT_ID: Joi.string().optional(),
+        GITHUB_CLIENT_SECRET: Joi.string().optional(),
+        GITHUB_CALLBACK_URL: Joi.string().uri().optional(),
+        // /auth/github/callback에서 web 주소로 redirect할 때 사용. Joi에선 optional이지만
+        // 콜백 핸들러는 getOrThrow → GitHub 로그인 사용 시 반드시 prod env에 설정 필요.
+        WEB_PUBLIC_URL: Joi.string().uri().optional(),
         AUTO_SEED_ON_BOOT: Joi.string().valid('true', 'false').default('false'),
         MINIO_ENDPOINT: Joi.string().uri().optional(),
         MINIO_ACCESS_KEY: Joi.string().optional(),
@@ -62,6 +75,7 @@ import { SeederModule } from './seeder';
     GlobalCqrsModule,
     PrismaModule,
     ResponseCacheModule,
+    AuthModule,
     CareerModule,
     HeroModule,
     InternalModule,
@@ -70,6 +84,7 @@ import { SeederModule } from './seeder';
     ScraperModule,
     SearchModule,
     SeederModule,
+    UsersModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

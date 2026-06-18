@@ -91,7 +91,14 @@ pnpm hero:edit <codename>
 
 ## 인증/권한 정책
 
-**v1은 인증 없음.** 공개 API + 읽기 전용. 데이터 보정은 HTTP가 아닌 **`apps/api`의 nest-commander CLI로만** 가능. admin HTTP 엔드포인트를 추가하지 말 것.
+**공개 API는 여전히 무인증 + 읽기 전용**이 기본. 데이터 보정은 nest-commander CLI로만 가능하고, 일반 사용자용 HTTP에는 인증을 강제하지 않는다.
+
+회원 계정은 2026-06-18 이후 도입됨 (`/auth/sign-up`, `/auth/login`, GitHub OAuth):
+- **User.role** = `USER` | `ADMIN` (Prisma enum).
+- 로그인이 필요한 사용자 기능은 `@UseGuards(JwtAuthGuard)` + `@User() user: { id: number }` 데코레이터로 식별.
+- **관리자 전용** 엔드포인트는 `@UseGuards(JwtAuthGuard, AdminGuard)` 체인. `AdminGuard`는 `user.role === 'ADMIN'`만 통과.
+- 운영용 내부 endpoint(`/internal/monitoring-log` 등)는 별도 scoped token guard를 그대로 유지. admin role과 분리해 leak 범위 최소화.
+- 데이터 보정은 여전히 **CLI 우선**. admin HTTP는 진짜 admin role을 요구하는 사용자 대상 작업(예: 회원 제재)일 때만 추가.
 
 ---
 
