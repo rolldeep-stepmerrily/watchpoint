@@ -24,7 +24,9 @@ describe('LoginUseCase', () => {
     const jwtService = { sign: jest.fn().mockReturnValue('jwt') };
     const configService = {
       getOrThrow: jest.fn((key: string) => {
-        if (key === 'REFRESH_TOKEN_TTL_DAYS') return 7;
+        if (key === 'REFRESH_TOKEN_TTL_DAYS') {
+          return 7;
+        }
         return `${key}-value`;
       }),
     };
