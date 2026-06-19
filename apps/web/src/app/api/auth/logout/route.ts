@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-import { ACCESS_COOKIE, REFRESH_COOKIE, apiBase, clearAuthCookies } from '@/lib/auth-server';
+import { ACCESS_COOKIE, apiBase, clearAuthCookies, REFRESH_COOKIE } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
