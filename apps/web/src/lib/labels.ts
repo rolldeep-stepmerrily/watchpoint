@@ -287,6 +287,16 @@ interface Copy {
     oauthOnlyHint: string;
     joinedAt: (iso: string) => string;
     accountSection: string;
+    bookmarks: {
+      heroSection: string;
+      playerSection: string;
+      emptyHero: string;
+      emptyPlayer: string;
+      addLabel: string;
+      removeLabel: string;
+      removeEntryAria: (name: string) => string;
+      limitReached: (n: number) => string;
+    };
   };
   heroes: {
     title: string;
@@ -561,6 +571,16 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       oauthOnlyHint: 'GitHub 계정으로 가입한 회원은 비밀번호 로그인을 사용하지 않습니다.',
       joinedAt: (iso) => `가입일: ${new Intl.DateTimeFormat('ko-KR', { dateStyle: 'long' }).format(new Date(iso))}`,
       accountSection: '계정',
+      bookmarks: {
+        heroSection: '북마크한 영웅',
+        playerSection: '북마크한 플레이어',
+        emptyHero: '영웅 상세 페이지의 별 아이콘으로 북마크를 추가해 보세요.',
+        emptyPlayer: '전적조회 결과 페이지에서 별 아이콘으로 자주 보는 플레이어를 저장해 보세요.',
+        addLabel: '북마크 추가',
+        removeLabel: '북마크 제거',
+        removeEntryAria: (name) => `${name} 북마크 제거`,
+        limitReached: (n) => `북마크는 최대 ${n}개까지 저장할 수 있습니다.`,
+      },
     },
     heroes: {
       title: '영웅',
@@ -849,6 +869,16 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
       oauthOnlyHint: 'GitHub-only accounts do not use password sign-in.',
       joinedAt: (iso) => `Joined ${new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(new Date(iso))}`,
       accountSection: 'Account',
+      bookmarks: {
+        heroSection: 'Bookmarked heroes',
+        playerSection: 'Bookmarked players',
+        emptyHero: 'Tap the star icon on any hero page to add a bookmark.',
+        emptyPlayer: 'Star players in career search results to save them here.',
+        addLabel: 'Add bookmark',
+        removeLabel: 'Remove bookmark',
+        removeEntryAria: (name) => `Remove ${name}`,
+        limitReached: (n) => `You can save up to ${n} bookmarks.`,
+      },
     },
     heroes: {
       title: 'Heroes',

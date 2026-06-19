@@ -7,11 +7,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useLocale } from '@/hooks/use-locale';
 import { getLabels } from '@/lib/labels';
+import { useImportLocalBookmarksOnLogin } from '@/lib/use-bookmarks';
 
 export function AuthMenu(): React.JSX.Element {
   const locale = useLocale();
   const t = getLabels(locale);
   const { user, status, refresh } = useCurrentUser();
+  useImportLocalBookmarksOnLogin();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);

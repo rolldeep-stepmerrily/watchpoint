@@ -37,7 +37,7 @@ export function AccountPanel({ lang, initialUser }: Props): React.JSX.Element {
   const [user, setUser] = useState<CurrentUser>(initialUser);
 
   return (
-    <div className="mx-auto max-w-xl space-y-8">
+    <div className="space-y-8">
       <header className="space-y-1">
         <h1 className="text-2xl font-bold text-(--color-text-strong)">{t.profile.title}</h1>
         <p className="text-sm text-(--color-text-muted)">{user.email}</p>

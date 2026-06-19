@@ -2,6 +2,7 @@ import type { HeroDetailDto, HeroPatchHistoryDto } from '@@shared';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
+import { HeroBookmarkToggle } from '@/components/hero-bookmark-toggle';
 import { HeroPortrait } from '@/components/hero-portrait';
 import { JsonLd } from '@/components/json-ld';
 import { ApiError, getHero, getHeroPatchHistory } from '@/lib/api';
@@ -99,6 +100,7 @@ export default async function HeroDetailPage({ params }: Props) {
       <HeroBanner
         hero={hero}
         t={t}
+        lang={lang}
       />
 
       <HeroDetailTabs
@@ -110,7 +112,15 @@ export default async function HeroDetailPage({ params }: Props) {
   );
 }
 
-function HeroBanner({ hero, t }: { hero: HeroDetailDto; t: ReturnType<typeof getLabels> }) {
+function HeroBanner({
+  hero,
+  t,
+  lang,
+}: {
+  hero: HeroDetailDto;
+  t: ReturnType<typeof getLabels>;
+  lang: 'ko' | 'en' | 'ja';
+}) {
   const roleColor = `var(${roleColorVar(hero.role)})`;
   const roleFaint = `var(${roleColorVar(hero.role)}-faint)`;
 
@@ -168,6 +178,13 @@ function HeroBanner({ hero, t }: { hero: HeroDetailDto; t: ReturnType<typeof get
             <span className="ml-auto font-mono text-[10px] uppercase tracking-wider text-(--color-text-faint)">
               {t.hero.release} · {t.date(hero.releasedAt)}
             </span>
+            <HeroBookmarkToggle
+              codename={hero.codename}
+              name={hero.name}
+              portraitUrl={hero.portraitUrl ?? null}
+              role={hero.role}
+              lang={lang}
+            />
           </div>
 
           <div>

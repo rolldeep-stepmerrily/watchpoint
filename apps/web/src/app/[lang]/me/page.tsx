@@ -6,6 +6,7 @@ import { resolveLang } from '@/lib/i18n';
 import { getLabels } from '@/lib/labels';
 
 import { AccountPanel } from './account-panel';
+import { BookmarksSection } from './bookmarks-section';
 
 interface Props {
   params: Promise<{ lang: string }>;
@@ -32,9 +33,12 @@ export default async function MePage({ params }: Props): Promise<React.JSX.Eleme
   }
 
   return (
-    <AccountPanel
-      lang={lang}
-      initialUser={user}
-    />
+    <div className="mx-auto max-w-xl space-y-10">
+      <AccountPanel
+        lang={lang}
+        initialUser={user}
+      />
+      <BookmarksSection lang={lang} />
+    </div>
   );
 }
