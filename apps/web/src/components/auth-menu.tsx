@@ -7,11 +7,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useLocale } from '@/hooks/use-locale';
 import { getLabels } from '@/lib/labels';
+import { useImportLocalBookmarksOnLogin } from '@/lib/use-bookmarks';
 
 export function AuthMenu(): React.JSX.Element {
   const locale = useLocale();
   const t = getLabels(locale);
   const { user, status, refresh } = useCurrentUser();
+  useImportLocalBookmarksOnLogin();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -70,9 +72,7 @@ export function AuthMenu(): React.JSX.Element {
           url={user.avatarUrl}
           initial={initial}
         />
-        <span className="hidden sm:block text-sm text-(--color-text) max-w-32 truncate">
-          {user.name ?? user.email}
-        </span>
+        <span className="hidden sm:block text-sm text-(--color-text) max-w-32 truncate">{user.name ?? user.email}</span>
       </button>
 
       {open && (
@@ -89,6 +89,13 @@ export function AuthMenu(): React.JSX.Element {
               </span>
             )}
           </div>
+          <Link
+            href={`/${locale}/me` as never}
+            onClick={() => setOpen(false)}
+            className="block px-3 py-2 text-sm text-(--color-text) hover:bg-(--color-surface-hover)"
+          >
+            {t.auth.profile}
+          </Link>
           <button
             type="button"
             onClick={logout}

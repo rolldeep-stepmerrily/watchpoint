@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import Joi from 'joi';
 import { AuthModule } from './auth/auth.module';
+import { BookmarkModule } from './bookmark/bookmark.module';
 import { CareerModule } from './career/career.module';
 import { ResponseCacheModule } from './common/cache';
 import { GlobalCqrsModule } from './common/cqrs';
@@ -76,6 +77,7 @@ import { UsersModule } from './users/users.module';
     PrismaModule,
     ResponseCacheModule,
     AuthModule,
+    BookmarkModule,
     CareerModule,
     HeroModule,
     InternalModule,

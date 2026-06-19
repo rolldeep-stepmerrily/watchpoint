@@ -270,6 +270,17 @@
 | `PATCH` | `/users/me` | 프로필 수정. body: `{ name?, avatarUrl? }` |
 | `POST` | `/users/me/password` | 비밀번호 변경. body: `{ currentPassword, newPassword }` |
 
+### 북마크 (Bookmarks)
+
+모두 `Bearer <accessToken>` (JwtAuthGuard) 필수. `kind` = `HERO` (영웅 codename) \| `PLAYER` (OverFast playerId). kind별 한도 100건, 초과 시 `BOOKMARK_LIMIT_REACHED` (409).
+
+| Method | Path | 설명 |
+|---|---|---|
+| `GET` | `/users/me/bookmarks` | 내 북마크 목록. query: `?kind=HERO\|PLAYER` 선택 필터. 응답: `{ items: [{ id, kind, targetId, metadata, createdAt }] }` (createdAt desc) |
+| `POST` | `/users/me/bookmarks` | 북마크 추가. body: `{ kind, targetId, metadata? }`. idempotent — 같은 `(kind, targetId)` 재호출 시 metadata만 갱신 |
+| `DELETE` | `/users/me/bookmarks/:kind/:targetId` | 북마크 삭제. 멱등 (없어도 204) |
+| `POST` | `/users/me/bookmarks/import` | 게스트 localStorage 1회 흡수. body: `{ items: [{ kind, targetId, metadata? }] }` (max 200). 응답: `{ inserted, skipped }`. 중복/한도 초과는 silent skip |
+
 **권한 모델**: `User.role` = `USER` | `ADMIN`. 관리자 전용 라우트는 `@UseGuards(JwtAuthGuard, AdminGuard)`로 강제.
 
 ### Web ↔ API ISR 콘트랙트

@@ -266,6 +266,36 @@ interface Copy {
       validation: string;
       network: string;
       generic: string;
+      wrongPassword: string;
+      samePassword: string;
+      noPassword: string;
+    };
+  };
+  profile: {
+    title: string;
+    profileSection: string;
+    nameLabel: string;
+    avatarUrlLabel: string;
+    avatarUrlHint: string;
+    saveProfile: string;
+    saved: string;
+    passwordSection: string;
+    currentPassword: string;
+    newPassword: string;
+    changePassword: string;
+    passwordChanged: string;
+    oauthOnlyHint: string;
+    joinedAt: (iso: string) => string;
+    accountSection: string;
+    bookmarks: {
+      heroSection: string;
+      playerSection: string;
+      emptyHero: string;
+      emptyPlayer: string;
+      addLabel: string;
+      removeLabel: string;
+      removeEntryAria: (name: string) => string;
+      limitReached: (n: number) => string;
     };
   };
   heroes: {
@@ -520,6 +550,36 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
         validation: '입력값을 확인해주세요.',
         network: '네트워크 오류가 발생했습니다.',
         generic: '문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        wrongPassword: '현재 비밀번호가 올바르지 않습니다.',
+        samePassword: '새 비밀번호가 현재 비밀번호와 동일합니다.',
+        noPassword: '비밀번호 로그인을 사용하지 않는 계정입니다.',
+      },
+    },
+    profile: {
+      title: '내 정보',
+      profileSection: '프로필',
+      nameLabel: '이름',
+      avatarUrlLabel: '아바타 URL',
+      avatarUrlHint: '비워두면 이메일 첫 글자가 표시됩니다.',
+      saveProfile: '저장',
+      saved: '저장되었습니다.',
+      passwordSection: '비밀번호 변경',
+      currentPassword: '현재 비밀번호',
+      newPassword: '새 비밀번호',
+      changePassword: '비밀번호 변경',
+      passwordChanged: '비밀번호가 변경되었습니다.',
+      oauthOnlyHint: 'GitHub 계정으로 가입한 회원은 비밀번호 로그인을 사용하지 않습니다.',
+      joinedAt: (iso) => `가입일: ${new Intl.DateTimeFormat('ko-KR', { dateStyle: 'long' }).format(new Date(iso))}`,
+      accountSection: '계정',
+      bookmarks: {
+        heroSection: '북마크한 영웅',
+        playerSection: '북마크한 플레이어',
+        emptyHero: '영웅 상세 페이지의 별 아이콘으로 북마크를 추가해 보세요.',
+        emptyPlayer: '전적조회 결과 페이지에서 별 아이콘으로 자주 보는 플레이어를 저장해 보세요.',
+        addLabel: '북마크 추가',
+        removeLabel: '북마크 제거',
+        removeEntryAria: (name) => `${name} 북마크 제거`,
+        limitReached: (n) => `북마크는 최대 ${n}개까지 저장할 수 있습니다.`,
       },
     },
     heroes: {
@@ -788,6 +848,36 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
         validation: 'Please check your input.',
         network: 'Network error.',
         generic: 'Something went wrong. Please try again.',
+        wrongPassword: 'Current password is incorrect.',
+        samePassword: 'New password must differ from the current one.',
+        noPassword: 'This account does not use password sign-in.',
+      },
+    },
+    profile: {
+      title: 'My Account',
+      profileSection: 'Profile',
+      nameLabel: 'Name',
+      avatarUrlLabel: 'Avatar URL',
+      avatarUrlHint: 'Leave blank to show the email initial.',
+      saveProfile: 'Save',
+      saved: 'Saved.',
+      passwordSection: 'Change Password',
+      currentPassword: 'Current password',
+      newPassword: 'New password',
+      changePassword: 'Change password',
+      passwordChanged: 'Password updated.',
+      oauthOnlyHint: 'GitHub-only accounts do not use password sign-in.',
+      joinedAt: (iso) => `Joined ${new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(new Date(iso))}`,
+      accountSection: 'Account',
+      bookmarks: {
+        heroSection: 'Bookmarked heroes',
+        playerSection: 'Bookmarked players',
+        emptyHero: 'Tap the star icon on any hero page to add a bookmark.',
+        emptyPlayer: 'Star players in career search results to save them here.',
+        addLabel: 'Add bookmark',
+        removeLabel: 'Remove bookmark',
+        removeEntryAria: (name) => `Remove ${name}`,
+        limitReached: (n) => `You can save up to ${n} bookmarks.`,
       },
     },
     heroes: {
