@@ -1,46 +1,40 @@
 'use client';
 
 import type { Locale } from '@@shared';
-import { useCallback, useId, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { getLabels } from '@/lib/labels';
 import { useBookmarks } from '@/lib/use-bookmarks';
 
 interface Props {
-  playerId: string;
+  codename: string;
   name: string;
-  avatar: string | null;
+  portraitUrl: string | null;
+  role: string;
   lang: Locale;
 }
 
-export function FavoriteToggle({ playerId, name, avatar, lang }: Props): React.JSX.Element {
+export function HeroBookmarkToggle({ codename, name, portraitUrl, role, lang }: Props): React.JSX.Element {
   const t = getLabels(lang);
-  const { hydrated, isBookmarked, add, remove, limit } = useBookmarks('PLAYER');
-  const [announce, setAnnounce] = useState('');
-  const [warning, setWarning] = useState('');
-  const liveId = useId();
+  const { hydrated, isBookmarked, add, remove, limit } = useBookmarks('HERO');
+  const [warning, setWarning] = useState<string | null>(null);
 
-  const favorited = isBookmarked(playerId);
+  const bookmarked = isBookmarked(codename);
 
   const onClick = useCallback(async () => {
-    if (favorited) {
-      await remove(playerId);
-      setWarning('');
-      setAnnounce(t.career.favorites.removedAria(name));
+    setWarning(null);
+    if (bookmarked) {
+      await remove(codename);
       return;
     }
-    const ok = await add({ targetId: playerId, metadata: { name, avatar } });
+    const ok = await add({ targetId: codename, metadata: { name, portraitUrl, role } });
     if (!ok) {
-      setWarning(t.career.favorites.limitReached(limit));
-      setAnnounce('');
-      return;
+      setWarning(t.profile.bookmarks.limitReached(limit));
     }
-    setWarning('');
-    setAnnounce(t.career.favorites.addedAria(name));
-  }, [favorited, add, remove, playerId, name, avatar, t, limit]);
+  }, [bookmarked, add, remove, codename, name, portraitUrl, role, limit, t]);
 
   const disabled = !hydrated;
-  const label = favorited ? t.career.favorites.removeLabel : t.career.favorites.addLabel;
+  const label = bookmarked ? t.profile.bookmarks.removeLabel : t.profile.bookmarks.addLabel;
 
   return (
     <div className="flex items-center gap-2">
@@ -48,25 +42,17 @@ export function FavoriteToggle({ playerId, name, avatar, lang }: Props): React.J
         type="button"
         onClick={onClick}
         disabled={disabled}
-        aria-pressed={favorited}
+        aria-pressed={bookmarked}
         aria-label={label}
         title={label}
         className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-(--color-border) bg-(--color-surface) text-(--color-text-muted) transition-colors hover:border-(--color-accent) hover:text-(--color-accent) disabled:cursor-not-allowed disabled:opacity-50"
       >
         <StarIcon
-          filled={favorited}
+          filled={bookmarked}
           label={label}
         />
       </button>
       {warning ? <span className="text-[11px] text-(--color-text-muted)">{warning}</span> : null}
-      <span
-        id={liveId}
-        role="status"
-        aria-live="polite"
-        className="sr-only"
-      >
-        {announce}
-      </span>
     </div>
   );
 }
