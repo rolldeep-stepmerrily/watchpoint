@@ -9,7 +9,8 @@ type AuthErrors = Labels['auth']['errors'];
 type Locale = 'ko' | 'en' | 'ja';
 
 const PASSWORD_PATTERN = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
+// BFF route handler가 백엔드 /auth/github로 302 — env 의존 없이 web 도메인 안에서 시작.
+const GITHUB_AUTH_HREF = '/api/auth/github';
 
 const mapErrorCode = (status: number, errorCode: string | undefined, t: AuthErrors): string => {
   if (errorCode === 'AUTH_EMAIL_ALREADY_EXISTS') {
@@ -39,8 +40,6 @@ export function AuthForm({ mode, lang }: Props): React.JSX.Element {
   const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const githubHref = API_BASE ? `${API_BASE}/auth/github` : '/auth/github';
 
   const submit = async (event: FormEvent): Promise<void> => {
     event.preventDefault();
@@ -92,7 +91,7 @@ export function AuthForm({ mode, lang }: Props): React.JSX.Element {
       <h1 className="text-2xl font-bold text-(--color-text-strong) mb-6">{title}</h1>
 
       <a
-        href={githubHref}
+        href={GITHUB_AUTH_HREF}
         className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-md border border-(--color-border) bg-(--color-surface) hover:bg-(--color-surface-hover) text-sm font-medium transition-colors"
       >
         <GithubIcon />
