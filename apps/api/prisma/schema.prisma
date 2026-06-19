@@ -287,6 +287,7 @@ model User {
 
   oauthAccounts OAuthAccount[]
   refreshTokens RefreshToken[]
+  bookmarks     Bookmark[]
 
   @@map("users")
 }
@@ -353,6 +354,29 @@ enum CareerLookupEvent {
   SEARCH
   SUMMARY
   STATS
+}
+
+/// 회원이 저장한 북마크. kind로 영웅(codename) / 플레이어(playerId)를 구분.
+/// FK 대신 string targetId — 영웅은 codename, 플레이어는 OverFast playerId(BattleTag based).
+/// metadata에는 표시용 캐시(이름, 아바타 등). 실데이터는 항상 fresh 조회.
+model Bookmark {
+  id        Int          @id @default(autoincrement())
+  userId    Int
+  kind      BookmarkKind
+  targetId  String
+  metadata  Json?
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, kind, targetId])
+  @@index([userId, kind, createdAt(sort: Desc)])
+  @@map("bookmarks")
+}
+
+enum BookmarkKind {
+  HERO
+  PLAYER
 }
 
 /// 외부 모니터링 routine (예: Claude /schedule prod-smoke) 결과 적재용.
