@@ -266,7 +266,27 @@ interface Copy {
       validation: string;
       network: string;
       generic: string;
+      wrongPassword: string;
+      samePassword: string;
+      noPassword: string;
     };
+  };
+  profile: {
+    title: string;
+    profileSection: string;
+    nameLabel: string;
+    avatarUrlLabel: string;
+    avatarUrlHint: string;
+    saveProfile: string;
+    saved: string;
+    passwordSection: string;
+    currentPassword: string;
+    newPassword: string;
+    changePassword: string;
+    passwordChanged: string;
+    oauthOnlyHint: string;
+    joinedAt: (iso: string) => string;
+    accountSection: string;
   };
   heroes: {
     title: string;
@@ -520,7 +540,27 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
         validation: '입력값을 확인해주세요.',
         network: '네트워크 오류가 발생했습니다.',
         generic: '문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        wrongPassword: '현재 비밀번호가 올바르지 않습니다.',
+        samePassword: '새 비밀번호가 현재 비밀번호와 동일합니다.',
+        noPassword: '비밀번호 로그인을 사용하지 않는 계정입니다.',
       },
+    },
+    profile: {
+      title: '내 정보',
+      profileSection: '프로필',
+      nameLabel: '이름',
+      avatarUrlLabel: '아바타 URL',
+      avatarUrlHint: '비워두면 이메일 첫 글자가 표시됩니다.',
+      saveProfile: '저장',
+      saved: '저장되었습니다.',
+      passwordSection: '비밀번호 변경',
+      currentPassword: '현재 비밀번호',
+      newPassword: '새 비밀번호',
+      changePassword: '비밀번호 변경',
+      passwordChanged: '비밀번호가 변경되었습니다.',
+      oauthOnlyHint: 'GitHub 계정으로 가입한 회원은 비밀번호 로그인을 사용하지 않습니다.',
+      joinedAt: (iso) => `가입일: ${new Intl.DateTimeFormat('ko-KR', { dateStyle: 'long' }).format(new Date(iso))}`,
+      accountSection: '계정',
     },
     heroes: {
       title: '영웅',
@@ -788,7 +828,27 @@ const UI_COPY: Record<SupportedLocale, Copy> = {
         validation: 'Please check your input.',
         network: 'Network error.',
         generic: 'Something went wrong. Please try again.',
+        wrongPassword: 'Current password is incorrect.',
+        samePassword: 'New password must differ from the current one.',
+        noPassword: 'This account does not use password sign-in.',
       },
+    },
+    profile: {
+      title: 'My Account',
+      profileSection: 'Profile',
+      nameLabel: 'Name',
+      avatarUrlLabel: 'Avatar URL',
+      avatarUrlHint: 'Leave blank to show the email initial.',
+      saveProfile: 'Save',
+      saved: 'Saved.',
+      passwordSection: 'Change Password',
+      currentPassword: 'Current password',
+      newPassword: 'New password',
+      changePassword: 'Change password',
+      passwordChanged: 'Password updated.',
+      oauthOnlyHint: 'GitHub-only accounts do not use password sign-in.',
+      joinedAt: (iso) => `Joined ${new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(new Date(iso))}`,
+      accountSection: 'Account',
     },
     heroes: {
       title: 'Heroes',

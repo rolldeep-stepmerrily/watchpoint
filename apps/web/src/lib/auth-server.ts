@@ -61,6 +61,30 @@ export const clearAuthCookies = (res: {
 };
 
 /**
+ * 백엔드 호출에 현재 access cookie를 Bearer로 자동 첨부한다. cookie 없으면 401 즉시 응답.
+ * BFF route handler 안에서만 사용 (cookies() 의존).
+ */
+export const fetchWithAuth = async (path: string, init: RequestInit = {}): Promise<Response> => {
+  const store = await cookies();
+  const access = store.get(ACCESS_COOKIE)?.value;
+
+  if (!access) {
+    return new Response(JSON.stringify({ errorCode: 'AUTH_REQUIRED' }), {
+      status: 401,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+
+  const headers = new Headers(init.headers);
+  headers.set('authorization', `Bearer ${access}`);
+  if (!headers.has('accept')) {
+    headers.set('accept', 'application/json');
+  }
+
+  return await fetch(`${API_BASE}${path}`, { ...init, headers });
+};
+
+/**
  * 현재 access cookie로 백엔드 /users/me 호출. 401/만료/미존재 시 null.
  */
 export const getCurrentUser = async (): Promise<AuthMe | null> => {

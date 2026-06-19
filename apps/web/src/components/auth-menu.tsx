@@ -70,9 +70,7 @@ export function AuthMenu(): React.JSX.Element {
           url={user.avatarUrl}
           initial={initial}
         />
-        <span className="hidden sm:block text-sm text-(--color-text) max-w-32 truncate">
-          {user.name ?? user.email}
-        </span>
+        <span className="hidden sm:block text-sm text-(--color-text) max-w-32 truncate">{user.name ?? user.email}</span>
       </button>
 
       {open && (
@@ -89,6 +87,13 @@ export function AuthMenu(): React.JSX.Element {
               </span>
             )}
           </div>
+          <Link
+            href={`/${locale}/me` as never}
+            onClick={() => setOpen(false)}
+            className="block px-3 py-2 text-sm text-(--color-text) hover:bg-(--color-surface-hover)"
+          >
+            {t.auth.profile}
+          </Link>
           <button
             type="button"
             onClick={logout}
