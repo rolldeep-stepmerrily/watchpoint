@@ -40,9 +40,9 @@ describe('SignUpUseCase', () => {
     const queryBus = { execute: jest.fn().mockResolvedValue({ id: 1, email: 'dup@example.com' }) };
     const useCase = buildDeps({ queryBus });
 
-    await expect(
-      useCase.execute({ bodyDto: { email: 'dup@example.com', password: 'Aa1!aaaa' } }),
-    ).rejects.toThrow(new AppException(AUTH_ERRORS.EMAIL_ALREADY_EXISTS));
+    await expect(useCase.execute({ bodyDto: { email: 'dup@example.com', password: 'Aa1!aaaa' } })).rejects.toThrow(
+      new AppException(AUTH_ERRORS.EMAIL_ALREADY_EXISTS),
+    );
   });
 
   it('정상 가입 시 토큰 발급 후 응답', async () => {
