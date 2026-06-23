@@ -9,7 +9,9 @@ import { resolveLang } from '@/lib/i18n';
 import { getLabels, type Labels } from '@/lib/labels';
 import { absoluteUrl, buildArticleJsonLd, buildBreadcrumbJsonLd, SITE_NAME } from '@/lib/seo';
 
-export const revalidate = 600;
+// soft-404 회피: notFound() in generateMetadata가 Next.js 15 + ISR 조합에서 status 200으로 응답하는 버그 회피.
+// 패치노트 상세는 일단 force-dynamic + upstream API 캐시(10분)로 비용 흡수.
+export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{ lang: string; version: string }>;
