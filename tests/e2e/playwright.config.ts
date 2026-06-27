@@ -19,11 +19,28 @@ export default defineConfig({
     locale: 'ko-KR',
     // Anthropic remote sandbox intercepts TLS with its own CA; Chromium rejects it
     ignoreHTTPSErrors: true,
+    // When running in the Anthropic remote sandbox, the pre-installed Chromium binary
+    // path must be specified explicitly because the bundled version doesn't match.
+    // Set PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH to override; leave unset for normal CI.
+    ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+      ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH }
+      : {}),
+    // The sandbox routes all HTTPS through a local proxy. Chromium does not pick up
+    // HTTPS_PROXY automatically, so we pass it explicitly when set.
+    ...(process.env.HTTPS_PROXY ? { proxy: { server: process.env.HTTPS_PROXY } } : {}),
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-dev-shm-usage',
+          ],
+        },
+      },
     },
   ],
 });
