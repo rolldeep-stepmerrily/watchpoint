@@ -13,9 +13,9 @@ import { absoluteUrl, buildBreadcrumbJsonLd, buildHeroPageJsonLd, SITE_NAME } fr
 
 import { HeroDetailTabs } from './hero-detail-tabs';
 
-// soft-404 회피: notFound() in generateMetadata가 Next.js 15 + ISR 조합에서 status 200으로 응답하는 버그 회피.
-// 영웅 상세는 5분 ISR 이점이 크지 않고(영웅 수 51 + 변경 빈도 낮음), upstream API에 5분 Redis 캐시가 있어 부담 미미.
-export const dynamic = 'force-dynamic';
+// soft-404는 미들웨어에서 invalid codename을 사전 검증해 status 404를 강제하므로,
+// 영웅 상세는 ISR 5분 캐시를 그대로 유지.
+export const revalidate = 300;
 
 interface Props {
   params: Promise<{ lang: string; codename: string }>;
