@@ -10,7 +10,7 @@
     "check": "biome check --write src/"
   },
   "dependencies": {
-    "@sentry/nextjs": "^10.57.0",
+    "@sentry/nextjs": "^10.62.0",
     "@watchpoint/shared": "workspace:*",
     "next": "^15.1.0",
     "react": "^19.0.0",
@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0",
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "postcss": "^8.4.0",
