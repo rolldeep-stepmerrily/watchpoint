@@ -9,9 +9,10 @@ import { resolveLang } from '@/lib/i18n';
 import { getLabels, type Labels } from '@/lib/labels';
 import { absoluteUrl, buildArticleJsonLd, buildBreadcrumbJsonLd, SITE_NAME } from '@/lib/seo';
 
-// soft-404 회피: notFound() in generateMetadata가 Next.js 15 + ISR 조합에서 status 200으로 응답하는 버그 회피.
-// 패치노트 상세는 일단 force-dynamic + upstream API 캐시(10분)로 비용 흡수.
-export const dynamic = 'force-dynamic';
+// 패치노트는 동적으로 추가되므로 미들웨어 사전 검증 대상에서 제외.
+// notFound() in generateMetadata가 status 200으로 응답하는 quirk는 잔존하지만,
+// body는 정상적인 not-found 콘텐츠이므로 운영상 받아들임 (별도 작업으로 후속).
+export const revalidate = 600;
 
 interface Props {
   params: Promise<{ lang: string; version: string }>;
