@@ -17,7 +17,7 @@ export const middleware = (request: NextRequest): NextResponse => {
   const first = segments[0];
 
   // unprefixed 페이지 → /<defaultLocale>/<원래 경로>로 redirect
-  if (!first || !isLocale(first)) {
+  if (!(first && isLocale(first))) {
     const url = request.nextUrl.clone();
     url.pathname = `/${DEFAULT_LOCALE}${pathname === '/' ? '' : pathname}`;
     url.search = search;
