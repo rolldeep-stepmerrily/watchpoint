@@ -13,8 +13,7 @@ import { absoluteUrl, buildBreadcrumbJsonLd, buildHeroPageJsonLd, SITE_NAME } fr
 
 import { HeroDetailTabs } from './hero-detail-tabs';
 
-// soft-404는 미들웨어에서 invalid codename을 사전 검증해 status 404를 강제하므로,
-// 영웅 상세는 ISR 5분 캐시를 그대로 유지.
+// soft-404 quirk(status 200 + not-found content)는 patch-notes와 동일하게 잔존 — task #219에서 추적.
 export const revalidate = 300;
 
 interface Props {
