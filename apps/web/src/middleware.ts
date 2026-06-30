@@ -1,13 +1,16 @@
-import { DEFAULT_LOCALE, HERO_CODENAMES, isLocale } from '@@shared';
+import { DEFAULT_LOCALE, isLocale } from '@@shared';
 import { type NextRequest, NextResponse } from 'next/server';
 
 /**
- * 1. 라우트 prefix가 없으면 default locale로 308 redirect. SEO상 검색엔진이 이전에
- *    인덱싱한 무-prefix URL(`/heroes`, `/patch-notes/...`)을 자연스럽게 locale prefix
- *    URL로 이전.
- * 2. `/<locale>/heroes/<codename>`은 codename이 카탈로그에 존재하는지 사전 검증. 없으면
- *    NextResponse.rewrite로 status 404 강제 → Next.js 15 + Vercel에서 `notFound()`가
- *    status 200으로 응답하는 soft-404 quirk를 우회.
+ * 라우트 prefix가 없으면 default locale로 308 redirect. SEO상 검색엔진이 이전에
+ * 인덱싱한 무-prefix URL(`/heroes`, `/patch-notes/...`)을 자연스럽게 locale prefix
+ * URL로 이전.
+ *
+ * 영웅 codename 사전 검증 + NextResponse.rewrite(..., { status: 404 })로 soft-404를
+ * 우회하던 시도는 제거됨: Vercel이 그 응답을 자체 정적 /404 폴백으로 매칭해
+ * (x-matched-path: /404) not-found.tsx의 커스텀 UI 자체가 사라지는 회귀를 유발했다.
+ * 페이지 쪽 notFound() 호출에 맡기고, status 200으로 응답하는 soft-404 quirk는
+ * patch-notes와 동일하게 잔존 — task #219에서 추적.
  *
  * 매처는 페이지 라우트만. `_next`/`api`/asset은 제외.
  */
@@ -22,15 +25,6 @@ export const middleware = (request: NextRequest): NextResponse => {
     url.pathname = `/${DEFAULT_LOCALE}${pathname === '/' ? '' : pathname}`;
     url.search = search;
     return NextResponse.redirect(url, 308);
-  }
-
-  // /<locale>/heroes/<codename> 단일 세그먼트만 사전 검증.
-  // 하위 경로(/abilities 같은 잠재 확장)는 Next.js 라우터가 404 처리하므로 건드리지 않음.
-  if (segments[1] === 'heroes' && segments.length === 3) {
-    const codename = segments[2];
-    if (!HERO_CODENAMES.has(codename)) {
-      return NextResponse.rewrite(request.nextUrl, { status: 404 });
-    }
   }
 
   return NextResponse.next();
