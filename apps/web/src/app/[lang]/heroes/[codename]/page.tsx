@@ -13,8 +13,6 @@ import { absoluteUrl, buildBreadcrumbJsonLd, buildHeroPageJsonLd, SITE_NAME } fr
 
 import { HeroDetailTabs } from './hero-detail-tabs';
 
-// soft-404는 미들웨어에서 invalid codename을 사전 검증해 status 404를 강제하므로,
-// 영웅 상세는 ISR 5분 캐시를 그대로 유지.
 export const revalidate = 300;
 
 interface Props {
@@ -56,8 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch (error) {
-    // 진짜 404는 generateMetadata에서 notFound() — Next.js가 not-found.tsx 렌더 + status 404 반환.
-    // page body에서만 notFound()를 호출하면 status 200 + not-found content가 함께 가는 soft-404가 된다.
+    // generateMetadata에서 notFound()를 호출하면 Next.js가 not-found.tsx를 렌더하고 404를 반환.
     // 5xx/네트워크 에러는 rethrow해서 ISR 캐시 오염을 막는다.
     if (error instanceof ApiError && error.status === 404) {
       notFound();
