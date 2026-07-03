@@ -27,7 +27,12 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         launchOptions: {
           executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? undefined,
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            // Route through the sandbox proxy; HTTPS_PROXY is set in Anthropic remote environments
+            ...(process.env.HTTPS_PROXY ? [`--proxy-server=${process.env.HTTPS_PROXY}`] : []),
+          ],
         },
       },
     },

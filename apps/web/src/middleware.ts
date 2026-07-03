@@ -26,10 +26,12 @@ export const middleware = (request: NextRequest): NextResponse => {
 
   // /<locale>/heroes/<codename> 단일 세그먼트만 사전 검증.
   // 하위 경로(/abilities 같은 잠재 확장)는 Next.js 라우터가 404 처리하므로 건드리지 않음.
+  // rewrite + { status: 404 }는 App Router의 not-found.tsx를 우회해 Next.js 내장 404를
+  // 렌더링하므로 NextResponse.next()로 통과 → page.tsx의 notFound()가 not-found.tsx 렌더링.
   if (segments[1] === 'heroes' && segments.length === 3) {
     const codename = segments[2];
     if (!HERO_CODENAMES.has(codename)) {
-      return NextResponse.rewrite(request.nextUrl, { status: 404 });
+      return NextResponse.next();
     }
   }
 
