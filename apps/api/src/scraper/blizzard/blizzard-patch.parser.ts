@@ -30,17 +30,19 @@ export class BlizzardPatchParser {
 
         // 날짜 파싱 실패 시 new Date() fallback은 위험 — 모든 미해석 patch가 "오늘" 발매로 잘못 색인되고
         // backfill `until` 필터를 우회한다. 파싱 실패는 명시적으로 skip.
-        const releasedAt = this.parseKoreanDate(dateText);
+        const releasedAt = this.parseDate(dateText);
         if (!releasedAt) {
           this.logger.warn(`patch skipped — releasedAt parse failed (version=${version}, raw="${dateText}")`);
           return;
         }
 
+        // PatchNote.sourceUrl은 unique. 페이지 base URL을 그대로 넣으면 두 번째 이후 patch가
+        // P2002 unique violation을 유발한다. anchor를 붙여 patch별로 고유 URL을 만든다.
         patches.push({
           version,
           title,
           releasedAt,
-          sourceUrl,
+          sourceUrl: this.buildPatchSourceUrl(sourceUrl, anchorId),
           summary: null,
           entries: this.parseEntries($, node),
         });
@@ -180,6 +182,10 @@ export class BlizzardPatchParser {
     return `${match[1]}.${match[2]}.${match[3]}`;
   }
 
+  private parseDate(text: string): Date | null {
+    return this.parseKoreanDate(text) ?? this.parseEnglishDate(text);
+  }
+
   private parseKoreanDate(text: string): Date | null {
     // "2026년 5월 12일"
     const match = text.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
@@ -187,7 +193,53 @@ export class BlizzardPatchParser {
       return null;
     }
     const [, y, m, d] = match;
+    return this.buildUtcDate(y, m, d);
+  }
+
+  private parseEnglishDate(text: string): Date | null {
+    // "July 2, 2026"
+    const match = text.match(/([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})/);
+    if (!match) {
+      return null;
+    }
+    const [, monthName, d, y] = match;
+    const monthIdx = EN_MONTHS.indexOf(monthName.toLowerCase());
+    if (monthIdx < 0) {
+      return null;
+    }
+    return this.buildUtcDate(y, String(monthIdx + 1), d);
+  }
+
+  private buildUtcDate(y: string, m: string, d: string): Date | null {
     const date = new Date(`${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T00:00:00Z`);
     return Number.isNaN(date.getTime()) ? null : date;
   }
+
+  private buildPatchSourceUrl(baseUrl: string, anchorId: string): string {
+    if (!anchorId) {
+      return baseUrl;
+    }
+    try {
+      const url = new URL(baseUrl);
+      url.hash = anchorId;
+      return url.toString();
+    } catch {
+      return `${baseUrl}#${anchorId}`;
+    }
+  }
 }
+
+const EN_MONTHS = [
+  'january',
+  'february',
+  'march',
+  'april',
+  'may',
+  'june',
+  'july',
+  'august',
+  'september',
+  'october',
+  'november',
+  'december',
+];
