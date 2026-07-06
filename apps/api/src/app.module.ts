@@ -34,7 +34,10 @@ import { UsersModule } from './users/users.module';
     }),
     ConfigModule.forRoot({
       validationSchema: Joi.object({
-        NODE_ENV: Joi.string().valid('local', 'development', 'production').default('development'),
+        // Railway 빌드 스택이 런타임 컨테이너에 NODE_ENV="" (빈 문자열)를 주입하는 경우가 있어,
+        // undefined 뿐 아니라 빈 문자열도 default로 흡수한다. build 단계에 NODE_ENV=production을
+        // 심으면 pnpm이 devDependencies(tsc/nest)를 스킵해 빌드가 깨지므로, 값은 스키마 기본으로만 강제.
+        NODE_ENV: Joi.string().valid('local', 'development', 'production').empty('').default('production'),
         PORT: Joi.number().optional(),
         API_PORT: Joi.number().default(3000),
         DATABASE_URL: Joi.string().required(),
