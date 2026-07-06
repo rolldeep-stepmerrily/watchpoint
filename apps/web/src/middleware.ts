@@ -26,10 +26,15 @@ export const middleware = (request: NextRequest): NextResponse => {
 
   // /<locale>/heroes/<codename> 단일 세그먼트만 사전 검증.
   // 하위 경로(/abilities 같은 잠재 확장)는 Next.js 라우터가 404 처리하므로 건드리지 않음.
+  //
+  // ⚠️ NextResponse.rewrite(url, { status: 404 }) 는 Vercel에서 custom not-found.tsx가 아닌
+  //    Vercel 기본 "This page could not be found." 페이지를 서빙한다. 대신 page.tsx의
+  //    notFound()가 custom not-found.tsx를 렌더하므로 미들웨어에서는 next()만 반환한다.
+  //    HTTP 응답 status 추적은 별도 task #219로 진행.
   if (segments[1] === 'heroes' && segments.length === 3) {
     const codename = segments[2];
     if (!HERO_CODENAMES.has(codename)) {
-      return NextResponse.rewrite(request.nextUrl, { status: 404 });
+      return NextResponse.next();
     }
   }
 
