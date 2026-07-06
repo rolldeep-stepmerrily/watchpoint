@@ -2,6 +2,7 @@ import { ResponseCache } from '@@cache';
 import { PrismaService } from '@@db';
 import { PatchNoteStatus, Prisma, ScrapeSource } from '@@prisma';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import * as Sentry from '@sentry/nestjs';
 import { isDefined } from 'class-validator';
 
 import { HeroIconMatcher } from '../../seeder';
@@ -351,7 +352,13 @@ export class BlizzardPatchScraper {
           summary.pendingReview += 1;
         }
       } catch (error) {
+        // persist 예외는 로그+skipped 카운트로만 흡수됐어서 3주간 조용히 sourceUrl @unique 위반이
+        // 반복됐다. Sentry로도 올려 재발 시 즉시 감지되게 한다.
         this.logger.warn(`persist patch ${patch.version} failed: ${(error as Error).message}`);
+        Sentry.captureException(error, {
+          tags: { scraper: 'blizzard-patch', phase: 'persist' },
+          extra: { version: patch.version, sourceUrl: patch.sourceUrl },
+        });
         summary.skipped += 1;
       }
     }
