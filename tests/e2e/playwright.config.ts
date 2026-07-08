@@ -19,6 +19,8 @@ export default defineConfig({
     locale: 'ko-KR',
     // Anthropic remote sandbox intercepts TLS with its own CA; Chromium rejects it
     ignoreHTTPSErrors: true,
+    // Route browser traffic through the sandbox's egress proxy when present
+    ...(process.env.HTTPS_PROXY ? { proxy: { server: process.env.HTTPS_PROXY } } : {}),
   },
   projects: [
     {
