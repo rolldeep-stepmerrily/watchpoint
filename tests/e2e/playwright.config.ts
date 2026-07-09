@@ -17,8 +17,10 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     viewport: { width: 1280, height: 800 },
     locale: 'ko-KR',
-    // Anthropic remote sandbox intercepts TLS with its own CA; Chromium rejects it
+    // Anthropic remote sandbox intercepts TLS with its own CA; Chromium rejects it.
+    // Proxy must be passed explicitly — Chromium ignores HTTPS_PROXY env var.
     ignoreHTTPSErrors: true,
+    proxy: process.env.HTTPS_PROXY ? { server: process.env.HTTPS_PROXY } : undefined,
   },
   projects: [
     {
