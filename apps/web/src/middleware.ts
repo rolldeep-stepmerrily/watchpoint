@@ -6,8 +6,8 @@ import { type NextRequest, NextResponse } from 'next/server';
  *    인덱싱한 무-prefix URL(`/heroes`, `/patch-notes/...`)을 자연스럽게 locale prefix
  *    URL로 이전.
  * 2. `/<locale>/heroes/<codename>`은 codename이 카탈로그에 존재하는지 사전 검증. 없으면
- *    NextResponse.rewrite로 status 404 강제 → Next.js 15 + Vercel에서 `notFound()`가
- *    status 200으로 응답하는 soft-404 quirk를 우회.
+ *    그냥 next()로 통과시켜 page.tsx의 notFound() 호출이 한국어 not-found.tsx를 렌더하도록
+ *    위임. HTTP status soft-404 이슈는 task #219에서 별도 추적.
  *
  * 매처는 페이지 라우트만. `_next`/`api`/asset은 제외.
  */
@@ -25,11 +25,12 @@ export const middleware = (request: NextRequest): NextResponse => {
   }
 
   // /<locale>/heroes/<codename> 단일 세그먼트만 사전 검증.
-  // 하위 경로(/abilities 같은 잠재 확장)는 Next.js 라우터가 404 처리하므로 건드리지 않음.
+  // 알 수 없는 codename은 page.tsx의 notFound() 호출에 맡겨 한국어 not-found.tsx를 렌더.
+  // (이전에 NextResponse.rewrite + status:404 를 썼으나 Next.js 기본 영문 404가 노출되는
+  //  부작용이 있었음 — HTTP status soft-404 이슈는 task #219에서 별도 추적)
   if (segments[1] === 'heroes' && segments.length === 3) {
-    const codename = segments[2];
-    if (!HERO_CODENAMES.has(codename)) {
-      return NextResponse.rewrite(request.nextUrl, { status: 404 });
+    if (!HERO_CODENAMES.has(segments[2])) {
+      return NextResponse.next();
     }
   }
 

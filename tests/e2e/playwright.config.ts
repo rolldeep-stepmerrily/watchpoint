@@ -19,6 +19,16 @@ export default defineConfig({
     locale: 'ko-KR',
     // Anthropic remote sandbox intercepts TLS with its own CA; Chromium rejects it
     ignoreHTTPSErrors: true,
+    ...(process.env.HTTPS_PROXY
+      ? {
+          proxy: {
+            server: process.env.HTTPS_PROXY,
+            // Bypass the intercepting proxy for prod domains so Chromium connects
+            // directly — avoids TLS-layer incompatibilities with GREASE extensions.
+            bypass: 'o-watchpoint.com,api.o-watchpoint.com',
+          },
+        }
+      : {}),
   },
   projects: [
     {
@@ -27,7 +37,12 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         launchOptions: {
           executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? undefined,
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--ignore-certificate-errors',
+            '--dns-over-https-mode=off',
+          ],
         },
       },
     },
