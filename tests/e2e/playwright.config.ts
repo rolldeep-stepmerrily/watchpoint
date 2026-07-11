@@ -19,6 +19,10 @@ export default defineConfig({
     locale: 'ko-KR',
     // Anthropic remote sandbox intercepts TLS with its own CA; Chromium rejects it
     ignoreHTTPSErrors: true,
+    // Remote sandbox routes outbound HTTPS through a local proxy — needed for APIRequestContext
+    // (page-level requests are handled via page.route() in the spec instead, because Chrome's
+    // extended TLS ClientHello is incompatible with the proxy's MITM TLS re-termination)
+    ...(process.env.HTTPS_PROXY ? { proxy: { server: process.env.HTTPS_PROXY } } : {}),
   },
   projects: [
     {

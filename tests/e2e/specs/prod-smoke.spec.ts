@@ -1,4 +1,4 @@
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { expect, request as requestLib, test, type APIRequestContext, type Page } from '@playwright/test';
 
 /**
  * Daily prod 종합 점검 (Playwright + Claude 결합).
@@ -21,8 +21,36 @@ const PROD_API = 'https://api.o-watchpoint.com';
 const TEST_PLAYER = 'TeKrop-2217';
 
 test.describe('Prod full coverage', () => {
-  test.beforeEach(({ baseURL }) => {
+  // When running inside Anthropic's remote sandbox the system HTTPS proxy re-terminates TLS
+  // using a non-standard CA, and Chrome's extended TLS ClientHello (GREASE, post-quantum key
+  // shares, etc.) causes the proxy to reset the connection before the handshake completes.
+  // Node.js/undici (used by Playwright's APIRequestContext) negotiates a simpler ClientHello
+  // and works fine through the same proxy. Intercepting all page-level requests and replaying
+  // them via the APIRequestContext lets Chrome render pages without making direct TLS connections.
+  const USE_PROXY_ROUTING = !!process.env.HTTPS_PROXY;
+
+  test.beforeEach(async ({ baseURL, page }) => {
     test.skip(!baseURL?.includes('o-watchpoint.com'), 'prod 전용 — 다른 환경에서는 skip');
+
+    if (USE_PROXY_ROUTING) {
+      const apiCtx = await requestLib.newContext({ ignoreHTTPSErrors: true });
+      await page.route('**/*', async (route) => {
+        try {
+          const req = route.request();
+          const res = await apiCtx.fetch(req.url(), {
+            method: req.method(),
+            headers: { ...req.headers(), 'accept-encoding': 'identity' },
+          });
+          await route.fulfill({
+            status: res.status(),
+            headers: Object.fromEntries(Object.entries(res.headers())),
+            body: await res.body(),
+          });
+        } catch {
+          await route.abort('failed');
+        }
+      });
+    }
   });
 
   // ─────────────────────────────────────────────────────────────
