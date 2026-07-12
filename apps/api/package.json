@@ -6,7 +6,7 @@
     "build": "prisma generate && nest build",
     "dev": "prisma generate && nest start --watch",
     "start": "node dist/main",
-    "start:prod": "prisma migrate deploy && prisma db seed && node dist/main",
+    "start:prod": "prisma migrate deploy && node dist/main",
     "lint": "biome lint src/",
     "check": "biome check --write src/",
     "test": "jest",
@@ -57,6 +57,7 @@
     "cheerio": "^1.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "commander": "^11",
     "compression": "^1.8.1",
     "dayjs": "^1.11.21",
     "domhandler": "^6.0.1",
@@ -99,6 +100,9 @@
     "ts-jest": "^29.1.0",
     "ts-loader": "^9.4.3",
     "typescript": "^5.8.0"
+  },
+  "prisma": {
+    "seed": "ts-node -r tsconfig-paths/register prisma/seed.ts"
   },
   "jest": {
     "moduleFileExtensions": [

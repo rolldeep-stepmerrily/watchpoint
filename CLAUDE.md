@@ -86,7 +86,7 @@ pnpm hero:edit <codename>
 ## Biome 설정
 
 - indent: 2 spaces, lineWidth: 120, quote: single, trailingCommas: all, semicolons: always
-- `apps/api`: `*.strategy.ts`, `*.controller.ts`, `*.service.ts`, `*.error.ts` → `useExplicitType: error`
+- `apps/api`: `*.strategy.ts`, `*.controller.ts`, `*.service.ts`, `*.error.ts` → `noInferrableTypes: error` (로컬 변수의 불필요한 타입 주석 금지 — 함수 반환 타입은 별도로 명시 강제)
 - `apps/web`: jsx 더블쿼터, `noConsole` off (Next.js 디버그 허용)
 
 ## 인증/권한 정책

@@ -3,7 +3,7 @@
     "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true,
-    "defaultBranch": "main"
+    "defaultBranch": "develop"
   },
   "files": {
     "ignoreUnknown": true,
@@ -105,7 +105,7 @@
         "useBlockStatements": "error"
       },
       "suspicious": {
-        "noExplicitAny": "warn",
+        "noExplicitAny": "error",
         "noConsole": "error",
         "noEmptyBlockStatements": "error",
         "useAwait": "error",
