@@ -36,6 +36,7 @@ export const NAMUWIKI_PAGE_TITLES: Readonly<Record<string, string>> = {
   mei: '메이(오버워치)',
   pharah: '파라(오버워치)',
   reaper: '리퍼(오버워치)',
+  shion: '시온(오버워치)',
   sierra: '시에라(오버워치)',
   sojourn: '소전(오버워치)',
   emre: '엠레(오버워치)',
