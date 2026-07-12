@@ -4,7 +4,12 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve as pathResolve } from 'node:path';
 import { Injectable, Logger } from '@nestjs/common';
 
-import { BlizzardIconParser, type ParsedAbilityIcon, type ParsedPerkIcon } from '../scraper/blizzard';
+import {
+  BlizzardIconParser,
+  CODENAME_TO_BLIZZARD_SLUG,
+  type ParsedAbilityIcon,
+  type ParsedPerkIcon,
+} from '../scraper/blizzard';
 import { ScraperHttpClient } from '../scraper/common';
 
 import { HeroDiffLogger } from './hero-diff-logger.service';
@@ -12,13 +17,6 @@ import { ABILITY_ID_TO_SLOT } from './icon-overrides';
 
 const BLIZZARD_HERO_BASE = 'https://overwatch.blizzard.com/ko-kr/heroes/';
 const PUBLIC_ICONS_REL = '../web/public/icons/heroes';
-
-/**
- * 일부 영웅은 codename과 Blizzard URL slug가 다름 (blizzard-hero.scraper.ts와 동일 매핑 유지).
- */
-const CODENAME_TO_BLIZZARD_SLUG: Readonly<Record<string, string>> = {
-  'd-va': 'dva',
-};
 
 /**
  * 1:1 순서 매칭에 사용. PASSIVE는 Blizzard 영문 페이지에 일반적으로 노출되지 않아 제외.
@@ -106,7 +104,20 @@ export class HeroIconMatcher {
     });
 
     if (!hero) {
-      throw new Error(`Hero ${codename} not found in DB. seed first.`);
+      this.logger.warn(`Hero ${codename} not found in DB. seed first.`);
+
+      return {
+        codename,
+        matched: false,
+        abilityMatched: 0,
+        abilityTotal: 0,
+        perkMatched: 0,
+        perkTotal: 0,
+        unmatchedAbilities: [],
+        unmatchedPerks: [],
+        extraAbilityIds: [],
+        skipped: `Hero ${codename} not found in DB. seed first.`,
+      };
     }
 
     const slug = CODENAME_TO_BLIZZARD_SLUG[codename] ?? codename;

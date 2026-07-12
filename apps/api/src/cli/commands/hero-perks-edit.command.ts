@@ -1,6 +1,7 @@
 import { ResponseCache } from '@@cache';
 import { PrismaService } from '@@db';
 import { PerkTier, Prisma } from '@@prisma';
+import { InvalidArgumentError } from 'commander';
 import { Command, CommandRunner, Option } from 'nest-commander';
 
 interface HeroPerksEditOptions {
@@ -147,9 +148,11 @@ export class HeroPerksEditCommand extends CommandRunner {
   @Option({ flags: '--tier <tier>', description: 'MINOR | MAJOR' })
   parseTier(value: string): PerkTier {
     const upper = value.toUpperCase();
+
     if (upper !== 'MINOR' && upper !== 'MAJOR') {
-      throw new Error(`tier는 MINOR 또는 MAJOR (입력: ${value})`);
+      throw new InvalidArgumentError(`tier는 MINOR 또는 MAJOR (입력: ${value})`);
     }
+
     return upper;
   }
 
@@ -173,7 +176,7 @@ export class HeroPerksEditCommand extends CommandRunner {
     try {
       return JSON.parse(value) as Prisma.InputJsonValue;
     } catch (error) {
-      throw new Error(`--stats JSON 파싱 실패: ${(error as Error).message}`);
+      throw new InvalidArgumentError(`--stats JSON 파싱 실패: ${(error as Error).message}`);
     }
   }
 

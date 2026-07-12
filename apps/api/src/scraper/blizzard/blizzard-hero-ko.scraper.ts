@@ -7,16 +7,10 @@ import { HeroDiffLogger } from '../../seeder';
 import { ABILITY_ID_TO_SLOT } from '../../seeder/icon-overrides';
 import { ScrapeJobRecorder, ScraperHttpClient } from '../common';
 import { BlizzardHeroParser } from './blizzard-hero.parser';
+import { CODENAME_TO_BLIZZARD_SLUG } from './blizzard-slug';
 import type { ParsedAbilityEn, ParsedHeroEn } from './dto/parsed-hero-en.dto';
 
 const BLIZZARD_HERO_KO_BASE = 'https://overwatch.blizzard.com/ko-kr/heroes/';
-
-/**
- * 일부 영웅은 codename과 Blizzard URL slug가 다름. en scraper와 동일 보정값 공유.
- */
-const CODENAME_TO_BLIZZARD_SLUG: Readonly<Record<string, string>> = {
-  'd-va': 'dva',
-};
 
 /**
  * Blizzard 영문 페이지가 PRIMARY+SECONDARY를 한 카드로 묶듯, 한국어 페이지도 동일하므로 같은 정렬 사용.

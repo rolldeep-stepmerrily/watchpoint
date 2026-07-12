@@ -1,9 +1,9 @@
 import { AppException } from '@@exceptions';
-import { timingSafeEqual } from 'node:crypto';
 import { CanActivate, type ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
 
+import { safeEqualHashed } from '../../common/security/safe-equal';
 import { INTERNAL_ERRORS } from '../internal.error';
 
 const LOCALHOST_ADDRESSES = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
@@ -29,9 +29,11 @@ export class IsLocalhostGuard implements CanActivate {
 
     if (expectedKey && expectedKey.length > 0) {
       const provided = request.headers['x-internal-key'];
-      if (typeof provided !== 'string' || !this.safeEqual(provided, expectedKey)) {
+
+      if (typeof provided !== 'string' || !safeEqualHashed(provided, expectedKey)) {
         throw new AppException(INTERNAL_ERRORS.FORBIDDEN);
       }
+
       return true;
     }
 
@@ -41,16 +43,11 @@ export class IsLocalhostGuard implements CanActivate {
     }
 
     const remoteAddress = request.socket.remoteAddress ?? '';
+
     if (!LOCALHOST_ADDRESSES.has(remoteAddress)) {
       throw new AppException(INTERNAL_ERRORS.FORBIDDEN);
     }
-    return true;
-  }
 
-  private safeEqual(provided: string, expected: string): boolean {
-    if (provided.length !== expected.length) {
-      return false;
-    }
-    return timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+    return true;
   }
 }
