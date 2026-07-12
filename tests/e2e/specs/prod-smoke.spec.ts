@@ -305,6 +305,7 @@ function collectConsoleErrors(page: Page): string[] {
   return errors;
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: prod smoke는 API DTO 전체를 import하지 않고 필드 접근으로 검증한다. 캐스팅 없이 any로 두는 게 실용적.
 async function fetchJson(request: APIRequestContext, url: string): Promise<any> {
   const res = await request.get(url);
   expect(res.status(), `${url} status`).toBe(200);
