@@ -50,6 +50,7 @@ export const HERO_CATALOG: ReadonlyArray<HeroCatalogEntry> = [
   { codename: 'mei', name: '메이', role: 'DAMAGE', subrole: 'Specialist', releasedAt: '2016-05-24' },
   { codename: 'pharah', name: '파라', role: 'DAMAGE', subrole: 'Recon', releasedAt: '2016-05-24' },
   { codename: 'reaper', name: '리퍼', role: 'DAMAGE', subrole: 'Flanker', releasedAt: '2016-05-24' },
+  { codename: 'shion', name: '시온', role: 'DAMAGE', subrole: 'Flanker', releasedAt: '2026-06-16' },
   { codename: 'sierra', name: '시에라', role: 'DAMAGE', subrole: 'Recon', releasedAt: '2026-04-22' },
   { codename: 'sojourn', name: '소전', role: 'DAMAGE', subrole: 'Sharpshooter', releasedAt: '2022-10-04' },
   { codename: 'emre', name: '엠레', role: 'DAMAGE', subrole: 'Specialist', releasedAt: '2026-02-11' },
