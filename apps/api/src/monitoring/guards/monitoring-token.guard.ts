@@ -1,9 +1,9 @@
 import { AppException } from '@@exceptions';
-import { timingSafeEqual } from 'node:crypto';
 import { CanActivate, type ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
 
+import { safeEqualHashed } from '../../common/security/safe-equal';
 import { MONITORING_ERRORS } from '../monitoring.error';
 
 /**
@@ -35,16 +35,11 @@ export class MonitoringTokenGuard implements CanActivate {
     }
 
     const provided = request.headers['x-monitoring-key'];
-    if (typeof provided !== 'string' || !this.safeEqual(provided, expectedKey)) {
+
+    if (typeof provided !== 'string' || !safeEqualHashed(provided, expectedKey)) {
       throw new AppException(MONITORING_ERRORS.FORBIDDEN);
     }
-    return true;
-  }
 
-  private safeEqual(provided: string, expected: string): boolean {
-    if (provided.length !== expected.length) {
-      return false;
-    }
-    return timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+    return true;
   }
 }

@@ -6,16 +6,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ABILITY_ID_TO_SLOT } from '../../seeder/icon-overrides';
 import { mergeTranslation, ScrapeJobRecorder, ScraperHttpClient } from '../common';
 import { BlizzardHeroParser } from './blizzard-hero.parser';
+import { CODENAME_TO_BLIZZARD_SLUG } from './blizzard-slug';
 import type { ParsedAbilityEn, ParsedHeroEn } from './dto/parsed-hero-en.dto';
 
 const BLIZZARD_HERO_BASE = 'https://overwatch.blizzard.com/en-us/heroes/';
-
-/**
- * 일부 영웅은 codename과 Blizzard URL slug가 다름. catalog와 분리해 둠 — 영문 페이지 한정 보정값.
- */
-const CODENAME_TO_BLIZZARD_SLUG: Readonly<Record<string, string>> = {
-  'd-va': 'dva',
-};
 
 /**
  * Blizzard 영문 페이지의 PRIMARY+SECONDARY 통합 케이스를 풀기 위한 ability 매칭 순서.

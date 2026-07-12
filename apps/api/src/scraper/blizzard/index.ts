@@ -11,3 +11,4 @@ export { BlizzardPatchCron } from './blizzard-patch.cron';
 export { BlizzardPatchParser } from './blizzard-patch.parser';
 export { BlizzardPatchScraper } from './blizzard-patch.scraper';
 export { BlizzardPatchEnScraper } from './blizzard-patch-en.scraper';
+export { CODENAME_TO_BLIZZARD_SLUG, toBlizzardSlug } from './blizzard-slug';

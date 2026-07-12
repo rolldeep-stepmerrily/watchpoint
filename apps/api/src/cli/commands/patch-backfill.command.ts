@@ -1,3 +1,4 @@
+import { InvalidArgumentError } from 'commander';
 import { Command, CommandRunner, Option } from 'nest-commander';
 
 import { BlizzardPatchScraper } from '../../scraper/blizzard';
@@ -29,18 +30,22 @@ export class PatchBackfillCommand extends CommandRunner {
   @Option({ flags: '--until <date>', description: '이 날짜 이전 패치는 무시 (YYYY-MM-DD, 기본 2026-01-01)' })
   parseUntil(value: string): Date {
     const date = new Date(`${value}T00:00:00Z`);
+
     if (Number.isNaN(date.getTime())) {
-      throw new Error(`잘못된 날짜 형식: ${value} (YYYY-MM-DD 필요)`);
+      throw new InvalidArgumentError(`잘못된 날짜 형식: ${value} (YYYY-MM-DD 필요)`);
     }
+
     return date;
   }
 
   @Option({ flags: '--max-pages <n>', description: '최대 페이지 수 (기본 24)' })
   parseMaxPages(value: string): number {
     const n = Number.parseInt(value, 10);
+
     if (Number.isNaN(n) || n <= 0) {
-      throw new Error(`잘못된 max-pages: ${value}`);
+      throw new InvalidArgumentError(`잘못된 max-pages: ${value}`);
     }
+
     return n;
   }
 }
