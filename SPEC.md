@@ -108,9 +108,12 @@
 |---|---|---|
 | id | Int | PK |
 | heroId | Int | 영웅 FK |
-| changeType | HeroChangeType | `NAME` / `DESCRIPTION` / `ABILITY_ADDED` / `ABILITY_REMOVED` / `ABILITY_UPDATED` / `PERK_ADDED` / `PERK_REMOVED` / `PERK_UPDATED` |
 | scrapeJobId | Int? | 트리거한 ScrapeJob FK |
-| payload | Json | before/after 또는 항목 식별자 |
+| changeType | HeroChangeType | 아래 enum 참고 |
+| target | String | 대상 분류 — `hero` / `ability` / `perk` / `stat` |
+| targetKey | String? | 식별자 — ability slot, perk `tier-slot`, stat key 등 (전체 대상이면 null) |
+| before | Json? | 변경 전 값 |
+| after | Json? | 변경 후 값 |
 | createdAt | DateTime | |
 
 ### PatchNote
@@ -166,7 +169,7 @@
 - **PerkTier**: `MINOR` / `MAJOR`
 - **EntryCategory**: `HERO_BALANCE` / `BUG_FIX` / `MAP` / `SYSTEM` / `GENERAL`
 - **PatchNoteStatus**: `DRAFT` / `PUBLISHED` / `PENDING_REVIEW`
-- **HeroChangeType**: `NAME` / `DESCRIPTION` / `ABILITY_ADDED` / `ABILITY_REMOVED` / `ABILITY_UPDATED` / `PERK_ADDED` / `PERK_REMOVED` / `PERK_UPDATED`
+- **HeroChangeType**: `HERO_STAT_CHANGED` / `ABILITY_ADDED` / `ABILITY_REMOVED` / `ABILITY_NAME_CHANGED` / `ABILITY_DESCRIPTION_CHANGED` / `ABILITY_STATS_CHANGED` / `PERK_ADDED` / `PERK_REMOVED` / `PERK_NAME_CHANGED` / `PERK_DESCRIPTION_CHANGED`
 - **ScrapeSource**: `BLIZZARD_PATCH_NOTES` / `BLIZZARD_PATCH_NOTES_EN` / `BLIZZARD_HERO_KO` / `BLIZZARD_HERO_EN` / `NAMUWIKI_HERO`
 - **ScrapeStatus**: `RUNNING` / `SUCCESS` / `FAILED` / `SKIPPED`
 - **Locale** (`?lang=`): `ko` / `en` / `ja` (기본 `ko`)

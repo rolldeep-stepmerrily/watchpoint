@@ -80,6 +80,9 @@ importers:
       class-validator:
         specifier: ^0.14.1
         version: 0.14.4
+      commander:
+        specifier: ^11
+        version: 11.1.0
       compression:
         specifier: ^1.8.1
         version: 1.8.1
