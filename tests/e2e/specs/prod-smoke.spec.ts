@@ -1,4 +1,5 @@
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { type APIRequestContext, type Page } from '@playwright/test';
+import { expect, test } from '../proxy-fixture';
 
 /**
  * Daily prod 종합 점검 (Playwright + Claude 결합).
