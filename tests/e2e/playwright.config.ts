@@ -27,7 +27,14 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         launchOptions: {
           executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? undefined,
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          // In the Anthropic remote sandbox, HTTPS_PROXY is set but Chromium cannot use it
+          // (the proxy policy blocks browser-type CONNECT tunnels). Direct outbound TCP
+          // to port 443 is allowed, so we bypass the proxy for Chromium only.
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            ...(process.env.HTTPS_PROXY ? ['--proxy-server=direct://'] : []),
+          ],
         },
       },
     },
