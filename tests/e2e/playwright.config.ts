@@ -19,6 +19,12 @@ export default defineConfig({
     locale: 'ko-KR',
     // Anthropic remote sandbox intercepts TLS with its own CA; Chromium rejects it
     ignoreHTTPSErrors: true,
+    // Sandbox outbound HTTPS routes through an agent proxy — forward it to Chromium.
+    // Note: Cloudflare (Vercel) may still block Chromium's TLS fingerprint from
+    // datacenter proxy egress IPs even when the proxy is configured correctly.
+    ...(process.env.HTTPS_PROXY
+      ? { proxy: { server: process.env.HTTPS_PROXY, bypass: process.env.NO_PROXY } }
+      : {}),
   },
   projects: [
     {
