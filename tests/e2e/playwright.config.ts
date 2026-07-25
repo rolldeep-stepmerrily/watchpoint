@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:3001';
+const SANDBOX_PROXY = process.env.HTTPS_PROXY;
 
 export default defineConfig({
   testDir: './specs',
@@ -27,7 +28,11 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         launchOptions: {
           executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? undefined,
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            ...(SANDBOX_PROXY ? [`--proxy-server=${SANDBOX_PROXY}`] : []),
+          ],
         },
       },
     },
