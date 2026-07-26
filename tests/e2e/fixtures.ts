@@ -21,10 +21,10 @@ const sandboxProxy = process.env.HTTPS_PROXY;
 
 export { expect };
 
-export const test = base.extend<{ _routeInterceptor: void }, { sharedRequest: APIRequestContext }>({
+export const test = base.extend<{ _routeInterceptor: undefined }, { sharedRequest: APIRequestContext }>({
   // Worker-scoped shared APIRequestContext — reused across all tests in a worker.
   sharedRequest: [
-    async ({}, use) => {
+    async (_fixtures, use) => {
       if (!sandboxProxy) {
         // Outside the sandbox: no shared context needed; individual tests create their own.
         await use(null as unknown as APIRequestContext);
@@ -66,7 +66,7 @@ async function attachRouteInterceptor(context: BrowserContext, apiCtx: APIReques
     } catch {
       // Best-effort: if the relay fetch fails (e.g., POST to an analytics endpoint that
       // fires after the test completes), abort gracefully rather than hanging.
-      await route.abort().catch(() => {});
+      await route.abort().catch(() => undefined);
     }
   });
 }
