@@ -17,7 +17,9 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     viewport: { width: 1280, height: 800 },
     locale: 'ko-KR',
-    // Anthropic remote sandbox intercepts TLS with its own CA; Chromium rejects it
+    // Anthropic remote sandbox intercepts TLS with its own CA; Chromium rejects it.
+    // The fixtures.ts route interceptor relays ALL browser requests through Node.js/APIRequestContext,
+    // bypassing Chromium's ML-KEM-768 key_share in TLS ClientHello that crashes the CCR proxy.
     ignoreHTTPSErrors: true,
   },
   projects: [
@@ -27,7 +29,10 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         launchOptions: {
           executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? undefined,
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+          ],
         },
       },
     },

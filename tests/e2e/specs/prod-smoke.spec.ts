@@ -1,4 +1,5 @@
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { expect, test } from '../fixtures';
+import type { APIRequestContext, Page } from '@playwright/test';
 
 /**
  * Daily prod 종합 점검 (Playwright + Claude 결합).
