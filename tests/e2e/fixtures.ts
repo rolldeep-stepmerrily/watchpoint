@@ -43,7 +43,7 @@ export const test = base.extend<{ _routeInterceptor: undefined }, { sharedReques
       if (sandboxProxy && sharedRequest) {
         await attachRouteInterceptor(context, sharedRequest);
       }
-      await use();
+      await use(undefined);
     },
     { auto: true },
   ],
