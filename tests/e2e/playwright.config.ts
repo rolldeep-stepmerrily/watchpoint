@@ -32,6 +32,10 @@ export default defineConfig({
           args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
+            // Chrome 124+ includes ML-KEM-768 post-quantum key shares in TLS ClientHello,
+            // which the CCR proxy cannot parse and resets the connection (ECONNRESET).
+            // Direct connections bypass the proxy; the sandbox permits them from Chromium.
+            '--proxy-server=direct://',
           ],
         },
       },
