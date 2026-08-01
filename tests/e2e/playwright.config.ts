@@ -19,6 +19,8 @@ export default defineConfig({
     locale: 'ko-KR',
     // Anthropic remote sandbox intercepts TLS with its own CA; Chromium rejects it
     ignoreHTTPSErrors: true,
+    // Route browser page navigations through the sandbox egress proxy
+    ...(process.env.HTTPS_PROXY ? { proxy: { server: process.env.HTTPS_PROXY } } : {}),
   },
   projects: [
     {
@@ -27,7 +29,14 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         launchOptions: {
           executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? undefined,
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            // QUIC (HTTP/3) uses UDP which bypasses the HTTP CONNECT proxy tunnel
+            // and gets blocked by the sandbox firewall → disable it so Chromium
+            // uses TCP/TLS for all connections through the proxy.
+            '--disable-quic',
+          ],
         },
       },
     },
