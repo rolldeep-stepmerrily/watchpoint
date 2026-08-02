@@ -24,7 +24,8 @@ export { expect };
 export const test = base.extend<{ _routeInterceptor: undefined }, { sharedRequest: APIRequestContext }>({
   // Worker-scoped shared APIRequestContext — reused across all tests in a worker.
   sharedRequest: [
-    async (_fixtures, use) => {
+    // biome-ignore lint/correctness/noEmptyPattern: Playwright 1.60 requires object destructuring as first arg; named param triggers a separate lint error
+    async ({}, use) => {
       if (!sandboxProxy) {
         // Outside the sandbox: no shared context needed; individual tests create their own.
         await use(null as unknown as APIRequestContext);
