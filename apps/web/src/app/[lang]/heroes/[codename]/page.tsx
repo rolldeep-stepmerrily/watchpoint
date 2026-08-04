@@ -56,11 +56,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch (error) {
-    // 진짜 404는 generateMetadata에서 notFound() — Next.js가 not-found.tsx 렌더 + status 404 반환.
-    // page body에서만 notFound()를 호출하면 status 200 + not-found content가 함께 가는 soft-404가 된다.
+    // Next.js 15에서 generateMetadata 내 notFound()는 route-specific not-found.tsx를 우회하고
+    // built-in /_not-found 라우트를 렌더링하는 버그가 있다 (미들웨어의 rewrite(status:404)와 동일).
+    // 404일 때는 fallback metadata를 반환하고, page body의 notFound()에 위임 (soft-404, task #219).
     // 5xx/네트워크 에러는 rethrow해서 ISR 캐시 오염을 막는다.
     if (error instanceof ApiError && error.status === 404) {
-      notFound();
+      return {
+        title: t.heroes.notFound.title,
+        robots: { index: false, follow: false },
+      };
     }
     throw error;
   }
