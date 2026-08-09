@@ -17,9 +17,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     viewport: { width: 1280, height: 800 },
     locale: 'ko-KR',
-    // Anthropic remote sandbox intercepts TLS with its own CA; Chromium rejects it.
-    // The fixtures.ts route interceptor relays ALL browser requests through Node.js/APIRequestContext,
-    // bypassing Chromium's ML-KEM-768 key_share in TLS ClientHello that crashes the CCR proxy.
+    // Anthropic remote sandbox intercepts TLS with its own CA; Chromium rejects it
     ignoreHTTPSErrors: true,
   },
   projects: [
@@ -32,6 +30,11 @@ export default defineConfig({
           args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
+            '--disable-quic',
+            // Sandbox egress proxy (HTTPS_PROXY) causes ERR_CONNECTION_RESET for Chromium
+            // browser connections. Direct TCP/TLS to HTTPS sites works fine from the sandbox.
+            // The Node.js request fixture reads HTTPS_PROXY from env automatically — no change.
+            ...(process.env.HTTPS_PROXY ? ['--proxy-server=direct://'] : []),
           ],
         },
       },
