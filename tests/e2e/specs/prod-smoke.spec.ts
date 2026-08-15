@@ -164,11 +164,13 @@ test.describe('Prod full coverage', () => {
     await expect(resultsContainer).toBeVisible();
   });
 
-  test('language toggle 존재 확인', async ({ page }) => {
-    await page.goto('/ko');
-    // 토글 버튼/링크가 헤더에 노출되는지만 확인 (구체 인터랙션은 별도 spec)
-    const langControl = page.locator('header').getByRole('button').or(page.locator('header').getByRole('link'));
-    expect(await langControl.count()).toBeGreaterThan(0);
+  test('language toggle 존재 확인', async ({ request }) => {
+    // LanguageToggle is 'use client' but Next.js SSR'd — buttons appear in initial HTML.
+    // Use request.get() to avoid browser pool exhaustion from late-sequence page.goto() calls.
+    const res = await request.get(`${PROD_WEB}/ko`);
+    const body = await res.text();
+    expect(body).toContain('title="한국어"');
+    expect(body).toContain('title="English"');
   });
 
   // ─────────────────────────────────────────────────────────────
@@ -193,11 +195,13 @@ test.describe('Prod full coverage', () => {
     expect(body).toContain('Sitemap: https://o-watchpoint.com/sitemap.xml');
   });
 
-  test('hreflang on home: ko + en + x-default', async ({ page }) => {
-    await page.goto('/ko');
-    expect(await page.locator('link[rel="alternate"][hrefLang="ko"]').count()).toBeGreaterThan(0);
-    expect(await page.locator('link[rel="alternate"][hrefLang="en"]').count()).toBeGreaterThan(0);
-    expect(await page.locator('link[rel="alternate"][hrefLang="x-default"]').count()).toBeGreaterThan(0);
+  test('hreflang on home: ko + en + x-default', async ({ request }) => {
+    // Fetch raw HTML via request context — avoids browser pool exhaustion from late page.goto() calls.
+    const res = await request.get(`${PROD_WEB}/ko`);
+    const body = await res.text();
+    expect(body).toContain('hreflang="ko"');
+    expect(body).toContain('hreflang="en"');
+    expect(body).toContain('hreflang="x-default"');
   });
 
   // ─────────────────────────────────────────────────────────────

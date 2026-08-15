@@ -10,6 +10,15 @@
  * via Playwright's route API and replay it through the APIRequestContext, which uses
  * Node.js/OpenSSL (no ML-KEM) and successfully tunnels through the CCR proxy.
  *
+ * Domain filter: only watchpoint domains (o-watchpoint.com) are proxied. External CDN
+ * requests (fonts, third-party scripts) are aborted cleanly — the sandbox proxy distorts
+ * their MIME types, causing console errors, and buffering large asset files saturates the
+ * Node.js request pool causing cascading timeouts in later tests.
+ *
+ * Content-encoding: the APIRequestContext auto-decompresses Brotli/gzip bodies but
+ * preserves the Content-Encoding header; strip it so the browser doesn't attempt a second
+ * decompression pass on the already-decoded body.
+ *
  * Important: this only applies when HTTPS_PROXY is set. In local dev or CI without the
  * proxy the fixture is a no-op and tests run exactly as before.
  */
@@ -52,21 +61,32 @@ export const test = base.extend<{ _routeInterceptor: undefined }, { sharedReques
 
 async function attachRouteInterceptor(context: BrowserContext, apiCtx: APIRequestContext) {
   await context.route('**', async (route) => {
-    const req = route.request();
+    const url = route.request().url();
+
+    // Only relay watchpoint domains through the Node.js request context.
+    // External CDN requests are aborted cleanly to avoid MIME type distortion
+    // and prevent connection pool exhaustion from large asset buffering.
+    if (!url.includes('o-watchpoint.com')) {
+      await route.abort().catch(() => undefined);
+      return;
+    }
+
     try {
-      const resp = await apiCtx.fetch(req.url(), {
-        method: req.method(),
-        headers: req.headers(),
-        data: req.postDataBuffer() ?? undefined,
+      const resp = await apiCtx.fetch(route.request().url(), {
+        method: route.request().method(),
+        headers: route.request().headers(),
+        data: route.request().postDataBuffer() ?? undefined,
         ignoreHTTPSErrors: true,
-        // Do not follow redirects; let the browser handle them to preserve navigation semantics.
         maxRedirects: 0,
         failOnStatusCode: false,
       });
-      await route.fulfill({ response: resp });
+      const headers = resp.headers();
+      // Strip encoding/length headers — body() returns already-decompressed bytes;
+      // leaving Content-Encoding causes the browser to attempt a second decompression.
+      delete headers['content-encoding'];
+      delete headers['content-length'];
+      await route.fulfill({ status: resp.status(), headers, body: await resp.body() });
     } catch {
-      // Best-effort: if the relay fetch fails (e.g., POST to an analytics endpoint that
-      // fires after the test completes), abort gracefully rather than hanging.
       await route.abort().catch(() => undefined);
     }
   });
